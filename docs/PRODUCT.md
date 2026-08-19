@@ -2,19 +2,19 @@
 
 ## Product Summary
 
-Describe the product in a few sentences.
+An app/website designed to help people within the KC metro find 3rd spaces. 
 
 ## Problem
 
-What problem does this solve?
+Hard to know what places are open AND fit the vibe you are going for. Are you trying to stay cheap so you need no cover places? Are you trying to get some work done, so you need decent wifi? Will you be working over lunch, so you also want food? Compile all of that into an app. 
 
 ## Target Users
 
-Who is this for?
+People in KC Metro looking for third spaces to exist in and meet up in.
 
 ## Core User Outcomes
 
-What should users be able to accomplish?
+Toggle settings that they want to filter locations. 
 
 ## MVP Scope
 
