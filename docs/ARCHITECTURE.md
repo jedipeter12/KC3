@@ -14,6 +14,23 @@ Briefly explain how the application is structured.
 - Analytics:
 - Third-party services:
 
+### Language
+TypeScript
+
+TypeScript is the default language for all application code. JavaScript may exist where required by tooling, but new application logic should be written in TypeScript.
+
+### Mobile
+React Native + Expo
+
+### Web
+Expo Web initially. A separate web frontend may be considered later if product requirements justify it.
+
+### Backend
+Supabase
+
+### Database
+PostgreSQL
+
 ## Repository / Module Structure
 
 ```text

@@ -23,6 +23,26 @@ These instructions apply to any AI coding agent working in this repository.
 - Add or update tests when behavior changes.
 - Run relevant tests and build checks before considering work complete.
 - Explain significant tradeoffs when introducing architectural changes.
+- When a requested change appears to require violating an architectural constraint, stop and explain the conflict rather than changing the architecture.
+
+
+# AGENTS.md
+
+## Technology Constraints
+
+- Primary language: TypeScript
+- Frontend: React Native
+- Framework: Expo
+- Backend: Supabase
+- Database: PostgreSQL via Supabase
+- Authentication: Supabase Auth
+
+### Hard constraints
+
+- Do not introduce another programming language without explicit approval.
+- Do not replace React Native, Expo, Supabase, or PostgreSQL without explicit approval.
+- Do not perform framework migrations or architectural rewrites unless specifically instructed.
+- Prefer existing project dependencies and patterns over introducing new libraries.
 
 ## Documentation Maintenance
 
