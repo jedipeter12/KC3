@@ -2,52 +2,41 @@
 
 ## Prerequisites
 
-List tools that must be installed before setup begins.
+Application prerequisites are not yet known because the Expo project has not been
+scaffolded. Do not infer tool versions or package managers. At present, only Git is
+needed to work with the documentation repository.
 
 - Git
-- Platform-specific SDK / IDE
-- Runtime / package manager
-- Other dependencies
+- Node.js/package manager version: To be selected and documented during
+  scaffolding.
+- Expo and platform tooling: To be selected and documented during scaffolding.
 
 ## Initial Setup
 
-Document setup in dependency order.
-
-```bash
-# Add commands here
-```
+There is currently no application setup procedure. Add exact, verified commands
+after scaffolding; do not leave example commands that appear runnable.
 
 ## Running Locally
 
-```bash
-# Add commands here
-```
+Not available until the application is scaffolded.
 
 ## Building
 
-```bash
-# Add commands here
-```
+Not available until the application is scaffolded.
 
 ## Testing
 
 ### Unit Tests
 
-```bash
-# Add commands here
-```
+No unit-test framework or command has been selected.
 
 ### Integration / UI Tests
 
-```bash
-# Add commands here
-```
+No integration or UI test framework or command has been selected.
 
 ## Linting / Formatting
 
-```bash
-# Add commands here
-```
+No linting or formatting tools have been selected.
 
 ## Environment Variables / Secrets
 
@@ -55,38 +44,61 @@ Never commit production secrets to the repository.
 
 Document required variable names without including their secret values.
 
-| Variable | Purpose | Required |
-|---|---|---|
-| `EXAMPLE_API_KEY` | Example only | Yes |
+No environment variable names are confirmed yet. Document the exact public client
+configuration and server-side secrets required by Supabase during scaffolding.
+Never place secret values in documentation, source control, or client-exposed
+configuration.
 
 ## Branching / Git Workflow
 
-Document the intended workflow.
+- Keep `main` in a reviewable state.
+- Create a focused branch for non-trivial work.
+- Use descriptive, focused commits and do not mix unrelated changes.
+- Do not push, merge, or otherwise modify remote state unless the specific task
+  authorizes it.
 
-Example:
+## Roles and Delivery Workflow
 
-- `main` should remain deployable.
-- Create a branch for non-trivial work.
-- Use descriptive commit messages.
-- Prefer focused commits over large unrelated changes.
+- The user is the Product Owner and approves product behavior and scope.
+- ChatGPT may act as PM, architect, and technical translator to turn product intent
+  into repository documentation and scoped tickets.
+- Codex acts as developer for approved tickets: read repository guidance, make the
+  smallest in-scope change, run appropriate checks, and report results.
+- Use this flow:
+  `idea or decision → repository documentation → scoped Codex ticket → implementation and tests → Product Owner review`.
+- `ROADMAP.md` is the PM backlog and should reflect work that is started,
+  completed, deferred, or reprioritized.
+- Autonomous multi-agent orchestration is not required for the initial workflow.
+
+## Ticket Completion Checklist
+
+Each implementation ticket should direct the developer to:
+
+1. Read `AGENTS.md`, `README.md`, and the relevant files in `docs/`.
+2. Confirm the requested behavior is approved and scoped.
+3. Avoid unrelated changes and preserve existing behavior.
+4. Add or update tests when behavior changes.
+5. Run the relevant tests and build checks.
+6. Update affected documentation.
+7. Report changed files, checks run, and remaining risks or follow-up work.
 
 ## Development Conventions
 
-- Naming:
-- File organization:
-- Error handling:
-- Logging:
-- Comments:
-- Dependency policy:
+- Language: Write new application logic in TypeScript. JavaScript may remain where
+  tooling requires it.
+- File organization: Follow the scaffolded project structure once it exists; do
+  not invent a parallel structure without a documented reason.
+- Error handling: Follow established project patterns once defined.
+- Logging: Do not log credentials or sensitive data; a broader strategy is not yet
+  defined.
+- Dependency policy: Prefer existing dependencies and patterns. Add a dependency
+  only for a clear, documented reason.
 
 ## Deployment / Release Process
 
-Document the exact release process once one exists.
+No deployment or release process exists yet. Document exact, verified steps after
+hosting and release tooling are selected.
 
 ## Troubleshooting
 
-### Common Issue
-
-Cause:
-
-Fix:
+No application-specific troubleshooting guidance exists yet.

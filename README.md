@@ -1,24 +1,20 @@
 # KC3
 
-An app to search and find third spaces in the Kansas City Metro area. 
+KC3 is a planned app for finding third places in the Kansas City metro area.
 
 ## Status
 
-- Stage: Idea / Prototype / MVP / Beta / Production
-- Current focus:
-- Last major milestone:
+- Stage: Product definition / pre-implementation
+- Current focus: Define and approve a bounded MVP before scaffolding the application.
+- Last major milestone: Approved the initial TypeScript, React Native/Expo, and Supabase working stack.
 
 ## Quick Start
 
-Document the minimum steps required to run the project locally.
+The repository currently contains product and engineering documentation only. There
+is no application to install, build, or run yet.
 
-```bash
-# Example only
-git clone <https://github.com/jedipeter12/KC3>
-cd <repo-folder>
-```
-
-Add project-specific install/build/run commands here.
+See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for the development workflow and
+the setup information that still needs to be established during scaffolding.
 
 ## Project Documentation
 
@@ -32,7 +28,7 @@ Add project-specific install/build/run commands here.
 ## Repository Structure
 
 ```text
-project/
+KC3/
 ├── README.md
 ├── AGENTS.md
 ├── docs/
@@ -41,11 +37,11 @@ project/
 │   ├── DECISIONS.md
 │   ├── ROADMAP.md
 │   └── DEVELOPMENT.md
-├── src/
-└── tests/
+└── LICENSE
 ```
 
-> The source/test layout can change to match the platform. For a native iOS app, for example, Xcode will normally create app, unit-test, and UI-test target folders instead of requiring `src/` and `tests/`.
+Application and test directories will be documented after the Expo project is
+scaffolded. Their structure is not yet decided.
 
 ## Working Rule
 
