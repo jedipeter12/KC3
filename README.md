@@ -4,14 +4,16 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 
 ## Status
 
-- Stage: Product definition / pre-implementation
-- Current focus: Define and approve a bounded MVP before scaffolding the application.
-- Last major milestone: Approved the initial TypeScript, React Native/Expo, and Supabase working stack.
+- Stage: Product definition / initial backend implementation
+- Current focus: Review the approved MVP data-model migration while the remaining
+  application scope is defined.
+- Last major milestone: Approved the KC3 MVP place data model.
 
 ## Quick Start
 
-The repository currently contains product and engineering documentation only. There
-is no application to install, build, or run yet.
+The repository currently contains product and engineering documentation plus the
+initial Supabase schema migration. There is no client application to install,
+build, or run yet.
 
 See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for the development workflow and
 the setup information that still needs to be established during scaffolding.
@@ -37,11 +39,14 @@ KC3/
 │   ├── DECISIONS.md
 │   ├── ROADMAP.md
 │   └── DEVELOPMENT.md
+├── supabase/
+│   ├── config.toml
+│   └── migrations/
 └── LICENSE
 ```
 
-Application and test directories will be documented after the Expo project is
-scaffolded. Their structure is not yet decided.
+Client application and test directories will be documented after the Expo project
+is scaffolded. Their structure is not yet decided.
 
 ## Working Rule
 

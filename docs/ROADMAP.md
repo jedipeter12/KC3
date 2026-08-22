@@ -4,20 +4,21 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Define and approve a bounded KC3 MVP before application scaffolding or feature
-implementation begins.
+Review the approved MVP data-model migration while defining the remaining bounded
+KC3 client MVP before application scaffolding.
 
 ## In Progress
 
 - [ ] Product Owner review of candidate MVP features and open product questions in
   `PRODUCT.md`.
+- [ ] Product Owner review and merge of the initial Supabase schema migration.
 
 ## Next
 
 - [ ] Convert the approved MVP into prioritized, small, reviewable implementation
   tickets with acceptance criteria.
-- [ ] Define the minimum data model and Supabase usage required by those approved
-  features.
+- [ ] Define least-privilege RLS policies before exposing place data to clients.
+- [ ] Define the Google import and curated seed-data workflows.
 - [ ] Scaffold the Expo/TypeScript application and record the resulting setup,
   commands, and repository structure.
 - [ ] Select and document testing, linting, formatting, hosting, and release
@@ -40,6 +41,9 @@ implementation begins.
 - [x] Repository-centered roles and supervised delivery workflow documented.
 - [x] Documentation gap analysis completed against the 2026-08-19 conversation
   context.
+- [x] MVP place data model approved.
+- [x] Initial Supabase migration authored with RLS enabled and no permissive
+  policies.
 
 ## Deferred / Rejected
 
