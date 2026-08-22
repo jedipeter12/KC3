@@ -43,6 +43,53 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-08-21 — Approve the normalized KC3 MVP place data model
+
+**Status:** Accepted
+
+**Decision**
+
+Use four public PostgreSQL tables for the initial KC3 data foundation: `places`
+for canonical physical-place identity, `place_google_data` for Google-derived
+metadata, `place_details` for KC3-owned workability information, and `place_hours`
+for repeatable weekly schedule intervals. Use PostgreSQL enums for bounded
+classifications, cascading foreign keys for dependent records, automatic
+`updated_at` triggers, and Row Level Security without permissive policies until
+access rules are separately approved.
+
+**Context**
+
+The initial schema must preserve the distinction between canonical, externally
+sourced, KC3-verified, and repeating hours data. It also needs to support unknown
+values and multiple opening intervals on the same day without prematurely opening
+API access.
+
+**Alternatives considered**
+
+- Keep all source, detail, and hours fields in one `places` table.
+- Allow only one hours row per place and day.
+- Add permissive read or write policies with the initial tables.
+
+**Reasoning**
+
+Separate tables make ownership and refresh behavior explicit, while shared
+primary keys enforce one-to-one source/detail records. Independent hours rows
+support split schedules. Enabling RLS before policies establishes a closed default
+until application access requirements are approved.
+
+**Consequences**
+
+Deleting a place deletes its Google data, details, and hours. Ordinary Supabase
+API clients cannot access the tables until policies are added. Google ingestion,
+seed data, and application queries must follow the ownership boundaries in this
+schema.
+
+**Follow-up**
+
+- Review and merge the migration without applying it to production.
+- Define roles and least-privilege RLS policies before client data access.
+- Define import and seed workflows separately.
+
 ### 2026-08-19 — Use a supervised, repository-centered delivery workflow
 
 **Status:** Accepted
