@@ -53,7 +53,8 @@ automatic update timestamps, the local MVP seed contract, and the
 closed-by-default RLS configuration.
 
 Run PostgreSQL lint checks against the same local database with
-`npm run lint:db`.
+`npm run lint:db`. The command targets KC3's `public` schema and fails on project
+warnings; it excludes third-party extension internals installed by the test suite.
 
 ### Application Unit Tests
 

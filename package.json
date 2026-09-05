@@ -3,7 +3,7 @@
   "scripts": {
     "test": "npm run test:db",
     "test:db": "supabase test db --local",
-    "lint:db": "supabase db lint --local --level warning"
+    "lint:db": "supabase db lint --local --schema public --level warning --fail-on warning"
   },
   "devDependencies": {
     "supabase": "^2.115.0"
