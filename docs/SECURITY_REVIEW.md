@@ -61,13 +61,16 @@ that were not intended for public use.
 
 ### H-02 — Administrative write and Google ingestion trust boundary is undefined
 
-KC3 will need a trusted way to seed, curate, and possibly refresh place data. No
-administrative workflow or server boundary exists. A Supabase secret/service-role
-credential bypasses RLS and must never be embedded in Expo, Expo Web, a public
-bundle, or other user-controlled runtime. A leaked credential would permit broad
-read/write/delete access and cascading deletion of dependent records.
+KC3 has a credential-free SQL seed for local database resets, but it still needs
+a trusted production path to curate and possibly refresh place data. No
+administrative workflow or server boundary exists. A Supabase
+secret/service-role credential bypasses RLS and must never be embedded in Expo,
+Expo Web, a public bundle, or other user-controlled runtime. A leaked credential
+would permit broad read/write/delete access and cascading deletion of dependent
+records.
 
-- **Current exploitability:** No credential or ingestion code exists.
+- **Current exploitability:** The local seed uses no credential or network
+  ingestion. No automated or production ingestion code exists.
 - **Threat mitigated by recommendation:** Full database compromise through a
   client-exposed or overprivileged administrative secret.
 - **Required timing:** **Immediate MVP blocker before seed/import automation.**

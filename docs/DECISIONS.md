@@ -43,6 +43,54 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-05 — Keep the local MVP seed additive and ownership-safe
+
+**Status:** Accepted
+
+**Decision**
+
+Use `supabase/seed.sql` to load 15 representative, real places across Lenexa,
+Overland Park, and Olathe for local development. Give every seed place a stable
+UUID, wrap the complete seed in one transaction, and use insert-only conflict
+handling. Seed canonical place values and unknown/unverified KC3 detail shells,
+but do not populate Google-owned fields or weekly hours.
+
+**Context**
+
+The database needs realistic records before client list and search work can be
+validated. The schema intentionally separates canonical, Google-owned, and
+KC3-owned data, while the production import and curation path, Google payload
+retention, and canonical deduplication policy remain undecided.
+
+**Alternatives considered**
+
+- Update seed-managed rows to the file's latest values on every reset.
+- Seed current business hours, ratings, or other Google-derived metadata.
+- Wait for the production Google import workflow before adding local data.
+
+**Reasoning**
+
+Stable IDs make repeated local execution deterministic. Treating existing rows
+as authoritative prevents a reset or manual rerun from erasing curation. Empty
+Google data and unknown KC3 details avoid presenting unverified facts as known,
+while the representative records are sufficient for early database and client
+development.
+
+**Consequences**
+
+Seed-file corrections do not replace an already-present row; developers must
+apply intentional corrections separately or reset the disposable local database.
+The seed is not a general deduplication solution or a production import path.
+Hours, ratings, coordinates, Google IDs, and richer KC3 details remain absent
+until source-aware workflows or explicit curation supply them.
+
+**Follow-up**
+
+- Define and approve the production administrative/import boundary.
+- Define Google payload retention and refresh rules before ingestion.
+- Expand or correct the seed only from authoritative sources and update its
+  regression test in the same change.
+
 ### 2026-08-23 — Test the approved database model with pgTAP
 
 **Status:** Accepted

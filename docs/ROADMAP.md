@@ -4,14 +4,14 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Review the approved MVP data-model migration while defining the remaining bounded
-KC3 client MVP before application scaffolding.
+Review the initial MVP seed data while defining the remaining bounded KC3 client
+MVP before application scaffolding.
 
 ## In Progress
 
 - [ ] Product Owner review of candidate MVP features and open product questions in
   `PRODUCT.md`.
-- [ ] Product Owner review and merge of the initial Supabase schema migration.
+- [ ] Product Owner review of the transactional, idempotent local MVP seed.
 
 ## Next
 
@@ -23,7 +23,7 @@ KC3 client MVP before application scaffolding.
 - [ ] Approve a server-controlled, least-privilege administrative import and
   curation path; never expose privileged Supabase credentials to a client.
 - [ ] Decide raw Google payload retention/privacy rules before ingestion.
-- [ ] Define the Google import and curated seed-data workflows.
+- [ ] Define the Google import workflow and any later curated seed expansion.
 - [ ] Scaffold the Expo/TypeScript application and record the resulting setup,
   commands, and repository structure.
 - [ ] Select and document application testing, linting, formatting, hosting, and
@@ -54,6 +54,9 @@ KC3 client MVP before application scaffolding.
   signup closure, and credential ignore rules added.
 - [x] pgTAP regression coverage and PostgreSQL lint commands added for the
   approved MVP data model.
+- [x] Initial Supabase schema hardened, tested, approved, and merged.
+- [x] Transactional, rerunnable local MVP seed added with 15 representative
+  Lenexa, Overland Park, and Olathe places and seed-specific regression coverage.
 
 ## Deferred / Rejected
 

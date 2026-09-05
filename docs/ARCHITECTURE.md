@@ -6,9 +6,11 @@ KC3 is in product definition and has no client application scaffold or deployed
 architecture yet. The approved target is a TypeScript application built with
 React Native and Expo, with Expo Web as the initial web target. Supabase provides
 the backend platform and PostgreSQL-based database; the initial MVP schema is
-defined as a migration but has not been applied to production. Supabase Auth is
-the selected authentication platform if approved features require accounts, and
-Supabase Storage may be used if an approved feature needs object storage.
+defined as a migration but has not been applied to production. A transactional,
+idempotent local seed bootstraps 15 representative places without importing
+Google data or guessing KC3 details. Supabase Auth is the selected authentication
+platform if approved features require accounts, and Supabase Storage may be used
+if an approved feature needs object storage.
 
 ## Technology Stack
 
@@ -51,11 +53,13 @@ KC3/
 │   ├── DECISIONS.md
 │   ├── ROADMAP.md
 │   ├── DEVELOPMENT.md
+│   ├── SEED_DATA.md
 │   ├── SECURITY_REVIEW.md
 │   └── TESTING_REVIEW.md
 ├── supabase/
 │   ├── config.toml
 │   ├── migrations/
+│   ├── seed.sql
 │   └── tests/
 └── LICENSE
 ```
@@ -102,6 +106,12 @@ approved. Default public-schema privileges for `postgres`-owned project
 migrations are also revoked so future project tables, sequences, and functions
 require intentional grants.
 
+The local MVP seed uses stable UUIDs and insert-only conflict handling. It creates
+canonical `places` rows and unknown/unverified `place_details` shells only when
+they are missing. It does not update existing records, populate Google-owned
+fields, or seed volatile weekly hours. See `SEED_DATA.md` for provenance and
+maintenance rules.
+
 ## APIs / Integrations
 
 Supabase is the only approved integration. The schema can retain Google-derived
@@ -117,9 +127,9 @@ undefined.
 
 ## Data Storage
 
-Persistent application data will use Supabase Database. Supabase Storage is
-available if required. Local storage, retention, backup, and deletion policies
-have not been decided.
+Persistent application data will use Supabase Database. Local database resets
+load `supabase/seed.sql` after migrations. Supabase Storage is available if
+required. Retention, backup, and deletion policies have not been decided.
 
 ## Security Considerations
 

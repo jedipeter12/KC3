@@ -8,9 +8,10 @@
 
 KC3 currently contains an approved Supabase/PostgreSQL data model and no client
 application, API/server implementation, TypeScript application logic, utilities,
-search/filter implementation, or seed/import workflow. This review therefore
-focuses on the migration in `supabase/migrations/` and does not define behavior
-for candidate client features that `PRODUCT.md` marks as unapproved.
+search/filter implementation, or automated import workflow. This review covers
+the migration in `supabase/migrations/` and the approved local seed without
+defining behavior for candidate client features that `PRODUCT.md` marks as
+unapproved.
 
 ## Existing Coverage Assessment
 
@@ -21,10 +22,9 @@ constraints, defaults, relationships, timestamp triggers, and RLS posture had no
 executable regression protection.
 
 There is no meaningful line-coverage percentage to report for a SQL migration.
-The final workspace suite provides 84 behavior and contract assertions across
-four pgTAP files. Of these, 81 were authored from the approved data model during
-this review. A concurrent defensive security review added three assertions for
-its privilege revocations.
+The workspace suite provides 96 behavior and contract assertions across five
+pgTAP files. The first four files provide 84 schema assertions, including three
+for privilege revocations. The seed-data test adds 12 assertions.
 
 ## Major Untested Risks Found
 
@@ -77,13 +77,22 @@ Concurrent security work added tests proving current privileges and default
 privileges for `postgres`-owned project tables, sequences, and functions remain
 revoked from Supabase Data API roles.
 
+### Local MVP seed
+
+`005_seed_data.test.sql` verifies all 15 stable seed identities and canonical
+values, even distribution across Lenexa, Overland Park, and Olathe, coverage of
+the initial place types, active defaults, unknown/unverified KC3 detail shells,
+and the absence of guessed Google data or weekly hours. Repeat execution of the
+actual seed is also verified during seed-workflow changes because pgTAP receives
+the post-seed database rather than executing the seed file itself.
+
 ## Deliberately Not Tested
 
 - Search/filter behavior, list/detail/map presentation, and client logic: these
   are candidate features, not approved behavior, and no implementation exists.
 - API response behavior and role-level CRUD flows: no API policy or role behavior
   is approved, and no client/API implementation exists.
-- Google ingestion, seed data, freshness calculations, and normalization: no
+- Google ingestion, freshness calculations, and general import normalization: no
   workflows or rules are approved or implemented.
 - Place deduplication, hours overlap/equal-time rules, and consistency between the
   next-day flag and actual clock ordering: approved documents do not define them.
@@ -143,7 +152,7 @@ detection.
    SELECT, INSERT, UPDATE, and DELETE as each approved role, including negative
    cases. This prevents data exposure, unauthorized writes, and incomplete
    policies.
-4. **Test import and seed workflows when approved and implemented.** Cover source
+4. **Test future import workflows when approved and implemented.** Cover source
    ownership, idempotency, duplicate handling, raw-data retention, and transaction
    failure. This prevents reruns from duplicating places or partially refreshing
    data.
@@ -162,16 +171,20 @@ detection.
 
 ## Verification Results
 
-**Reverified:** 2026-09-04
+**Reverified:** 2026-09-05
 
-- Assertion-plan consistency: passed; the four files declare and contain
-  21 + 32 + 21 + 10 = 84 assertions.
+- Assertion-plan consistency: passed; the five files declare and contain
+  21 + 32 + 21 + 10 + 12 = 96 assertions.
 - Package lock refresh: passed with `npm install --package-lock-only
   --ignore-scripts`.
 - Whitespace/error check: passed with `git diff --check`.
-- Supabase startup and clean database reset: passed; the migration applied from a
-  fresh local database.
-- Database tests: passed with `npm test`; all 84 assertions succeeded across four
+- Supabase startup and clean database reset: passed; the migration and seed
+  applied from a fresh local database.
+- Seed rerun: passed; a second execution inserted no duplicate places or detail
+  rows and preserved simulated canonical, KC3, Google, and hours edits.
+- Seed transaction failure: passed; a deliberately injected failure rolled back
+  rows inserted earlier in the transaction.
+- Database tests: passed with `npm test`; all 96 assertions succeeded across five
   pgTAP files.
 - Database lint: passed with `npm run lint:db`; no schema errors were found.
 - Typecheck: not applicable; no TypeScript source or TypeScript configuration.

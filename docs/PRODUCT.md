@@ -30,6 +30,9 @@ filter experience remains an MVP scope decision.
   KC3-specific place details, and weekly hours.
 - The approved schema supports curated place records and preserves unknown detail
   values without requiring user accounts.
+- An initial local-development seed of 15 real places across Lenexa, Overland
+  Park, and Olathe, using only verified canonical names and addresses while
+  leaving unverified details, Google metadata, and hours unknown.
 - Approval of this data foundation does not by itself approve every candidate
   client feature below.
 
@@ -50,7 +53,6 @@ tickets until approved. The place data model itself is approved separately below
 - Place categories or tags, hours, coordinates, and freshness timestamps.
 - Attributes such as Wi-Fi, outlets, bathrooms, meeting or video-call
   suitability, and cost to occupy.
-- Seed location data.
 - A mobile-friendly layout and deployment.
 
 ## Approved MVP Data Model

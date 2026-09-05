@@ -39,11 +39,18 @@ Supabase CLI dependency. From the repository root:
    `npm exec -- supabase db reset`.
 3. Run the database tests with `npm test`.
 
+Database reset automatically runs `supabase/seed.sql` after migrations. The seed
+is transactional and safe to run again against the same database. It adds missing
+stable seed records and unknown KC3 detail shells but does not overwrite existing
+canonical or KC3-curated fields. It intentionally leaves Google-owned fields and
+weekly hours empty. See `SEED_DATA.md` for the dataset and maintenance rules.
+
 The tests live in `supabase/tests/`. They execute inside transactions and roll
 their fixture data back. The suite covers schema shape, approved enum values,
 required canonical fields, defaults and unknown values, one-to-one ownership,
 cascading deletion, weekly-hours validation, split and overnight intervals,
-automatic update timestamps, and the closed-by-default RLS configuration.
+automatic update timestamps, the local MVP seed contract, and the
+closed-by-default RLS configuration.
 
 Run PostgreSQL lint checks against the same local database with
 `npm run lint:db`.
