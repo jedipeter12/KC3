@@ -1,16 +1,18 @@
 # Test Coverage and Reliability Review
 
-**Review date:** 2026-08-23; updated 2026-09-05 for public place access
+**Review date:** 2026-08-23; updated 2026-09-05 for public place access and the
+Expo client scaffold
 
 **Scope:** Approved behavior and current implementation in the KC3 repository.
 
 ## Scope and Established Behavior
 
-KC3 currently contains an approved Supabase/PostgreSQL data model, local seed, and
-anonymous read-only place RPC, but no client application, custom server,
-TypeScript application logic, search/filter implementation, or automated import
-workflow. This review covers the migrations, approved local seed, and database-
-level API authorization contract without defining unapproved client behavior.
+KC3 currently contains an approved Supabase/PostgreSQL data model, local seed,
+anonymous read-only place RPC, and an Expo TypeScript client scaffold. The client
+does not yet contain a Supabase data layer, search/filter implementation, or
+feature UI, and there is no custom server or automated import workflow. This
+review covers the database behavior plus the scaffold's application quality
+baseline without defining unapproved client behavior.
 
 ## Existing Coverage Assessment
 
@@ -36,8 +38,8 @@ place access test adds 24 authorization and response-contract assertions.
 - The four `updated_at` triggers and initial closed-by-default RLS configuration
   had no regression tests.
 - No CI job runs migration reset, database tests, or database linting.
-- No Expo client or HTTP integration test exists to verify RPC serialization,
-  transformations, search/filter behavior, or end-to-end behavior.
+- No client data layer or HTTP integration test exists to verify RPC
+  serialization, transformations, search/filter behavior, or end-to-end behavior.
 
 ## Tests Added
 
@@ -97,21 +99,22 @@ remain inaccessible and that unapproved Data API roles cannot execute the RPC.
 
 ## Deliberately Not Tested
 
-- Search/filter behavior, list/detail/map presentation, and client logic: these
-  are candidate features, not approved behavior, and no implementation exists.
+- Approved list/search/filter behavior and all later detail/map presentation: no
+  feature implementation exists yet.
 - Automated HTTP serialization and Expo client integration for the approved RPC,
-  plus all future authenticated and administrative CRUD flows: no client exists
-  and those additional role behaviors are not approved.
+  plus all future authenticated and administrative CRUD flows: no client data
+  layer exists and those additional role behaviors are not approved.
 - Google ingestion, freshness calculations, and general import normalization: no
   workflows or rules are approved or implemented.
 - Place deduplication, hours overlap/equal-time rules, and consistency between the
   next-day flag and actual clock ordering: approved documents do not define them.
 - Blank-text, Google rating bounds, and closed/next-day semantics remain untested
   because they are not clearly approved behavior.
-- UI, accessibility, performance/load, and end-to-end behavior: no client exists
-  and the corresponding requirements and tooling are undecided.
-- TypeScript typechecking, application linting, and application builds: no
-  TypeScript/application sources or configurations exist.
+- Feature UI, accessibility, performance/load, and end-to-end behavior: the
+  scaffold has no discovery flow yet and the corresponding automated tooling is
+  undecided.
+- Automated mobile device launch behavior: the current environment verifies iOS
+  and Android bundles, but has no configured simulator target.
 
 ## Product Owner Decisions Required
 
@@ -165,9 +168,9 @@ detection.
    ownership, idempotency, duplicate handling, raw-data retention, and transaction
    failure. This prevents reruns from duplicating places or partially refreshing
    data.
-5. **Select application test tooling during Expo scaffolding.** Add unit tests for
-   approved validation, transformations, filters, and multi-branch utilities as
-   they appear. This prevents client behavior from drifting from the database and
+5. **Expand the Jest baseline with feature behavior.** Add unit tests for approved
+   validation, transformations, filters, and multi-branch utilities as they
+   appear. This prevents client behavior from drifting from the database and
    approved rules.
 6. **Expand API/client integration coverage with richer approved fields.** Verify
    enum, nullable boolean, date, time, JSON, and error serialization as those
@@ -199,6 +202,11 @@ detection.
   with exactly the five approved fields, while direct `places` access returned
   HTTP 401.
 - Database lint: passed with `npm run lint:db`; no schema errors were found.
-- Typecheck: not applicable; no TypeScript source or TypeScript configuration.
-- Application lint: not applicable; no application source or lint configuration.
-- Build: not applicable; Expo is not scaffolded and no build command exists.
+- Typecheck: passed with `npm run typecheck`.
+- Application lint: passed with `npm run lint`.
+- Formatting: passed with `npm run format:check`.
+- Application tests: passed with `npm run test:app`; one scaffold baseline test
+  succeeded.
+- Export: passed with `npm run export`; Expo produced Web, iOS, and Android
+  bundles.
+- Expo Web development server: started successfully and returned HTTP 200.

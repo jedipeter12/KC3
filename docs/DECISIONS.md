@@ -43,6 +43,132 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-05 — Scaffold Expo SDK 57 with repository-level quality tooling
+
+**Status:** Accepted
+
+**Decision**
+
+Use the stable Expo SDK 57 blank TypeScript foundation with a root `index.ts`,
+application code under `src/`, and application tests under `tests/`. Standardize
+local development on Node.js 24.20.0 LTS and npm 11.19.0 with the committed npm
+lockfile. Use strict TypeScript, Expo's ESLint flat configuration, Prettier, and
+Jest with `jest-expo` as the initial application quality toolchain.
+
+**Context**
+
+The approved list-first slice needs the smallest supported mobile and Web client
+before its Supabase data path or UI can be implemented. Existing database scripts
+must remain usable and separate from application-only checks.
+
+**Alternatives considered**
+
+- Adopt Expo Router and its default multi-screen example before a navigation
+  requirement exists.
+- Place application source at the repository root.
+- Introduce a different test runner or formatter instead of Expo's documented
+  Jest baseline and the established Expo lint configuration.
+
+**Reasoning**
+
+The blank scaffold proves all three approved targets with minimal generated code
+and avoids prematurely selecting navigation. The `src/` and `tests/` separation
+keeps future features and their tests discoverable. Expo's documented compatible
+toolchain minimizes custom configuration; ESLint stays on the Expo-compatible 9.x
+line until the Expo configuration supports ESLint 10.
+
+**Consequences**
+
+Developers use the pinned Node/npm versions and npm lockfile. Application checks
+are available as dedicated scripts, while the existing `npm test`, `test:db`, and
+`lint:db` database behavior remains unchanged. Navigation, UI test utilities,
+coverage targets, CI, hosting, and signed native builds remain later decisions.
+
+**Follow-up**
+
+- Configure the public Supabase client and environment variable contract.
+- Select CI, hosting, and release tooling in their approved tickets.
+
+### 2026-09-05 — Use Notion as a subordinate execution tracker
+
+**Status:** Accepted
+
+**Decision**
+
+Use the directly linked KC3 Work/Tickets Notion database for detailed ticket
+scope, acceptance criteria, dependencies, priority, status, and progress history.
+Keep `docs/ROADMAP.md` as the source of truth for project scope, priorities, and
+status. Limit KC3 Notion access to that database and its ticket pages rather than
+searching unrelated workspace content.
+
+**Context**
+
+The repository-centered workflow preserves durable product knowledge, while a
+structured tracker makes implementation sequencing and history easier to review.
+
+**Alternatives considered**
+
+- Track all execution detail only in `ROADMAP.md`.
+- Make Notion the authoritative project backlog.
+
+**Reasoning**
+
+A subordinate tracker adds useful operational structure without splitting or
+reversing the repository's authority. The explicit access boundary avoids pulling
+unrelated personal workspace context into KC3.
+
+**Consequences**
+
+Roadmap changes must be mirrored to Notion when relevant, and conflicts are
+resolved in favor of the repository. Ticket pages may contain more execution
+detail than the roadmap, but they cannot approve or redefine product scope.
+
+**Follow-up**
+
+- Keep ticket status synchronized whenever roadmap work starts or finishes.
+
+### 2026-09-05 — Approve a list-first Expo MVP slice
+
+**Status:** Accepted
+
+**Decision**
+
+Make the first Expo client slice an anonymous list of active places using the
+existing `list_public_places()` RPC. Display name, city, address, and place type;
+add client-side name search and city/place-type filters; and provide loading,
+empty, and sanitized error states. Target mobile and Expo Web. Exclude maps,
+accounts, writes, hours, Google metadata, and place-detail screens from this
+slice.
+
+**Context**
+
+The backend now exposes a tested five-field public read contract, but no client
+exists. A bounded vertical slice is needed before richer data or experiences are
+approved.
+
+**Alternatives considered**
+
+- Include a map and place-detail experience in the first slice.
+- Scaffold the client without an approved user-facing slice.
+- Require accounts before discovery.
+
+**Reasoning**
+
+The list-first slice validates the complete client-to-database path with the data
+already available. Client-side filtering is sufficient for the 15-record seed and
+does not broaden the public database boundary.
+
+**Consequences**
+
+The first client must use the RPC rather than base tables and must not expose
+privileged credentials. Maps and richer details require later product approval
+and, where needed, explicit backend contract changes with authorization tests.
+
+**Follow-up**
+
+- Scaffold Expo and select the initial application testing and quality tooling.
+- Implement and verify the list-first tickets in roadmap order.
+
 ### 2026-09-05 — Expose active places through a narrow anonymous RPC
 
 **Status:** Accepted

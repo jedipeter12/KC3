@@ -37,23 +37,37 @@ filter experience remains an MVP scope decision.
   projection containing only place ID, name, city, address, and place type.
 - The approved public discovery boundary does not require accounts and does not
   permit client writes or direct access to the underlying place tables.
-- Approval of this data foundation does not by itself approve every candidate
-  client feature below.
+- A list-first Expo client slice that shows the public projection, supports
+  client-side name search and city/place-type filters, and handles loading,
+  empty, and error states.
+- The first client slice targets mobile and Expo Web and does not require a map,
+  accounts, writes, hours, or a place-detail screen.
 
 ### Explicitly Not Included
 
 - No features have been permanently excluded. The later-feature candidates below
   are not approved for the MVP.
 
-## Candidate MVP Client Features (Not Yet Approved)
+## Approved List-first MVP Client Slice
+
+The first client implementation is intentionally bounded to the existing public
+RPC contract:
+
+- Display active places in a list with name, city, address, and place type.
+- Support client-side name search and city/place-type filters.
+- Provide loading, empty, and sanitized error states.
+- Use a mobile-friendly layout that also works through Expo Web.
+- Do not add a map, accounts, client writes, hours, Google metadata, or a
+  place-detail screen in this slice.
+
+## Later Client Feature Candidates (Not Yet Approved)
 
 The following client-facing ideas were discussed as a plausible MVP shape. They
 are preserved for Product Owner review and must not be treated as implementation
 tickets until approved. The place data model itself is approved separately below.
 
-- A places database with search and filtering.
-- Place list and place-detail views.
-- Map and list presentation.
+- Place-detail views.
+- Map presentation.
 - Place categories or tags, hours, coordinates, and freshness timestamps.
 - Attributes such as Wi-Fi, outlets, bathrooms, meeting or video-call
   suitability, and cost to occupy.
@@ -100,8 +114,8 @@ are allowed so split operating periods can be represented.
 - Should KC3 consistently call these locations "third places" or "third spaces"?
   The source context uses "third place," while the original repository summary
   used "third space."
-- Which candidate features are required for the first usable MVP?
-- Is map presentation required for MVP, or is a list sufficient?
+- Which capabilities, if any, should follow the approved list-first slice?
+- When, if ever, should map presentation enter the MVP?
 - Where will initial place data come from, and who is responsible for keeping it
   current?
 - Do any future candidate MVP features require user accounts?

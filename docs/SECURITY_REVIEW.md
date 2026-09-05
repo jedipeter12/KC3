@@ -1,14 +1,15 @@
 # Defensive Security Review
 
-**Review date:** 2026-08-23; updated 2026-09-05 for public place access
+**Review date:** 2026-08-23; updated 2026-09-05 for public place access and the
+Expo client scaffold
 
 **Scope:** Repository contents and Git history, Supabase migration and local
 configuration, dependency metadata, documented architecture, and the controls
 that must exist before KC3 has real users.
 
-**Current project stage:** Product definition and initial backend implementation.
-The first read-only Supabase RPC exists, but no client, custom server, deployed
-environment, or production database exists in this repository.
+**Current project stage:** Initial client implementation. The first read-only
+Supabase RPC and an unconnected Expo client scaffold exist, but no custom server,
+deployed environment, or production database exists in this repository.
 
 ## Executive Security Assessment
 
@@ -18,13 +19,15 @@ five-field, active-place RPC. All four base tables remain inaccessible to Data A
 roles. The RPC runs as a dedicated `NOLOGIN`, `NOBYPASSRLS` role with column-level
 source privileges and an active-only RLS policy.
 
-No critical vulnerability, committed credential, custom authentication flaw,
-remote-code path, or known vulnerable npm dependency was found in the current
-repository. The most important remaining risks are pre-launch design gaps: the
-administrative write/import path, privacy treatment of retained Google payloads,
-production environment controls, backup/restore expectations, and any future
-account model are not approved. The anonymous RPC must not be broadened without a
-new approval and matching authorization tests.
+No critical or high-severity dependency advisory, committed credential, custom
+authentication flaw, or application remote-code path was found. A live
+production-dependency audit reports 10 moderate findings in Expo's transitive
+CLI/config tooling; M-07 records the current disposition. The most important
+remaining risks are pre-launch design gaps: the administrative write/import path,
+privacy treatment of retained Google payloads, production environment controls,
+backup/restore expectations, and any future account model are not approved. The
+anonymous RPC must not be broadened without a new approval and matching
+authorization tests.
 
 Security status by stage:
 
@@ -206,17 +209,32 @@ all clients support enforced SSL.
 - **Disposition:** **PRODUCT OWNER DECISION REQUIRED** for access needs and cost;
   recommendation is SSL enforcement and the narrowest feasible network access.
 
+### M-07 — Expo's supported dependency tree has moderate audit findings
+
+The Expo SDK 57 production dependency tree reports 10 moderate npm audit entries
+through Expo CLI/config packages. The actionable advisory is an older `uuid`
+version used by the transitive `xcode` build-configuration package. npm currently
+offers only an unsupported downgrade to Expo 46 as an automatic resolution, so
+that change was not applied.
+
+- **Threat:** A vulnerable build-time dependency could affect native project
+  generation if untrusted values reach the affected UUID buffer API. No KC3
+  application path currently calls that API, and the scaffold does not ingest
+  untrusted native project configuration.
+- **Required timing:** Re-run the audit during dependency updates and **before a
+  production release**; adopt the first supported Expo patch that resolves the
+  chain.
+- **Disposition:** **TRACKED FOR SUPPORTED UPSTREAM REMEDIATION.** Do not downgrade
+  Expo or force an incompatible audit fix.
+
 ## Low-Risk / Hardening Opportunities
 
 - Add automated secret scanning and protected-branch checks before more people,
   CI credentials, or integrations are added. Ignore rules reduce accidents but
   are not a scanner.
-- Pin the package manager/Node version and use `npm ci` in CI. The lockfile pins
-  the current CLI, but `package.json` uses a caret range and no runtime version is
-  documented.
-- Add scheduled dependency review, lockfile update automation, and an SBOM once
-  application dependencies exist. The current dependency tree is small and the
-  live npm audit found zero advisories.
+- Use `npm ci` with the pinned Node/npm versions when CI is introduced.
+- Add scheduled dependency review, lockfile update automation, and an SBOM. Track
+  M-07 until the supported Expo dependency line resolves the moderate findings.
 - Disable unused Supabase services in environments where they are not needed.
   Local Storage, S3 protocol, Realtime, Edge Runtime, analytics, and vector
   features are enabled by the generated config, although no KC3 feature uses
@@ -260,13 +278,11 @@ all clients support enforced SSL.
 - No credential-like file was present. Regex review of the current tree and Git
   patch history found only documentation/configuration variable names, not secret
   values.
-- `package-lock.json` includes registry integrity hashes. `npm ls --all` completed
-  successfully, and a live `npm audit` found zero known vulnerabilities in 15
-  installed dependency entries.
-- There is no client rendering, custom API, CORS customization, logging, or error
-  path yet, so there is no present implementation of XSS, SQL injection, unsafe
-  output rendering, or token storage to exploit. These areas must be reviewed
-  when code is added rather than assumed safe permanently.
+- Node.js 24.20.0 LTS and npm 11.19.0 are recorded in `.nvmrc` and `package.json`;
+  `package-lock.json` includes registry integrity hashes.
+- The client renders only fixed local scaffold copy. There is no custom API, CORS
+  customization, logging, remote data rendering, or token storage yet, so those
+  areas must be reviewed as feature code is added rather than assumed safe.
 
 ## Product Owner Decisions Required
 
@@ -492,10 +508,10 @@ all clients support enforced SSL.
   connection-string patterns. No secret value was found; only documentation and
   environment-variable placeholders matched.
 - Checked likely credential filenames. None existed.
-- Ran `npm ls --all`: passed. Platform-specific unmet optional dependencies are
-  expected; the matching macOS ARM64 CLI package is installed.
-- Ran live `npm audit --json`: passed with zero known vulnerabilities (0 critical,
-  high, moderate, low, or informational; 15 total dependency entries reported).
+- Ran `npm ls --depth=0`: passed for the Expo and database toolchain.
+- Ran live `npm audit --omit=dev --json`: reported 10 moderate findings and no
+  critical or high-severity findings. M-07 records the supported-remediation
+  disposition.
 - Ran the repository-pinned Supabase CLI: `2.115.0`.
 - Statically verified that every pgTAP file's declared plan equals its assertion
   count.
@@ -507,6 +523,9 @@ all clients support enforced SSL.
   15 seed rows with exactly the five approved fields, and direct `places` access
   returned HTTP 401.
 - Ran `npm run lint:db`: passed with no schema errors.
+- Ran the application typecheck, lint, formatting check, Jest baseline, and
+  Web/iOS/Android Expo export: all passed.
+- Started Expo Web locally and verified an HTTP 200 response.
 - Ran `git diff --check`: passed.
 - Verified all repository-local Markdown link targets: passed.
 

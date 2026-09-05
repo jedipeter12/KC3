@@ -4,17 +4,19 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 
 ## Status
 
-- Stage: Product definition / initial backend implementation
-- Current focus: Review the anonymous active-place access boundary while the
-  remaining Expo client MVP is defined.
-- Last major milestone: Added, reviewed, and merged the ownership-safe local MVP
-  place seed.
+- Stage: Initial client implementation
+- Current focus: Connect the scaffolded Expo client to the approved public
+  Supabase boundary.
+- Last major milestone: Scaffolded and verified the Expo SDK 57 TypeScript
+  application for Web, iOS, and Android.
 
 ## Quick Start
 
-The repository currently contains product and engineering documentation, the
-Supabase schema and public-read migrations, and a local MVP seed. There is no
-client application to install, build, or run yet.
+The repository contains the Expo client scaffold, product and engineering
+documentation, the Supabase schema and public-read migrations, and a local MVP
+seed. Use Node.js 24.20.0 and npm 11.19.0, then run `npm install` and `npm start`.
+Use `npm run web`, `npm run ios`, or `npm run android` for a specific supported
+target.
 
 See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for the development workflow and
 the setup information that still needs to be established during scaffolding.
@@ -37,7 +39,14 @@ the setup information that still needs to be established during scaffolding.
 KC3/
 ├── README.md
 ├── AGENTS.md
+├── app.json
+├── index.ts
 ├── package.json
+├── tsconfig.json
+├── src/
+│   ├── App.tsx
+│   └── config/
+├── tests/
 ├── docs/
 │   ├── PRODUCT.md
 │   ├── ARCHITECTURE.md
@@ -56,8 +65,8 @@ KC3/
 ```
 
 Database tests are documented in [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md).
-Client application and application-test directories will be documented after the
-Expo project is scaffolded. Their structure is not yet decided.
+Application source lives in `src/`, application tests live in `tests/`, and the
+root `index.ts` registers the React Native application with Expo.
 
 ## Working Rule
 

@@ -2,11 +2,11 @@
 
 ## Current Architecture Summary
 
-KC3 is in product definition and has no client application scaffold or deployed
-architecture yet. The approved target is a TypeScript application built with
-React Native and Expo, with Expo Web as the initial web target. Supabase provides
-the backend platform and PostgreSQL-based database; the initial MVP schema is
-defined as a migration but has not been applied to production. A transactional,
+KC3 has an Expo SDK 57 TypeScript client scaffold targeting React Native and Expo
+Web, but no deployed architecture yet. Application code lives in `src/`, a root
+entry point registers the app, and application tests live separately in `tests/`.
+Supabase provides the backend platform and PostgreSQL-based database; the initial
+MVP schema is defined as a migration but has not been applied to production. A transactional,
 idempotent local seed bootstraps 15 representative places without importing
 Google data or guessing KC3 details. A read-only Supabase RPC exposes the five
 approved identity fields for active places to unauthenticated clients without
@@ -48,7 +48,15 @@ PostgreSQL
 KC3/
 ├── README.md
 ├── AGENTS.md
+├── app.json
+├── index.ts
 ├── package.json
+├── tsconfig.json
+├── eslint.config.js
+├── src/
+│   ├── App.tsx
+│   └── config/
+├── tests/
 ├── docs/
 │   ├── PRODUCT.md
 │   ├── ARCHITECTURE.md
@@ -66,13 +74,17 @@ KC3/
 └── LICENSE
 ```
 
-There are no client application modules or application tests yet. Record their
-actual structure here after the Expo project is scaffolded. Database regression
-tests live in `supabase/tests/`.
+Client application modules live in `src/`, application tests live in `tests/`,
+and database regression tests live in `supabase/tests/`. Generated Expo exports
+use the ignored `dist/` directory.
 
 ## Major Components
 
-- Expo client: Approved platform; component boundaries are not designed yet.
+- Expo client: Expo SDK 57 with React Native 0.86, React 19, and Expo Web. The
+  scaffold uses a root `index.ts`, `src/App.tsx`, and feature-neutral
+  configuration under `src/config/`. The first slice remains a read-only place
+  list with client-side name search and city/place-type filters over the existing
+  RPC; feature component boundaries are not designed yet.
 - Supabase backend: Approved platform for backend services, database, and
   authentication. The initial public place schema is defined in a versioned
   migration. The first anonymous read RPC is implemented; authenticated,
@@ -169,11 +181,13 @@ shared strategy before introducing a new one.
 - Database tests: pgTAP tests run against the local Supabase PostgreSQL instance.
   They protect the approved schema contract, constraints, defaults, relationships,
   timestamp triggers, seed contract, and public RPC/RLS/privilege boundary.
-- Unit tests: Application unit-test tooling and coverage expectations are not
-  selected because no client application exists yet.
+- Unit tests: Jest with the `jest-expo` preset provides the application unit-test
+  baseline. Coverage expectations are not yet selected.
 - Integration tests: Database migration tests are established; API and client
   integration tooling is not selected.
 - UI / end-to-end tests: Not selected.
+- Static quality checks: TypeScript strict typechecking, Expo's ESLint flat
+  configuration, and Prettier formatting checks run from npm scripts.
 
 Relevant tests must be added or updated whenever behavior changes.
 
@@ -184,12 +198,11 @@ decisions.
 
 ## Known Technical Debt
 
-- No client exists to exercise the approved RPC through the generated Supabase
-  client or validate its serialized TypeScript shape.
+- The scaffold does not yet exercise the approved RPC through a generated
+  Supabase client or validate its serialized TypeScript shape.
 
 ## Architecture Questions
 
-- What application and test structure should the initial Expo scaffold use?
 - Which approved MVP features, if any, require Supabase Auth or Storage?
 - What hosting and release path should be used for Expo Web and mobile builds?
 - Which testing, linting, and formatting tools should be adopted?

@@ -1,11 +1,51 @@
 {
+  "name": "kc3",
+  "version": "0.1.0",
   "private": true,
+  "main": "index.ts",
+  "packageManager": "npm@11.19.0",
+  "engines": {
+    "node": ">=24.20.0 <25",
+    "npm": ">=11.19.0 <12"
+  },
   "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"tests/**/*.{ts,tsx}\" index.ts eslint.config.js app.json tsconfig.json package.json",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"tests/**/*.{ts,tsx}\" index.ts eslint.config.js app.json tsconfig.json package.json",
+    "test:app": "jest --runInBand",
+    "export": "expo export --platform all --output-dir dist",
     "test": "npm run test:db",
     "test:db": "supabase test db --local",
     "lint:db": "supabase db lint --local --schema public --level warning --fail-on warning"
   },
+  "dependencies": {
+    "expo": "~57.0.20",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-web": "~0.21.0"
+  },
   "devDependencies": {
-    "supabase": "^2.115.0"
+    "@types/jest": "^30.0.0",
+    "@types/react": "~19.2.2",
+    "eslint": "^9.39.5",
+    "eslint-config-expo": "~57.0.2",
+    "jest": "^30.2.0",
+    "jest-expo": "~57.0.5",
+    "prettier": "^3.9.0",
+    "supabase": "^2.115.0",
+    "typescript": "~6.0.3"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "testMatch": [
+      "<rootDir>/tests/**/*.test.ts?(x)"
+    ]
   }
 }

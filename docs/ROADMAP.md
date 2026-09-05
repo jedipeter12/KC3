@@ -4,29 +4,31 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Review the first anonymous public data boundary while continuing to resolve the
-bounded client MVP before Expo scaffolding.
+Deliver the approved list-first Expo MVP over the existing anonymous public data
+boundary.
 
 ## In Progress
 
-- [ ] Product Owner review of candidate MVP features and open product questions in
-  `PRODUCT.md`.
-- [ ] Product Owner review of the implemented anonymous, read-only active-place
-  RPC and its authorization tests.
+- [ ] No implementation ticket is active; public Supabase client configuration is
+  the next ready ticket.
 
 ## Next
 
-- [ ] Convert the approved MVP into prioritized, small, reviewable implementation
-  tickets with acceptance criteria.
+- [ ] Configure the public Supabase client without placing privileged credentials
+  in the client bundle.
+- [ ] Implement the typed `list_public_places()` data layer and its client-level
+  integration coverage.
+- [ ] Build the place list with loading, empty, and sanitized error states.
+- [ ] Add client-side name search and city/place-type filters.
+- [ ] Verify the list-first slice on mobile and Expo Web, including baseline
+  accessibility checks.
+- [ ] Add application and database checks to CI after the client tooling is
+  selected.
 - [ ] Approve a server-controlled, least-privilege administrative import and
   curation path; never expose privileged Supabase credentials to a client.
 - [ ] Decide raw Google payload retention/privacy rules before ingestion.
 - [ ] Define the Google import workflow and any later curated seed expansion.
-- [ ] Scaffold the Expo/TypeScript application and record the resulting setup,
-  commands, and repository structure.
-- [ ] Select and document application testing, linting, formatting, hosting, and
-  release tooling during application scaffolding.
-- [ ] Add the database test and lint commands to CI after CI is selected.
+- [ ] Select hosting and release tooling when deployment work is approved.
 
 ## Later
 
@@ -59,6 +61,14 @@ bounded client MVP before Expo scaffolding.
 - [x] Anonymous public place boundary approved and implemented as a read-only RPC
   limited to active place IDs, names, cities, addresses, and place types, with
   dedicated-role, RLS, privilege, status, column, and write-denial tests.
+- [x] List-first Expo MVP approved with an anonymous place list, client-side name
+  search and city/place-type filters, loading/empty/error states, and no map,
+  accounts, writes, hours, or place-detail screen.
+- [x] Prioritized implementation and historical tickets captured in the KC3
+  Notion tracker while retaining this roadmap as the source of truth.
+- [x] Expo SDK 57 TypeScript application scaffolded with a documented `src/` and
+  `tests/` structure, Node/npm pinning, Jest, ESLint, Prettier, strict typechecking,
+  and verified Web/iOS/Android export commands.
 
 ## Deferred / Rejected
 
@@ -73,4 +83,5 @@ Use this section for ideas intentionally postponed or rejected so they are not r
 
 ## Known Bugs / Issues
 
-- No application exists yet, so there are no runtime bugs to track.
+- No runtime bugs are known in the scaffold. Client feature implementation has
+  not started.
