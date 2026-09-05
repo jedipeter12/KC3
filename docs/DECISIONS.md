@@ -43,6 +43,47 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-08-23 — Test the approved database model with pgTAP
+
+**Status:** Accepted
+
+**Decision**
+
+Use pgTAP tests executed by the repository-pinned Supabase CLI for regression
+coverage of the approved MVP database migration. Keep database behavior tests in
+`supabase/tests/` and run them against a reset local Supabase PostgreSQL instance.
+
+**Context**
+
+The database migration is KC3's only implemented product behavior. It contains
+important constraints, defaults, ownership boundaries, triggers, and security
+settings that static review alone cannot reliably protect. No client application
+or application-test stack exists yet.
+
+**Alternatives considered**
+
+- Rely on migration review without executable regression tests.
+- Add a general JavaScript or TypeScript test framework before application code
+  exists.
+- Test PostgreSQL behavior through mocks or SQL string inspection.
+
+**Reasoning**
+
+pgTAP exercises the real PostgreSQL behavior managed by Supabase and requires no
+application test framework. It can verify database contracts and failure paths
+without defining unapproved client behavior.
+
+**Consequences**
+
+Database tests require a Docker-compatible runtime and a local Supabase stack.
+Future database migrations must keep the suite current. Application, API, and UI
+test tooling remain separate decisions to make when those layers exist.
+
+**Follow-up**
+
+- Run the database tests and PostgreSQL lint checks in CI once CI is selected.
+- Select application-test tooling during Expo scaffolding.
+
 ### 2026-08-21 — Approve the normalized KC3 MVP place data model
 
 **Status:** Accepted

@@ -44,20 +44,25 @@ PostgreSQL
 KC3/
 ├── README.md
 ├── AGENTS.md
+├── package.json
 ├── docs/
 │   ├── PRODUCT.md
 │   ├── ARCHITECTURE.md
 │   ├── DECISIONS.md
 │   ├── ROADMAP.md
-│   └── DEVELOPMENT.md
+│   ├── DEVELOPMENT.md
+│   ├── SECURITY_REVIEW.md
+│   └── TESTING_REVIEW.md
 ├── supabase/
 │   ├── config.toml
-│   └── migrations/
+│   ├── migrations/
+│   └── tests/
 └── LICENSE
 ```
 
-There are no client application modules or tests yet. Record their actual
-structure here after the Expo project is scaffolded.
+There are no client application modules or application tests yet. Record their
+actual structure here after the Expo project is scaffolded. Database regression
+tests live in `supabase/tests/`.
 
 ## Major Components
 
@@ -91,7 +96,11 @@ four tables have creation/update timestamps; a shared trigger maintains
 times for closed rows, and both times for open rows.
 
 Row Level Security is enabled on every table. No permissive policies exist yet,
-so API access remains closed until explicit access rules are approved.
+and Data API privileges for `anon`, `authenticated`, and `service_role` are
+explicitly revoked, so API access remains closed until explicit access rules are
+approved. Default public-schema privileges for `postgres`-owned project
+migrations are also revoked so future project tables, sequences, and functions
+require intentional grants.
 
 ## APIs / Integrations
 
@@ -118,9 +127,14 @@ have not been decided.
   be documented without values when the application is scaffolded.
 - Input validation: Not designed.
 - Authorization boundaries: All public tables have RLS enabled with no permissive
-  policies. Define explicit policies before client reads or writes are enabled.
+  policies or Data API role privileges. Define least-privilege grants and explicit
+  policies, with database tests, before client reads or writes are enabled.
+- Authentication: Account signup is disabled in the local configuration because
+  accounts are not approved. Production auth requirements remain undecided.
 - Sensitive-data handling: Not designed.
 - Logging considerations: Not designed.
+
+See `SECURITY_REVIEW.md` for the current risk assessment and pre-launch controls.
 
 ## Error Handling
 
@@ -129,8 +143,13 @@ shared strategy before introducing a new one.
 
 ## Testing Strategy
 
-- Unit tests: Tooling and coverage expectations are not selected.
-- Integration tests: Not selected.
+- Database tests: pgTAP tests run against the local Supabase PostgreSQL instance.
+  They protect the approved schema contract, constraints, defaults, relationships,
+  timestamp triggers, and closed-by-default RLS posture.
+- Unit tests: Application unit-test tooling and coverage expectations are not
+  selected because no client application exists yet.
+- Integration tests: Database migration tests are established; API and client
+  integration tooling is not selected.
 - UI / end-to-end tests: Not selected.
 
 Relevant tests must be added or updated whenever behavior changes.

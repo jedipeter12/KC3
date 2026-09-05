@@ -18,11 +18,17 @@ KC3 client MVP before application scaffolding.
 - [ ] Convert the approved MVP into prioritized, small, reviewable implementation
   tickets with acceptance criteria.
 - [ ] Define least-privilege RLS policies before exposing place data to clients.
+- [ ] Approve the public data/column/status boundary and add grant/RLS regression
+  tests in the same change as the first client access.
+- [ ] Approve a server-controlled, least-privilege administrative import and
+  curation path; never expose privileged Supabase credentials to a client.
+- [ ] Decide raw Google payload retention/privacy rules before ingestion.
 - [ ] Define the Google import and curated seed-data workflows.
 - [ ] Scaffold the Expo/TypeScript application and record the resulting setup,
   commands, and repository structure.
-- [ ] Select and document testing, linting, formatting, hosting, and release
-  tooling.
+- [ ] Select and document application testing, linting, formatting, hosting, and
+  release tooling during application scaffolding.
+- [ ] Add the database test and lint commands to CI after CI is selected.
 
 ## Later
 
@@ -44,6 +50,10 @@ KC3 client MVP before application scaffolding.
 - [x] MVP place data model approved.
 - [x] Initial Supabase migration authored with RLS enabled and no permissive
   policies.
+- [x] Defensive repository security review completed; deny-by-default grants,
+  signup closure, and credential ignore rules added.
+- [x] pgTAP regression coverage and PostgreSQL lint commands added for the
+  approved MVP data model.
 
 ## Deferred / Rejected
 

@@ -25,6 +25,8 @@ the setup information that still needs to be established during scaffolding.
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — important decisions and why they were made
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — completed, current, and planned work
 - [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) — local development, testing, deployment, and conventions
+- [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md) — current defensive security assessment and pre-launch requirements
+- [`docs/TESTING_REVIEW.md`](docs/TESTING_REVIEW.md) — database coverage review, remaining gaps, and decisions required
 - [`AGENTS.md`](AGENTS.md) — standing instructions for AI coding agents
 
 ## Repository Structure
@@ -33,20 +35,25 @@ the setup information that still needs to be established during scaffolding.
 KC3/
 ├── README.md
 ├── AGENTS.md
+├── package.json
 ├── docs/
 │   ├── PRODUCT.md
 │   ├── ARCHITECTURE.md
 │   ├── DECISIONS.md
 │   ├── ROADMAP.md
-│   └── DEVELOPMENT.md
+│   ├── DEVELOPMENT.md
+│   ├── SECURITY_REVIEW.md
+│   └── TESTING_REVIEW.md
 ├── supabase/
 │   ├── config.toml
-│   └── migrations/
+│   ├── migrations/
+│   └── tests/
 └── LICENSE
 ```
 
-Client application and test directories will be documented after the Expo project
-is scaffolded. Their structure is not yet decided.
+Database tests are documented in [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md).
+Client application and application-test directories will be documented after the
+Expo project is scaffolded. Their structure is not yet decided.
 
 ## Working Rule
 

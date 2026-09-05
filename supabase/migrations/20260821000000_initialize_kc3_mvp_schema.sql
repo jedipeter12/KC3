@@ -160,3 +160,34 @@ alter table public.places enable row level security;
 alter table public.place_google_data enable row level security;
 alter table public.place_details enable row level security;
 alter table public.place_hours enable row level security;
+
+-- Keep the Data API closed until access rules and their tests are explicitly
+-- approved. RLS and object privileges are separate controls, so revoke both
+-- current grants and automatic grants for future objects created by
+-- postgres-owned project migrations.
+revoke all on table
+  public.places,
+  public.place_google_data,
+  public.place_details,
+  public.place_hours
+from anon, authenticated, service_role;
+
+revoke execute on function public.set_updated_at()
+from public, anon, authenticated, service_role;
+
+alter default privileges for role postgres in schema public
+  revoke all privileges on tables
+  from anon, authenticated, service_role;
+
+alter default privileges for role postgres in schema public
+  revoke execute on functions
+  from anon, authenticated, service_role;
+
+alter default privileges for role postgres in schema public
+  revoke all privileges on sequences
+  from anon, authenticated, service_role;
+
+-- PostgreSQL grants EXECUTE on new functions to PUBLIC globally. A
+-- schema-scoped REVOKE cannot remove that built-in default.
+alter default privileges for role postgres
+  revoke execute on functions from public;

@@ -1,4 +1,10 @@
 {
+  "private": true,
+  "scripts": {
+    "test": "npm run test:db",
+    "test:db": "supabase test db --local",
+    "lint:db": "supabase db lint --local --level warning"
+  },
   "devDependencies": {
     "supabase": "^2.115.0"
   }

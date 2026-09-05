@@ -4,11 +4,14 @@
 
 Application prerequisites are not yet known because the Expo project has not been
 scaffolded. Do not infer tool versions or package managers. At present, only Git is
-needed to work with the documentation repository.
+needed to work with the documentation repository. Running the database tests also
+requires Node.js with npm and a Docker-compatible container runtime for the local
+Supabase stack.
 
 - Git
-- Node.js/package manager version: To be selected and documented during
-  scaffolding.
+- Node.js with npm: Required for the repository-pinned Supabase CLI. Exact project
+  versions remain to be selected during application scaffolding.
+- Docker-compatible container runtime: Required by local Supabase commands.
 - Expo and platform tooling: To be selected and documented during scaffolding.
 
 ## Initial Setup
@@ -26,17 +29,40 @@ Not available until the application is scaffolded.
 
 ## Testing
 
-### Unit Tests
+### Database Tests
 
-No unit-test framework or command has been selected.
+The approved PostgreSQL data model is tested with pgTAP through the repository's
+Supabase CLI dependency. From the repository root:
 
-### Integration / UI Tests
+1. Start the local Supabase services with `npm exec -- supabase start`.
+2. Rebuild the local database from migrations with
+   `npm exec -- supabase db reset`.
+3. Run the database tests with `npm test`.
 
-No integration or UI test framework or command has been selected.
+The tests live in `supabase/tests/`. They execute inside transactions and roll
+their fixture data back. The suite covers schema shape, approved enum values,
+required canonical fields, defaults and unknown values, one-to-one ownership,
+cascading deletion, weekly-hours validation, split and overnight intervals,
+automatic update timestamps, and the closed-by-default RLS configuration.
+
+Run PostgreSQL lint checks against the same local database with
+`npm run lint:db`.
+
+### Application Unit Tests
+
+No application unit-test framework or command has been selected because no client
+application exists yet.
+
+### API / UI Tests
+
+No API or UI test framework or command has been selected. Database migration
+tests are the only applicable integration tests at the current project stage.
 
 ## Linting / Formatting
 
-No linting or formatting tools have been selected.
+The Supabase CLI's PostgreSQL lint command is available as `npm run lint:db`.
+Application linting and formatting tools have not been selected because the Expo
+application has not been scaffolded.
 
 ## Environment Variables / Secrets
 
@@ -48,6 +74,10 @@ No environment variable names are confirmed yet. Document the exact public clien
 configuration and server-side secrets required by Supabase during scaffolding.
 Never place secret values in documentation, source control, or client-exposed
 configuration.
+
+The repository ignores common environment, signing-key, Expo/EAS local-state,
+keystore, and mobile-provisioning files as an accident-prevention measure. Ignore
+rules do not replace secret scanning or platform secret management.
 
 ## Branching / Git Workflow
 
@@ -93,6 +123,10 @@ Each implementation ticket should direct the developer to:
   defined.
 - Dependency policy: Prefer existing dependencies and patterns. Add a dependency
   only for a clear, documented reason.
+- Database access: Keep Data API grants and RLS policies in versioned migrations
+  and add role-focused database tests in the same change that opens access.
+- Privileged credentials: Never place a Supabase secret/service-role key or direct
+  database credential in an Expo, Expo Web, or other client bundle.
 
 ## Deployment / Release Process
 
