@@ -5,9 +5,10 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 ## Status
 
 - Stage: Product definition / initial backend implementation
-- Current focus: Review the initial local MVP place seed while the remaining
-  application scope is defined.
-- Last major milestone: Hardened, tested, and approved the KC3 MVP place schema.
+- Current focus: Define the public data boundary required before connecting an
+  Expo client to Supabase.
+- Last major milestone: Added, reviewed, and merged the ownership-safe local MVP
+  place seed.
 
 ## Quick Start
 

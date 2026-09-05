@@ -4,14 +4,13 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Review the initial MVP seed data while defining the remaining bounded KC3 client
-MVP before application scaffolding.
+Define the least-privilege public data boundary required before connecting the
+first Expo client to Supabase, while continuing to resolve the bounded client MVP.
 
 ## In Progress
 
 - [ ] Product Owner review of candidate MVP features and open product questions in
   `PRODUCT.md`.
-- [ ] Product Owner review of the transactional, idempotent local MVP seed.
 
 ## Next
 
@@ -55,8 +54,9 @@ MVP before application scaffolding.
 - [x] pgTAP regression coverage and PostgreSQL lint commands added for the
   approved MVP data model.
 - [x] Initial Supabase schema hardened, tested, approved, and merged.
-- [x] Transactional, rerunnable local MVP seed added with 15 representative
-  Lenexa, Overland Park, and Olathe places and seed-specific regression coverage.
+- [x] Transactional, rerunnable local MVP seed added, reviewed, and merged with 15
+  representative Lenexa, Overland Park, and Olathe places and seed-specific
+  regression coverage.
 
 ## Deferred / Rejected
 
