@@ -1,16 +1,18 @@
 # Test Coverage and Reliability Review
 
-**Review date:** 2026-08-23
+**Review date:** 2026-08-23; updated 2026-09-05 for public place access and the
+Expo client scaffold
 
 **Scope:** Approved behavior and current implementation in the KC3 repository.
 
 ## Scope and Established Behavior
 
-KC3 currently contains an approved Supabase/PostgreSQL data model and no client
-application, API/server implementation, TypeScript application logic, utilities,
-search/filter implementation, or seed/import workflow. This review therefore
-focuses on the migration in `supabase/migrations/` and does not define behavior
-for candidate client features that `PRODUCT.md` marks as unapproved.
+KC3 currently contains an approved Supabase/PostgreSQL data model, local seed,
+anonymous read-only place RPC, and an Expo TypeScript client scaffold. The client
+does not yet contain a Supabase data layer, search/filter implementation, or
+feature UI, and there is no custom server or automated import workflow. This
+review covers the database behavior plus the scaffold's application quality
+baseline without defining unapproved client behavior.
 
 ## Existing Coverage Assessment
 
@@ -21,10 +23,10 @@ constraints, defaults, relationships, timestamp triggers, and RLS posture had no
 executable regression protection.
 
 There is no meaningful line-coverage percentage to report for a SQL migration.
-The final workspace suite provides 84 behavior and contract assertions across
-four pgTAP files. Of these, 81 were authored from the approved data model during
-this review. A concurrent defensive security review added three assertions for
-its privilege revocations.
+The workspace suite provides 120 behavior and contract assertions across six
+pgTAP files. The first four files provide 84 schema assertions, including three
+for privilege revocations. The seed-data test adds 12 assertions, and the public
+place access test adds 24 authorization and response-contract assertions.
 
 ## Major Untested Risks Found
 
@@ -33,11 +35,11 @@ its privilege revocations.
   nullable unknown booleans, and hours consistency checks had no negative tests.
 - Shared primary-key ownership and cascading deletes had no executable coverage.
 - Multiple intervals per weekday and overnight intervals had no regression tests.
-- The four `updated_at` triggers and closed-by-default RLS configuration had no
-  regression tests.
+- The four `updated_at` triggers and initial closed-by-default RLS configuration
+  had no regression tests.
 - No CI job runs migration reset, database tests, or database linting.
-- No API or client exists through which to test role-based access,
-  transformations, search/filter behavior, or end-to-end behavior.
+- No client data layer or HTTP integration test exists to verify RPC
+  serialization, transformations, search/filter behavior, or end-to-end behavior.
 
 ## Tests Added
 
@@ -69,30 +71,50 @@ overnight-hours support.
 ### Timestamps and security posture
 
 `004_timestamps_and_security.test.sql` verifies all four automatic `updated_at`
-triggers, RLS enablement on all approved tables, absence of policies, and trigger
-enablement. It protects freshness metadata and the accepted closed-by-default
-access decision while roles and policies remain undefined.
+triggers, RLS enablement on all approved tables, the bounded policy count, and
+trigger enablement. It protects freshness metadata and prevents unreviewed policy
+growth.
 
 Concurrent security work added tests proving current privileges and default
 privileges for `postgres`-owned project tables, sequences, and functions remain
 revoked from Supabase Data API roles.
 
+### Local MVP seed
+
+`005_seed_data.test.sql` verifies all 15 stable seed identities and canonical
+values, even distribution across Lenexa, Overland Park, and Olathe, coverage of
+the initial place types, active defaults, unknown/unverified KC3 detail shells,
+and the absence of guessed Google data or weekly hours. Repeat execution of the
+actual seed is also verified during seed-workflow changes because pgTAP receives
+the post-seed database rather than executing the seed file itself.
+
+### Anonymous public place access
+
+`006_public_place_access.test.sql` verifies the hardened dedicated reader role,
+the active-only RLS policy, the RPC owner and fixed search path, the five-field
+response contract, and exact role and column grants. It executes the RPC as
+`anon`, proves every non-active status is excluded, and verifies anonymous and
+internal-reader writes fail. It also proves base tables and unapproved columns
+remain inaccessible and that unapproved Data API roles cannot execute the RPC.
+
 ## Deliberately Not Tested
 
-- Search/filter behavior, list/detail/map presentation, and client logic: these
-  are candidate features, not approved behavior, and no implementation exists.
-- API response behavior and role-level CRUD flows: no API policy or role behavior
-  is approved, and no client/API implementation exists.
-- Google ingestion, seed data, freshness calculations, and normalization: no
+- Approved list/search/filter behavior and all later detail/map presentation: no
+  feature implementation exists yet.
+- Automated HTTP serialization and Expo client integration for the approved RPC,
+  plus all future authenticated and administrative CRUD flows: no client data
+  layer exists and those additional role behaviors are not approved.
+- Google ingestion, freshness calculations, and general import normalization: no
   workflows or rules are approved or implemented.
 - Place deduplication, hours overlap/equal-time rules, and consistency between the
   next-day flag and actual clock ordering: approved documents do not define them.
 - Blank-text, Google rating bounds, and closed/next-day semantics remain untested
   because they are not clearly approved behavior.
-- UI, accessibility, performance/load, and end-to-end behavior: no client exists
-  and the corresponding requirements and tooling are undecided.
-- TypeScript typechecking, application linting, and application builds: no
-  TypeScript/application sources or configurations exist.
+- Feature UI, accessibility, performance/load, and end-to-end behavior: the
+  scaffold has no discovery flow yet and the corresponding automated tooling is
+  undecided.
+- Automated mobile device launch behavior: the current environment verifies iOS
+  and Android bundles, but has no configured simulator target.
 
 ## Product Owner Decisions Required
 
@@ -115,13 +137,13 @@ as closing the next day. It also does not decide whether duplicate/overlapping
 intervals, equal open/close times, or a next-day flag with a later closing time
 should be rejected. Confirm the semantics before adding constraints or tests.
 
-**PRODUCT OWNER DECISION REQUIRED — Data API and administrative roles**
+**PRODUCT OWNER DECISION REQUIRED — Administrative and future authenticated roles**
 
-The accepted design enables RLS with no policies, and the current working-tree
-migration also revokes privileges from `anon`, `authenticated`, and
-`service_role`. Roles and import/administrative workflows remain undecided.
-Define which roles need read/write access before role-level tests lock in
-privilege behavior. See `SECURITY_REVIEW.md` for the broader risk analysis.
+Anonymous active-place reads are approved and covered. `authenticated` and
+`service_role` retain no access to that RPC or the base tables, and import/
+administrative workflows remain undecided. Define any additional role behavior
+before grants and role-level tests lock it in. See `SECURITY_REVIEW.md` for the
+broader risk analysis.
 
 **PRODUCT OWNER DECISION REQUIRED — Canonical deduplication**
 
@@ -139,22 +161,21 @@ detection.
 2. **Resolve the Product Owner decisions above.** Then add focused positive and
    negative tests for each approved rule. This avoids codifying assumptions while
    closing real data-quality and authorization risks.
-3. **Add role-level RLS/API tests with the first approved policies.** Exercise
-   SELECT, INSERT, UPDATE, and DELETE as each approved role, including negative
-   cases. This prevents data exposure, unauthorized writes, and incomplete
-   policies.
-4. **Test import and seed workflows when approved and implemented.** Cover source
+3. **Add HTTP/client integration tests with the first Expo data layer.** Verify
+   the RPC response and error serialization through the generated Supabase client
+   without granting base-table access.
+4. **Test future import workflows when approved and implemented.** Cover source
    ownership, idempotency, duplicate handling, raw-data retention, and transaction
    failure. This prevents reruns from duplicating places or partially refreshing
    data.
-5. **Select application test tooling during Expo scaffolding.** Add unit tests for
-   approved validation, transformations, filters, and multi-branch utilities as
-   they appear. This prevents client behavior from drifting from the database and
+5. **Expand the Jest baseline with feature behavior.** Add unit tests for approved
+   validation, transformations, filters, and multi-branch utilities as they
+   appear. This prevents client behavior from drifting from the database and
    approved rules.
-6. **Add API/client integration tests with the first data-access layer.** Verify
-   real enum, nullable boolean, date, time, JSON, and error serialization against
-   local Supabase. This prevents type-generation and transformation bugs that
-   database-only tests cannot observe.
+6. **Expand API/client integration coverage with richer approved fields.** Verify
+   enum, nullable boolean, date, time, JSON, and error serialization as those
+   values enter the public contract. This prevents type-generation and
+   transformation bugs that database-only tests cannot observe.
 7. **Add end-to-end and accessibility coverage after those experiences are
    approved.** Focus on critical discovery flows, not implementation-detail
    snapshots. This prevents broken user journeys without prematurely defining the
@@ -162,18 +183,30 @@ detection.
 
 ## Verification Results
 
-**Reverified:** 2026-09-04
+**Reverified:** 2026-09-05
 
-- Assertion-plan consistency: passed; the four files declare and contain
-  21 + 32 + 21 + 10 = 84 assertions.
+- Assertion-plan consistency: passed; the six files declare and contain
+  21 + 32 + 21 + 10 + 12 + 24 = 120 assertions.
 - Package lock refresh: passed with `npm install --package-lock-only
   --ignore-scripts`.
 - Whitespace/error check: passed with `git diff --check`.
-- Supabase startup and clean database reset: passed; the migration applied from a
-  fresh local database.
-- Database tests: passed with `npm test`; all 84 assertions succeeded across four
+- Supabase startup and clean database reset: passed; the migration and seed
+  applied from a fresh local database.
+- Seed rerun: passed; a second execution inserted no duplicate places or detail
+  rows and preserved simulated canonical, KC3, Google, and hours edits.
+- Seed transaction failure: passed; a deliberately injected failure rolled back
+  rows inserted earlier in the transaction.
+- Database tests: passed with `npm test`; all 120 assertions succeeded across six
   pgTAP files.
+- Local PostgREST smoke test: passed; the anonymous RPC returned all 15 seed rows
+  with exactly the five approved fields, while direct `places` access returned
+  HTTP 401.
 - Database lint: passed with `npm run lint:db`; no schema errors were found.
-- Typecheck: not applicable; no TypeScript source or TypeScript configuration.
-- Application lint: not applicable; no application source or lint configuration.
-- Build: not applicable; Expo is not scaffolded and no build command exists.
+- Typecheck: passed with `npm run typecheck`.
+- Application lint: passed with `npm run lint`.
+- Formatting: passed with `npm run format:check`.
+- Application tests: passed with `npm run test:app`; one scaffold baseline test
+  succeeded.
+- Export: passed with `npm run export`; Expo produced Web, iOS, and Android
+  bundles.
+- Expo Web development server: started successfully and returned HTTP 200.

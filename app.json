@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "KC3",
+    "slug": "kc3",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

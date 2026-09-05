@@ -43,6 +43,233 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-05 — Scaffold Expo SDK 57 with repository-level quality tooling
+
+**Status:** Accepted
+
+**Decision**
+
+Use the stable Expo SDK 57 blank TypeScript foundation with a root `index.ts`,
+application code under `src/`, and application tests under `tests/`. Standardize
+local development on Node.js 24.20.0 LTS and npm 11.19.0 with the committed npm
+lockfile. Use strict TypeScript, Expo's ESLint flat configuration, Prettier, and
+Jest with `jest-expo` as the initial application quality toolchain.
+
+**Context**
+
+The approved list-first slice needs the smallest supported mobile and Web client
+before its Supabase data path or UI can be implemented. Existing database scripts
+must remain usable and separate from application-only checks.
+
+**Alternatives considered**
+
+- Adopt Expo Router and its default multi-screen example before a navigation
+  requirement exists.
+- Place application source at the repository root.
+- Introduce a different test runner or formatter instead of Expo's documented
+  Jest baseline and the established Expo lint configuration.
+
+**Reasoning**
+
+The blank scaffold proves all three approved targets with minimal generated code
+and avoids prematurely selecting navigation. The `src/` and `tests/` separation
+keeps future features and their tests discoverable. Expo's documented compatible
+toolchain minimizes custom configuration; ESLint stays on the Expo-compatible 9.x
+line until the Expo configuration supports ESLint 10.
+
+**Consequences**
+
+Developers use the pinned Node/npm versions and npm lockfile. Application checks
+are available as dedicated scripts, while the existing `npm test`, `test:db`, and
+`lint:db` database behavior remains unchanged. Navigation, UI test utilities,
+coverage targets, CI, hosting, and signed native builds remain later decisions.
+
+**Follow-up**
+
+- Configure the public Supabase client and environment variable contract.
+- Select CI, hosting, and release tooling in their approved tickets.
+
+### 2026-09-05 — Use Notion as a subordinate execution tracker
+
+**Status:** Accepted
+
+**Decision**
+
+Use the directly linked KC3 Work/Tickets Notion database for detailed ticket
+scope, acceptance criteria, dependencies, priority, status, and progress history.
+Keep `docs/ROADMAP.md` as the source of truth for project scope, priorities, and
+status. Limit KC3 Notion access to that database and its ticket pages rather than
+searching unrelated workspace content.
+
+**Context**
+
+The repository-centered workflow preserves durable product knowledge, while a
+structured tracker makes implementation sequencing and history easier to review.
+
+**Alternatives considered**
+
+- Track all execution detail only in `ROADMAP.md`.
+- Make Notion the authoritative project backlog.
+
+**Reasoning**
+
+A subordinate tracker adds useful operational structure without splitting or
+reversing the repository's authority. The explicit access boundary avoids pulling
+unrelated personal workspace context into KC3.
+
+**Consequences**
+
+Roadmap changes must be mirrored to Notion when relevant, and conflicts are
+resolved in favor of the repository. Ticket pages may contain more execution
+detail than the roadmap, but they cannot approve or redefine product scope.
+
+**Follow-up**
+
+- Keep ticket status synchronized whenever roadmap work starts or finishes.
+
+### 2026-09-05 — Approve a list-first Expo MVP slice
+
+**Status:** Accepted
+
+**Decision**
+
+Make the first Expo client slice an anonymous list of active places using the
+existing `list_public_places()` RPC. Display name, city, address, and place type;
+add client-side name search and city/place-type filters; and provide loading,
+empty, and sanitized error states. Target mobile and Expo Web. Exclude maps,
+accounts, writes, hours, Google metadata, and place-detail screens from this
+slice.
+
+**Context**
+
+The backend now exposes a tested five-field public read contract, but no client
+exists. A bounded vertical slice is needed before richer data or experiences are
+approved.
+
+**Alternatives considered**
+
+- Include a map and place-detail experience in the first slice.
+- Scaffold the client without an approved user-facing slice.
+- Require accounts before discovery.
+
+**Reasoning**
+
+The list-first slice validates the complete client-to-database path with the data
+already available. Client-side filtering is sufficient for the 15-record seed and
+does not broaden the public database boundary.
+
+**Consequences**
+
+The first client must use the RPC rather than base tables and must not expose
+privileged credentials. Maps and richer details require later product approval
+and, where needed, explicit backend contract changes with authorization tests.
+
+**Follow-up**
+
+- Scaffold Expo and select the initial application testing and quality tooling.
+- Implement and verify the list-first tickets in roadmap order.
+
+### 2026-09-05 — Expose active places through a narrow anonymous RPC
+
+**Status:** Accepted
+
+**Decision**
+
+Allow unauthenticated clients to list active places without creating an account.
+Expose only place ID, name, city, address, and place type through the zero-argument
+`public.list_public_places()` RPC. Grant `anon` permission to execute that RPC,
+but retain the existing revocation of all direct base-table privileges and all
+client writes.
+
+Run the RPC as a dedicated `NOLOGIN`, `NOBYPASSRLS` role. Give that role column-
+level read access only to the five returned fields plus `status`, and apply an RLS
+policy that permits it to see only `active` places. Keep `authenticated` and
+`service_role` access closed until a use case for either role is approved.
+
+**Context**
+
+The approved schema and local seed are ready for a first client query, but all
+Data API access was intentionally closed. The first useful client slice needs a
+small place identity projection without exposing hidden records, Google payloads,
+verification notes, lifecycle metadata, or privileged credentials.
+
+**Alternatives considered**
+
+- Grant anonymous clients direct column-level access to `places` with RLS.
+- Expose an automatically updatable database view.
+- Put the first read behind a separate server or API layer.
+- Require accounts before any place discovery.
+
+**Reasoning**
+
+An RPC keeps storage tables out of the client contract and allows an explicit,
+stable response shape. A constrained function owner lets RLS remain effective
+without giving `anon` direct table privileges. Anonymous read-only discovery is
+the smallest useful access boundary and avoids premature authentication, server,
+and write-path complexity.
+
+**Consequences**
+
+Clients must call `list_public_places` rather than query `places`. Only active
+records and the five approved fields are returned. Place details, hours, Google
+metadata, raw payloads, statuses, audit timestamps, authenticated access, and all
+writes remain unavailable. Any expansion of this contract requires an explicit
+migration and matching authorization regression tests.
+
+**Follow-up**
+
+- Review and merge the migration and its pgTAP coverage.
+- Approve the first Expo place-list experience before scaffolding feature code.
+- Define a separate server-controlled administrative and import boundary.
+
+### 2026-09-05 — Keep the local MVP seed additive and ownership-safe
+
+**Status:** Accepted
+
+**Decision**
+
+Use `supabase/seed.sql` to load 15 representative, real places across Lenexa,
+Overland Park, and Olathe for local development. Give every seed place a stable
+UUID, wrap the complete seed in one transaction, and use insert-only conflict
+handling. Seed canonical place values and unknown/unverified KC3 detail shells,
+but do not populate Google-owned fields or weekly hours.
+
+**Context**
+
+The database needs realistic records before client list and search work can be
+validated. The schema intentionally separates canonical, Google-owned, and
+KC3-owned data, while the production import and curation path, Google payload
+retention, and canonical deduplication policy remain undecided.
+
+**Alternatives considered**
+
+- Update seed-managed rows to the file's latest values on every reset.
+- Seed current business hours, ratings, or other Google-derived metadata.
+- Wait for the production Google import workflow before adding local data.
+
+**Reasoning**
+
+Stable IDs make repeated local execution deterministic. Treating existing rows
+as authoritative prevents a reset or manual rerun from erasing curation. Empty
+Google data and unknown KC3 details avoid presenting unverified facts as known,
+while the representative records are sufficient for early database and client
+development.
+
+**Consequences**
+
+Seed-file corrections do not replace an already-present row; developers must
+apply intentional corrections separately or reset the disposable local database.
+The seed is not a general deduplication solution or a production import path.
+Hours, ratings, coordinates, Google IDs, and richer KC3 details remain absent
+until source-aware workflows or explicit curation supply them.
+
+**Follow-up**
+
+- Define and approve the production administrative/import boundary.
+- Define Google payload retention and refresh rules before ingestion.
+- Expand or correct the seed only from authoritative sources and update its
+  regression test in the same change.
+
 ### 2026-08-23 — Test the approved database model with pgTAP
 
 **Status:** Accepted

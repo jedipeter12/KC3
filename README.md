@@ -4,16 +4,19 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 
 ## Status
 
-- Stage: Product definition / initial backend implementation
-- Current focus: Review the approved MVP data-model migration while the remaining
-  application scope is defined.
-- Last major milestone: Approved the KC3 MVP place data model.
+- Stage: Initial client implementation
+- Current focus: Connect the scaffolded Expo client to the approved public
+  Supabase boundary.
+- Last major milestone: Scaffolded and verified the Expo SDK 57 TypeScript
+  application for Web, iOS, and Android.
 
 ## Quick Start
 
-The repository currently contains product and engineering documentation plus the
-initial Supabase schema migration. There is no client application to install,
-build, or run yet.
+The repository contains the Expo client scaffold, product and engineering
+documentation, the Supabase schema and public-read migrations, and a local MVP
+seed. Use Node.js 24.20.0 and npm 11.19.0, then run `npm install` and `npm start`.
+Use `npm run web`, `npm run ios`, or `npm run android` for a specific supported
+target.
 
 See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for the development workflow and
 the setup information that still needs to be established during scaffolding.
@@ -27,6 +30,7 @@ the setup information that still needs to be established during scaffolding.
 - [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) — local development, testing, deployment, and conventions
 - [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md) — current defensive security assessment and pre-launch requirements
 - [`docs/TESTING_REVIEW.md`](docs/TESTING_REVIEW.md) — database coverage review, remaining gaps, and decisions required
+- [`docs/SEED_DATA.md`](docs/SEED_DATA.md) — local seed behavior, data provenance, and maintenance rules
 - [`AGENTS.md`](AGENTS.md) — standing instructions for AI coding agents
 
 ## Repository Structure
@@ -35,25 +39,34 @@ the setup information that still needs to be established during scaffolding.
 KC3/
 ├── README.md
 ├── AGENTS.md
+├── app.json
+├── index.ts
 ├── package.json
+├── tsconfig.json
+├── src/
+│   ├── App.tsx
+│   └── config/
+├── tests/
 ├── docs/
 │   ├── PRODUCT.md
 │   ├── ARCHITECTURE.md
 │   ├── DECISIONS.md
 │   ├── ROADMAP.md
 │   ├── DEVELOPMENT.md
+│   ├── SEED_DATA.md
 │   ├── SECURITY_REVIEW.md
 │   └── TESTING_REVIEW.md
 ├── supabase/
 │   ├── config.toml
 │   ├── migrations/
+│   ├── seed.sql
 │   └── tests/
 └── LICENSE
 ```
 
 Database tests are documented in [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md).
-Client application and application-test directories will be documented after the
-Expo project is scaffolded. Their structure is not yet decided.
+Application source lives in `src/`, application tests live in `tests/`, and the
+root `index.ts` registers the React Native application with Expo.
 
 ## Working Rule
 

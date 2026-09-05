@@ -2,13 +2,17 @@
 
 ## Current Architecture Summary
 
-KC3 is in product definition and has no client application scaffold or deployed
-architecture yet. The approved target is a TypeScript application built with
-React Native and Expo, with Expo Web as the initial web target. Supabase provides
-the backend platform and PostgreSQL-based database; the initial MVP schema is
-defined as a migration but has not been applied to production. Supabase Auth is
-the selected authentication platform if approved features require accounts, and
-Supabase Storage may be used if an approved feature needs object storage.
+KC3 has an Expo SDK 57 TypeScript client scaffold targeting React Native and Expo
+Web, but no deployed architecture yet. Application code lives in `src/`, a root
+entry point registers the app, and application tests live separately in `tests/`.
+Supabase provides the backend platform and PostgreSQL-based database; the initial
+MVP schema is defined as a migration but has not been applied to production. A transactional,
+idempotent local seed bootstraps 15 representative places without importing
+Google data or guessing KC3 details. A read-only Supabase RPC exposes the five
+approved identity fields for active places to unauthenticated clients without
+granting them base-table access. Supabase Auth is the selected authentication
+platform if later approved features require accounts, and Supabase Storage may be
+used if an approved feature needs object storage.
 
 ## Technology Stack
 
@@ -44,32 +48,47 @@ PostgreSQL
 KC3/
 ├── README.md
 ├── AGENTS.md
+├── app.json
+├── index.ts
 ├── package.json
+├── tsconfig.json
+├── eslint.config.js
+├── src/
+│   ├── App.tsx
+│   └── config/
+├── tests/
 ├── docs/
 │   ├── PRODUCT.md
 │   ├── ARCHITECTURE.md
 │   ├── DECISIONS.md
 │   ├── ROADMAP.md
 │   ├── DEVELOPMENT.md
+│   ├── SEED_DATA.md
 │   ├── SECURITY_REVIEW.md
 │   └── TESTING_REVIEW.md
 ├── supabase/
 │   ├── config.toml
 │   ├── migrations/
+│   ├── seed.sql
 │   └── tests/
 └── LICENSE
 ```
 
-There are no client application modules or application tests yet. Record their
-actual structure here after the Expo project is scaffolded. Database regression
-tests live in `supabase/tests/`.
+Client application modules live in `src/`, application tests live in `tests/`,
+and database regression tests live in `supabase/tests/`. Generated Expo exports
+use the ignored `dist/` directory.
 
 ## Major Components
 
-- Expo client: Approved platform; component boundaries are not designed yet.
+- Expo client: Expo SDK 57 with React Native 0.86, React 19, and Expo Web. The
+  scaffold uses a root `index.ts`, `src/App.tsx`, and feature-neutral
+  configuration under `src/config/`. The first slice remains a read-only place
+  list with client-side name search and city/place-type filters over the existing
+  RPC; feature component boundaries are not designed yet.
 - Supabase backend: Approved platform for backend services, database, and
   authentication. The initial public place schema is defined in a versioned
-  migration. API policies and remaining service boundaries are not designed yet.
+  migration. The first anonymous read RPC is implemented; authenticated,
+  administrative, import, and remaining service boundaries are not designed yet.
 
 ## Data Model
 
@@ -95,40 +114,56 @@ four tables have creation/update timestamps; a shared trigger maintains
 `updated_at` automatically. Hours checks require valid weekday numbers, null
 times for closed rows, and both times for open rows.
 
-Row Level Security is enabled on every table. No permissive policies exist yet,
-and Data API privileges for `anon`, `authenticated`, and `service_role` are
-explicitly revoked, so API access remains closed until explicit access rules are
-approved. Default public-schema privileges for `postgres`-owned project
-migrations are also revoked so future project tables, sequences, and functions
-require intentional grants.
+Row Level Security is enabled on every table. Direct table privileges for `anon`,
+`authenticated`, and `service_role` remain explicitly revoked. The only current
+policy permits the dedicated `kc3_public_place_reader` role to select active rows
+from `places`; it receives column-level access only to ID, name, city, address,
+place type, and status. The role is `NOLOGIN` and cannot bypass RLS. Default
+public-schema privileges for `postgres`-owned project migrations remain revoked
+so future project tables, sequences, and functions require intentional grants.
+
+The local MVP seed uses stable UUIDs and insert-only conflict handling. It creates
+canonical `places` rows and unknown/unverified `place_details` shells only when
+they are missing. It does not update existing records, populate Google-owned
+fields, or seed volatile weekly hours. See `SEED_DATA.md` for provenance and
+maintenance rules.
 
 ## APIs / Integrations
 
-Supabase is the only approved integration. The schema can retain Google-derived
-metadata, but ingestion behavior and direct Google API integration are not defined
-by this migration. Authentication details, data exchanged, and failure behavior
-will be documented when their relevant features are approved.
+Supabase is the only approved integration. Anonymous clients may execute
+`public.list_public_places()` through the Supabase RPC API. The zero-argument RPC
+returns active places ordered by name and ID with exactly `id`, `name`, `city`,
+`address`, and `place_type`. Its dedicated security-definer owner has only the
+source access required by that contract, and `anon` has no direct table access.
+
+The schema can retain Google-derived metadata, but ingestion behavior and direct
+Google API integration are not defined. Authentication details and remaining
+failure behavior will be documented when their relevant features are approved.
 
 ## Authentication and Authorization
 
-Supabase Auth is the approved authentication service. User accounts are not yet an
-approved MVP requirement, so identity flows, roles, and authorization rules remain
-undefined.
+Supabase Auth is the approved authentication service, but accounts are not
+required for the approved public place query. Signup remains disabled. Identity
+flows and authenticated authorization rules remain undefined because no account-
+based feature is approved. The PostgreSQL `anon` Data API role does not enable
+Supabase anonymous-user sign-ins.
 
 ## Data Storage
 
-Persistent application data will use Supabase Database. Supabase Storage is
-available if required. Local storage, retention, backup, and deletion policies
-have not been decided.
+Persistent application data will use Supabase Database. Local database resets
+load `supabase/seed.sql` after migrations. Supabase Storage is available if
+required. Retention, backup, and deletion policies have not been decided.
 
 ## Security Considerations
 
 - Secret handling: Do not commit credentials; required environment variables must
   be documented without values when the application is scaffolded.
 - Input validation: Not designed.
-- Authorization boundaries: All public tables have RLS enabled with no permissive
-  policies or Data API role privileges. Define least-privilege grants and explicit
-  policies, with database tests, before client reads or writes are enabled.
+- Authorization boundaries: All public tables have RLS enabled and no Data API
+  role has direct table privileges. Anonymous access is limited to executing the
+  approved active-place RPC; its constrained owner is filtered by RLS. Add an
+  explicit migration and role-focused tests before expanding reads or enabling
+  any client write.
 - Authentication: Account signup is disabled in the local configuration because
   accounts are not approved. Production auth requirements remain undecided.
 - Sensitive-data handling: Not designed.
@@ -145,12 +180,14 @@ shared strategy before introducing a new one.
 
 - Database tests: pgTAP tests run against the local Supabase PostgreSQL instance.
   They protect the approved schema contract, constraints, defaults, relationships,
-  timestamp triggers, and closed-by-default RLS posture.
-- Unit tests: Application unit-test tooling and coverage expectations are not
-  selected because no client application exists yet.
+  timestamp triggers, seed contract, and public RPC/RLS/privilege boundary.
+- Unit tests: Jest with the `jest-expo` preset provides the application unit-test
+  baseline. Coverage expectations are not yet selected.
 - Integration tests: Database migration tests are established; API and client
   integration tooling is not selected.
 - UI / end-to-end tests: Not selected.
+- Static quality checks: TypeScript strict typechecking, Expo's ESLint flat
+  configuration, and Prettier formatting checks run from npm scripts.
 
 Relevant tests must be added or updated whenever behavior changes.
 
@@ -161,16 +198,16 @@ decisions.
 
 ## Known Technical Debt
 
-- None yet; implementation has not started.
+- The scaffold does not yet exercise the approved RPC through a generated
+  Supabase client or validate its serialized TypeScript shape.
 
 ## Architecture Questions
 
-- What application and test structure should the initial Expo scaffold use?
 - Which approved MVP features, if any, require Supabase Auth or Storage?
 - What hosting and release path should be used for Expo Web and mobile builds?
 - Which testing, linting, and formatting tools should be adopted?
-- Which RLS policies and roles are required for approved client and administrative
-  access?
+- Which roles and interfaces are required for future authenticated and
+  administrative access?
 
 ## Explicitly Unapproved Alternatives
 
