@@ -33,6 +33,10 @@ filter experience remains an MVP scope decision.
 - An initial local-development seed of 15 real places across Lenexa, Overland
   Park, and Olathe, using only verified canonical names and addresses while
   leaving unverified details, Google metadata, and hours unknown.
+- Anonymous, read-only discovery of active places through an approved public
+  projection containing only place ID, name, city, address, and place type.
+- The approved public discovery boundary does not require accounts and does not
+  permit client writes or direct access to the underlying place tables.
 - Approval of this data foundation does not by itself approve every candidate
   client feature below.
 
@@ -100,7 +104,7 @@ are allowed so split operating periods can be represented.
 - Is map presentation required for MVP, or is a list sufficient?
 - Where will initial place data come from, and who is responsible for keeping it
   current?
-- Does any approved MVP feature require user accounts?
+- Do any future candidate MVP features require user accounts?
 - What are the initial geographic boundaries of the Kansas City metro for KC3?
 - What privacy and accessibility requirements must the MVP meet?
 

@@ -5,16 +5,16 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 ## Status
 
 - Stage: Product definition / initial backend implementation
-- Current focus: Define the public data boundary required before connecting an
-  Expo client to Supabase.
+- Current focus: Review the anonymous active-place access boundary while the
+  remaining Expo client MVP is defined.
 - Last major milestone: Added, reviewed, and merged the ownership-safe local MVP
   place seed.
 
 ## Quick Start
 
 The repository currently contains product and engineering documentation, the
-initial Supabase schema migration, and a local MVP seed. There is no client
-application to install, build, or run yet.
+Supabase schema and public-read migrations, and a local MVP seed. There is no
+client application to install, build, or run yet.
 
 See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for the development workflow and
 the setup information that still needs to be established during scaffolding.

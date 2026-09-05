@@ -4,21 +4,20 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Define the least-privilege public data boundary required before connecting the
-first Expo client to Supabase, while continuing to resolve the bounded client MVP.
+Review the first anonymous public data boundary while continuing to resolve the
+bounded client MVP before Expo scaffolding.
 
 ## In Progress
 
 - [ ] Product Owner review of candidate MVP features and open product questions in
   `PRODUCT.md`.
+- [ ] Product Owner review of the implemented anonymous, read-only active-place
+  RPC and its authorization tests.
 
 ## Next
 
 - [ ] Convert the approved MVP into prioritized, small, reviewable implementation
   tickets with acceptance criteria.
-- [ ] Define least-privilege RLS policies before exposing place data to clients.
-- [ ] Approve the public data/column/status boundary and add grant/RLS regression
-  tests in the same change as the first client access.
 - [ ] Approve a server-controlled, least-privilege administrative import and
   curation path; never expose privileged Supabase credentials to a client.
 - [ ] Decide raw Google payload retention/privacy rules before ingestion.
@@ -57,6 +56,9 @@ first Expo client to Supabase, while continuing to resolve the bounded client MV
 - [x] Transactional, rerunnable local MVP seed added, reviewed, and merged with 15
   representative Lenexa, Overland Park, and Olathe places and seed-specific
   regression coverage.
+- [x] Anonymous public place boundary approved and implemented as a read-only RPC
+  limited to active place IDs, names, cities, addresses, and place types, with
+  dedicated-role, RLS, privilege, status, column, and write-denial tests.
 
 ## Deferred / Rejected
 

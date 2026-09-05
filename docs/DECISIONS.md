@@ -43,6 +43,59 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-05 — Expose active places through a narrow anonymous RPC
+
+**Status:** Accepted
+
+**Decision**
+
+Allow unauthenticated clients to list active places without creating an account.
+Expose only place ID, name, city, address, and place type through the zero-argument
+`public.list_public_places()` RPC. Grant `anon` permission to execute that RPC,
+but retain the existing revocation of all direct base-table privileges and all
+client writes.
+
+Run the RPC as a dedicated `NOLOGIN`, `NOBYPASSRLS` role. Give that role column-
+level read access only to the five returned fields plus `status`, and apply an RLS
+policy that permits it to see only `active` places. Keep `authenticated` and
+`service_role` access closed until a use case for either role is approved.
+
+**Context**
+
+The approved schema and local seed are ready for a first client query, but all
+Data API access was intentionally closed. The first useful client slice needs a
+small place identity projection without exposing hidden records, Google payloads,
+verification notes, lifecycle metadata, or privileged credentials.
+
+**Alternatives considered**
+
+- Grant anonymous clients direct column-level access to `places` with RLS.
+- Expose an automatically updatable database view.
+- Put the first read behind a separate server or API layer.
+- Require accounts before any place discovery.
+
+**Reasoning**
+
+An RPC keeps storage tables out of the client contract and allows an explicit,
+stable response shape. A constrained function owner lets RLS remain effective
+without giving `anon` direct table privileges. Anonymous read-only discovery is
+the smallest useful access boundary and avoids premature authentication, server,
+and write-path complexity.
+
+**Consequences**
+
+Clients must call `list_public_places` rather than query `places`. Only active
+records and the five approved fields are returned. Place details, hours, Google
+metadata, raw payloads, statuses, audit timestamps, authenticated access, and all
+writes remain unavailable. Any expansion of this contract requires an explicit
+migration and matching authorization regression tests.
+
+**Follow-up**
+
+- Review and merge the migration and its pgTAP coverage.
+- Approve the first Expo place-list experience before scaffolding feature code.
+- Define a separate server-controlled administrative and import boundary.
+
 ### 2026-09-05 — Keep the local MVP seed additive and ownership-safe
 
 **Status:** Accepted

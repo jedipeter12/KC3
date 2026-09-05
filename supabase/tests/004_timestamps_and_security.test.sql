@@ -79,8 +79,8 @@ select is(
     where schemaname = 'public'
       and tablename in ('places', 'place_google_data', 'place_details', 'place_hours')
   ),
-  0,
-  'no public table has a permissive or restrictive RLS policy yet'
+  1,
+  'only the approved public place reader policy opens table rows'
 );
 
 select is(

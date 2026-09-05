@@ -1,38 +1,38 @@
 # Defensive Security Review
 
-**Review date:** 2026-08-23
+**Review date:** 2026-08-23; updated 2026-09-05 for public place access
 
 **Scope:** Repository contents and Git history, Supabase migration and local
 configuration, dependency metadata, documented architecture, and the controls
 that must exist before KC3 has real users.
 
-**Current project stage:** Product definition and initial backend migration. No
-client, custom API endpoint, deployed environment, or production database exists
-in this repository.
+**Current project stage:** Product definition and initial backend implementation.
+The first read-only Supabase RPC exists, but no client, custom server, deployed
+environment, or production database exists in this repository.
 
 ## Executive Security Assessment
 
-KC3 has a good early-stage security foundation but is not ready to expose its
-Data API or deploy to real users. The strongest current control is that all four
-tables have Row Level Security enabled with no permissive policies. This review
-also made the closed state independent of changing Supabase defaults by revoking
-Data API privileges explicitly.
+KC3 has a good early-stage security foundation but is not ready to deploy to real
+users. The Data API now exposes one approved operation: anonymous execution of a
+five-field, active-place RPC. All four base tables remain inaccessible to Data API
+roles. The RPC runs as a dedicated `NOLOGIN`, `NOBYPASSRLS` role with column-level
+source privileges and an active-only RLS policy.
 
 No critical vulnerability, committed credential, custom authentication flaw,
 remote-code path, or known vulnerable npm dependency was found in the current
-repository. The most important risks are pre-launch design gaps: the public data
-boundary, administrative write/import path, privacy treatment of retained Google
-payloads, production environment controls, backup/restore expectations, and any
-future account model are not approved. Those gaps are safe only while the API
-remains closed and there is no deployed application.
+repository. The most important remaining risks are pre-launch design gaps: the
+administrative write/import path, privacy treatment of retained Google payloads,
+production environment controls, backup/restore expectations, and any future
+account model are not approved. The anonymous RPC must not be broadened without a
+new approval and matching authorization tests.
 
 Security status by stage:
 
-- **Safe for the current schema-review stage:** Yes. The migration applies from a
-  clean local database, all 84 pgTAP assertions pass, and database lint reports no
-  schema errors.
-- **Safe to expose to an Expo client:** No. Explicit grants, RLS policies, and
-  policy tests do not yet exist for any approved client use case.
+- **Safe for the current local backend stage:** Yes. The migrations apply from a
+  clean local database, all 120 pgTAP assertions pass, and database lint reports
+  no schema errors.
+- **Safe for an Expo client to call the approved RPC locally:** Yes. This does not
+  approve additional reads, any writes, or production deployment.
 - **Safe for production users:** No. Hosting, environment separation, secrets
   management, backups, monitoring, operational access, and release controls are
   not defined.
@@ -43,21 +43,22 @@ None found in the current repository.
 
 ## High-Risk Findings
 
-### H-01 — Client authorization policy is intentionally undefined
+### H-01 — Initial client authorization boundary is implemented
 
-All place tables are in the exposed `public` schema. RLS is enabled and client
-privileges are now explicitly revoked, so the current state is closed. However,
-there is no approved definition of which roles may read which statuses, rows, or
-columns. A future blanket `select` grant and `using (true)` policy could expose
-hidden records, raw upstream data, internal verification notes, or other fields
-that were not intended for public use.
+All place tables are in the exposed `public` schema, but direct Data API role
+privileges remain revoked. `anon` may execute only `list_public_places()`, which
+returns five approved fields for active places. Its constrained owner has only
+the six source-column privileges needed to project and filter those records, and
+RLS enforces the same active-only boundary. A future broad grant could still
+expose hidden or internal data if it bypasses this pattern.
 
-- **Current exploitability:** None through the Data API because privileges and
-  policies deny access.
+- **Current exploitability:** Limited to the explicitly approved public place
+  fields and active rows through the RPC.
 - **Threat mitigated by recommendation:** Unauthorized disclosure and accidental
   publication caused by an overbroad future policy.
-- **Required timing:** **Immediate MVP blocker before the first client query.**
-- **Disposition:** **PRODUCT OWNER DECISION REQUIRED.**
+- **Required timing:** Re-review before expanding the RPC, adding another client
+  query, or enabling writes.
+- **Disposition:** **MITIGATED FOR THE APPROVED INITIAL READ.**
 
 ### H-02 — Administrative write and Google ingestion trust boundary is undefined
 
@@ -88,8 +89,8 @@ part of KC3's public API.
 - **Current exploitability:** The table is inaccessible to client roles.
 - **Threat mitigated by recommendation:** Privacy leakage, unnecessary data
   retention, oversized-response denial of service, and accidental API expansion.
-- **Required timing:** **Before importing Google payloads or enabling public
-  reads.**
+- **Required timing:** **Before importing Google payloads or exposing any Google-
+  sourced field.**
 - **Disposition:** **PRODUCT OWNER DECISION REQUIRED.**
 
 ### H-04 — Production security and recovery controls do not exist
@@ -147,21 +148,19 @@ establish the required behavior clearly enough.
   DECISION REQUIRED**; implementation should then enforce the approved rules at
   both the trusted ingestion boundary and database where practical.
 
-### M-03 — Authorization regression coverage is incomplete
+### M-03 — Authorization regression coverage is established for the initial read
 
-The repository now has pgTAP migration tests covering the schema, constraints,
-triggers, closed RLS state, explicit grants, and deny-by-default privileges. RLS
-mistakes often fail silently by returning too many or too few rows. Tests proving
-the first approved anonymous/authenticated policy behavior and hidden-status or
-column exposure cannot exist until that behavior is decided, and no CI currently
-runs the database suite.
+The pgTAP suite now covers the initial anonymous RPC's dedicated role, policy,
+function owner and configuration, response fields, active-only status behavior,
+direct-table denial, and read/write grants. Future authenticated, administrative,
+or expanded public behavior remains untested because it is unapproved, and no CI
+currently runs the database suite.
 
 - **Threat:** A later policy or grant change silently opens data.
-- **Required timing:** **Same change as the first grants/RLS policies; before
-  client access.**
-- **Disposition:** Current deny-by-default behavior is covered. Role/row/column
-  access cases are intentionally left until approved so tests do not encode
-  invented authorization requirements.
+- **Required timing:** Add equivalent positive and negative coverage in the same
+  change as every future authorization expansion.
+- **Disposition:** The approved initial read boundary is covered; CI remains a
+  follow-up.
 
 ### M-04 — Internal and API objects share the exposed `public` schema
 
@@ -239,10 +238,14 @@ all clients support enforced SSL.
 
 ## Security Controls Already Implemented Well
 
-- Every current application table has RLS enabled and no permissive policy.
+- Every current application table has RLS enabled. The sole policy applies only
+  to the constrained public reader role and active `places` rows.
 - Current table grants and automatic Data API grants for future
   `postgres`-owned project objects are explicitly revoked in the migration;
   project access must be granted intentionally.
+- Anonymous clients have only `EXECUTE` on the approved RPC. Its dedicated
+  `NOLOGIN`, `NOBYPASSRLS` owner has narrowly enumerated source columns, a fixed
+  empty `search_path`, no write privileges, and no lasting schema-create grant.
 - The trigger helper sets an empty `search_path`, reducing object-shadowing risk,
   and client roles cannot execute it directly.
 - PostgreSQL enums, foreign keys, uniqueness, check constraints, UUID primary
@@ -269,20 +272,14 @@ all clients support enforced SSL.
 
 ### D-01 — Public data and authorization boundary
 
-1. **Issue:** Which records, statuses, tables, and fields may unauthenticated or
-   authenticated clients read is undefined.
-2. **Risk:** A broad policy could expose hidden/internal/raw data; a narrow but
-   incorrect policy could break the product.
-3. **Likely options:** Direct read-only table access; a purpose-built read view or
-   RPC; or a server/API layer that returns an approved projection.
-4. **Tradeoffs:** Direct table reads are simple and fast but tightly couple the
-   public contract to storage. A view/projection adds maintenance but reduces
-   accidental column exposure. A server layer offers maximum control at greater
-   cost and complexity.
-5. **Recommendation (not approved):** Start with an explicitly enumerated,
-   read-only public projection limited to approved fields and visible statuses;
-   grant only `select`, keep all writes privileged, and add role/status/column
-   tests in the same change.
+1. **Decision:** Anonymous clients may call a read-only RPC that returns active
+   place ID, name, city, address, and place type. Base tables and writes remain
+   inaccessible.
+2. **Implementation:** `list_public_places()` is owned by a dedicated constrained
+   reader role whose source access is restricted by column grants and RLS.
+3. **Coverage:** Role, function, policy, status, column, and write-denial behavior
+   is protected by pgTAP.
+4. **Disposition:** **ACCEPTED AND IMPLEMENTED 2026-09-05.** See `DECISIONS.md`.
 
 ### D-02 — Administrative curation and import path
 
@@ -392,12 +389,15 @@ all clients support enforced SSL.
 5. Revoked automatic table, sequence, and function grants for future
    `postgres`-owned project objects; future project API access now requires an
    intentional migration.
+6. Added an anonymous active-place RPC owned by a dedicated constrained reader
+   role, without granting any Data API role direct table access.
+7. Added RLS, column, role, status, response-shape, and write-denial regression
+   tests for the approved public query.
 ## Issues Intentionally Left Unchanged
 
-- No RLS policy or API grant was added because public/authenticated behavior is
-  not approved.
-- No authentication system, role model, account table, MFA rule, or password
-  policy was designed.
+- No authenticated or administrative API grant was added because those behaviors
+  are not approved.
+- No account table, MFA rule, or password policy was designed.
 - No schema split, server layer, Edge Function, ingestion service, or admin UI was
   introduced.
 - No text/JSON size cap, URL allowlist, overlapping-hours rule, or 24-hour-place
@@ -415,52 +415,49 @@ all clients support enforced SSL.
 
 ## Recommended Security Work, Prioritized
 
-### Immediate MVP / before any client or production exposure
+### Immediate MVP / before production or access-boundary expansion
 
-1. **Approve the public data boundary, then implement least-privilege grants, RLS,
-   and pgTAP tests together.** This prevents unauthorized disclosure and write
-   access. Do it before the first Expo/Supabase query.
-2. **Approve and implement a server-controlled, least-privilege admin/import
+1. **Approve and implement a server-controlled, least-privilege admin/import
    path.** This prevents a service-role or database credential from reaching a
    client and limits compromise blast radius. Do it before seed/import automation.
-3. **Decide raw-data/privacy/retention rules.** This prevents unnecessary or
+2. **Decide raw-data/privacy/retention rules.** This prevents unnecessary or
    accidental upstream-data disclosure. Do it before retaining Google payloads or
    collecting any user information.
-4. **Establish production environment and recovery controls.** Separate dev/prod,
+3. **Establish production environment and recovery controls.** Separate dev/prod,
    keep secrets in platform stores, require admin MFA, enforce SSL, restrict
    direct DB access, verify Supabase Security Advisor findings, define backups,
    and test restore. This mitigates deployment compromise and unrecoverable loss;
    complete it before production.
-5. **Define validation and safe-output contracts.** Enumerate returned columns,
+4. **Define validation and safe-output contracts.** Enumerate returned columns,
    cap requests/payloads, validate import fields and URL schemes, paginate, and
    avoid rendering raw errors/upstream data. This mitigates injection-adjacent
    output risks, resource abuse, and data corruption; implement during the first
    client/import code.
-6. **Add CI security gates.** Run secret scanning, `npm ci`, `npm audit`, migration
+5. **Add CI security gates.** Run secret scanning, `npm ci`, `npm audit`, migration
    reset/lint, and database authorization tests on pull requests. This prevents
-   regressions and leaked credentials; add when CI/tooling is selected and no
-   later than the first access-policy change.
-7. **Keep signup disabled unless accounts are approved.** If they are approved,
+   regressions and leaked credentials; add when CI/tooling is selected and before
+   any hosted client or production access.
+6. **Keep signup disabled unless accounts are approved.** If they are approved,
    establish confirmation, password/passwordless, session, recovery, CAPTCHA,
    MFA, deletion, and authorization requirements first. This avoids premature
    account attack surface and privacy obligations.
-8. **Create basic operational logging and sanitized errors.** Record import and
+7. **Create basic operational logging and sanitized errors.** Record import and
    privileged changes without secrets or full raw payloads; give users generic
    errors and keep diagnostic detail server-side. This supports incident response
    without leaking sensitive data; implement before beta/production workflows.
 
 ### Reasonable after the first bounded MVP, unless scope expands sooner
 
-9. **Consider a dedicated API schema/read model.** It reduces accidental exposure
+8. **Consider a dedicated API schema/read model.** It reduces accidental exposure
    as internal tables and functions multiply. Do it before the API becomes large
    or gains client writes; it is not necessary solely to review this migration.
-10. **Add advanced abuse controls based on reachable features.** Rate limits,
+9. **Add advanced abuse controls based on reachable features.** Rate limits,
     CAPTCHA, quotas, WAF rules, and stronger user MFA mitigate automated abuse,
     but should follow actual auth/write/search endpoints and expected traffic.
-11. **Automate dependency maintenance and produce an SBOM.** This shortens
+10. **Automate dependency maintenance and produce an SBOM.** This shortens
     vulnerability exposure and improves incident response. Add after application
     dependencies and deployment artifacts exist.
-12. **Adopt stronger recovery/monitoring as data value grows.** PITR, alerting,
+11. **Adopt stronger recovery/monitoring as data value grows.** PITR, alerting,
     anomaly detection, and formal incident runbooks reduce loss and response time.
     Add when curation volume or user-generated data makes daily-backup loss
     unacceptable.
@@ -484,7 +481,7 @@ all clients support enforced SSL.
 
 ## Checks Performed and Results
 
-**Reverified:** 2026-09-04
+**Reverified:** 2026-09-05
 
 - Read all repository guidance and project documentation.
 - Inventoried tracked, untracked, ignored, hidden, and symlink files. No unexpected
@@ -503,8 +500,12 @@ all clients support enforced SSL.
 - Statically verified that every pgTAP file's declared plan equals its assertion
   count.
 - Started the local Supabase stack and rebuilt the database from a clean reset;
-  the KC3 migration applied successfully.
-- Ran `npm test`: passed all 84 assertions across four pgTAP files.
+  both KC3 migrations and the seed applied successfully.
+- Ran `npm test`: passed all 120 assertions across six pgTAP files, including 24
+  assertions for the public RPC and authorization boundary.
+- Called the local PostgREST API with the public client key: the RPC returned all
+  15 seed rows with exactly the five approved fields, and direct `places` access
+  returned HTTP 401.
 - Ran `npm run lint:db`: passed with no schema errors.
 - Ran `git diff --check`: passed.
 - Verified all repository-local Markdown link targets: passed.

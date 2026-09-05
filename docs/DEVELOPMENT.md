@@ -49,8 +49,8 @@ The tests live in `supabase/tests/`. They execute inside transactions and roll
 their fixture data back. The suite covers schema shape, approved enum values,
 required canonical fields, defaults and unknown values, one-to-one ownership,
 cascading deletion, weekly-hours validation, split and overnight intervals,
-automatic update timestamps, the local MVP seed contract, and the
-closed-by-default RLS configuration.
+automatic update timestamps, the local MVP seed contract, and the anonymous
+public place RPC's role, RLS, column, status, and write-denial boundaries.
 
 Run PostgreSQL lint checks against the same local database with
 `npm run lint:db`. The command targets KC3's `public` schema and fails on project
@@ -63,8 +63,10 @@ application exists yet.
 
 ### API / UI Tests
 
-No API or UI test framework or command has been selected. Database migration
-tests are the only applicable integration tests at the current project stage.
+The approved Supabase RPC authorization behavior is tested at the PostgreSQL role
+level with pgTAP. No client-level API or UI test framework or command has been
+selected. Database migration tests are the only applicable integration tests at
+the current project stage.
 
 ## Linting / Formatting
 
@@ -133,6 +135,9 @@ Each implementation ticket should direct the developer to:
   only for a clear, documented reason.
 - Database access: Keep Data API grants and RLS policies in versioned migrations
   and add role-focused database tests in the same change that opens access.
+- Public place reads: Unauthenticated clients may execute only
+  `public.list_public_places()`. Do not query the base tables from client code or
+  broaden the returned fields without an approved migration and matching tests.
 - Privileged credentials: Never place a Supabase secret/service-role key or direct
   database credential in an Expo, Expo Web, or other client bundle.
 
