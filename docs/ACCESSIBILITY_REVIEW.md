@@ -60,3 +60,42 @@ and [WAI button semantics](https://www.w3.org/WAI/ARIA/apg/patterns/button/).
 
 Run the client with the documented public configuration and repeat these checks
 on an interactive simulator/device before marking KC3-21 complete.
+
+## Follow-up Attempt — 2026-09-06
+
+Rechecked the merged implementation at `14cdc55`. All 30 application tests,
+typecheck, lint, and formatting checks pass. No application behavior changed in
+this follow-up, and production exports were not repeated.
+
+The iPhone 17 / iOS 26.5 simulator screenshot still shows KC3 behind the Expo Go
+developer menu. Its accessibility tree exposes only the simulator window and
+toolbar, not the app controls. A coordinate tap on the menu's close button failed
+with Computer Use error `-10005: noWindowsAvailable`; reconnecting to the simulator
+and repeating the tap produced the same error. This does not establish a defect
+in KC3, and no native interaction pass is claimed. Neither `adb` on PATH nor the
+default macOS Android SDK directory is available.
+
+### Manual Completion Procedure
+
+Use an interactive device or simulator with the current client and the local
+15-place seed. Record OS/device, client revision, text-size setting, screen
+reader, observed result, and any defect for each check below.
+
+1. At default text size, search for ` LiBrArY `, select Olathe, and verify the two
+   Olathe libraries. Select Coffee shop and verify the no-match message. Clear
+   filters and verify the complete list returns. Repeat filter taps while the
+   software keyboard is open and scroll to the final place.
+2. Repeat at a large text size and the largest accessibility text size. Inspect
+   the header, search, every city/type chip, Clear filters, place names,
+   addresses, and the bottom of the list for clipped text, horizontal overflow,
+   or unreachable controls. Restore the original text setting afterward.
+3. With VoiceOver (iOS), TalkBack (Android), or a Web screen reader, traverse the
+   screen and verify meaningful control names, sensible reading/focus order,
+   selected filter state, and operable search, filters, clearing, and retry.
+4. Exercise a delayed response, failed response, retry success, and an empty
+   response using a controlled local test backend. Listen for loading and error
+   announcements; verify they are timely and intelligible. Inspect empty/error
+   text and reach Retry at the largest text size. Do not equate accessibility
+   markup or mocked announcement calls with a spoken verification pass.
+
+Keep KC3-21 in progress until the remaining checks have recorded evidence.
