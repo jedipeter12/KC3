@@ -5,10 +5,10 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 ## Status
 
 - Stage: Initial client implementation
-- Current focus: Add client-side name search and city/place-type filters to the
-  public place list.
-- Last major milestone: Implemented and verified the responsive public place
-  list with loading, empty, sanitized error, and retry states.
+- Current focus: Verify the completed list-first slice on mobile and Expo Web,
+  including baseline accessibility checks.
+- Last major milestone: Implemented and verified client-side name search and
+  city/place-type filters over the loaded public place list.
 
 ## Quick Start
 

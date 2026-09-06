@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   Pressable,
   StyleSheet,
   Text,
+  TextInput,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,6 +16,7 @@ import {
   PUBLIC_PLACES_ERROR_MESSAGE,
 } from "../../data/publicPlaces";
 import type { PlaceType, PublicPlace } from "../../types/database";
+import { filterPlaces, getPlaceFilterOptions } from "./placeFilters";
 
 const PLACE_TYPE_LABELS: Record<PlaceType, string> = {
   coffee_shop: "Coffee shop",
@@ -25,6 +27,8 @@ const PLACE_TYPE_LABELS: Record<PlaceType, string> = {
   park: "Park",
 };
 
+const EMPTY_PLACES: readonly PublicPlace[] = [];
+
 type PlaceListState =
   | { status: "loading" }
   | { status: "loaded"; places: PublicPlace[] }
@@ -33,6 +37,134 @@ type PlaceListState =
 export type PlaceListScreenProps = Readonly<{
   loadPlaces?: () => Promise<PublicPlace[]>;
 }>;
+
+type FilterChipProps = Readonly<{
+  label: string;
+  onPress: () => void;
+  selected: boolean;
+}>;
+
+function FilterChip({ label, onPress, selected }: FilterChipProps) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.filterChip,
+        selected && styles.filterChipSelected,
+        pressed && styles.filterChipPressed,
+      ]}
+    >
+      <Text
+        style={[
+          styles.filterChipText,
+          selected && styles.filterChipTextSelected,
+        ]}
+      >
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
+type PlaceFiltersProps = Readonly<{
+  cities: readonly string[];
+  hasActiveFilters: boolean;
+  nameQuery: string;
+  onChangeNameQuery: (query: string) => void;
+  onClear: () => void;
+  onSelectCity: (city: string | null) => void;
+  onSelectPlaceType: (placeType: PlaceType | null) => void;
+  placeTypes: readonly PlaceType[];
+  selectedCity: string | null;
+  selectedPlaceType: PlaceType | null;
+}>;
+
+function PlaceFilters({
+  cities,
+  hasActiveFilters,
+  nameQuery,
+  onChangeNameQuery,
+  onClear,
+  onSelectCity,
+  onSelectPlaceType,
+  placeTypes,
+  selectedCity,
+  selectedPlaceType,
+}: PlaceFiltersProps) {
+  return (
+    <View style={styles.filters}>
+      <View style={styles.filtersHeading}>
+        <Text accessibilityRole="header" style={styles.filtersTitle}>
+          Refine places
+        </Text>
+        {hasActiveFilters ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onClear}
+            style={({ pressed }) => [
+              styles.clearButton,
+              pressed && styles.clearButtonPressed,
+            ]}
+          >
+            <Text style={styles.clearButtonText}>Clear filters</Text>
+          </Pressable>
+        ) : null}
+      </View>
+
+      <Text style={styles.filterLabel}>Search by name</Text>
+      <TextInput
+        accessibilityLabel="Search places by name"
+        autoCapitalize="none"
+        autoCorrect={false}
+        onChangeText={onChangeNameQuery}
+        placeholder="Enter a place name"
+        placeholderTextColor="#71817b"
+        returnKeyType="search"
+        style={styles.searchInput}
+        value={nameQuery}
+      />
+
+      <Text style={styles.filterLabel}>City</Text>
+      <View accessibilityLabel="City filters" style={styles.filterChipGroup}>
+        <FilterChip
+          label="All cities"
+          onPress={() => onSelectCity(null)}
+          selected={selectedCity === null}
+        />
+        {cities.map((city) => (
+          <FilterChip
+            key={city}
+            label={city}
+            onPress={() => onSelectCity(city)}
+            selected={selectedCity === city}
+          />
+        ))}
+      </View>
+
+      <Text style={styles.filterLabel}>Place type</Text>
+      <View
+        accessibilityLabel="Place type filters"
+        style={styles.filterChipGroup}
+      >
+        <FilterChip
+          label="All types"
+          onPress={() => onSelectPlaceType(null)}
+          selected={selectedPlaceType === null}
+        />
+        {placeTypes.map((placeType) => (
+          <FilterChip
+            key={placeType}
+            label={PLACE_TYPE_LABELS[placeType]}
+            onPress={() => onSelectPlaceType(placeType)}
+            selected={selectedPlaceType === placeType}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
 
 function PlaceRow({ place }: Readonly<{ place: PublicPlace }>) {
   return (
@@ -53,7 +185,29 @@ export function PlaceListScreen({
   loadPlaces = listPublicPlaces,
 }: PlaceListScreenProps) {
   const [state, setState] = useState<PlaceListState>({ status: "loading" });
+  const [nameQuery, setNameQuery] = useState("");
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [selectedPlaceType, setSelectedPlaceType] = useState<PlaceType | null>(
+    null,
+  );
   const requestIdRef = useRef(0);
+
+  const loadedPlaces = state.status === "loaded" ? state.places : EMPTY_PLACES;
+  const filterOptions = useMemo(
+    () => getPlaceFilterOptions(loadedPlaces),
+    [loadedPlaces],
+  );
+  const visiblePlaces = useMemo(
+    () =>
+      filterPlaces(loadedPlaces, {
+        city: selectedCity,
+        nameQuery,
+        placeType: selectedPlaceType,
+      }),
+    [loadedPlaces, nameQuery, selectedCity, selectedPlaceType],
+  );
+  const hasActiveFilters =
+    nameQuery.length > 0 || selectedCity !== null || selectedPlaceType !== null;
 
   const requestPlaces = useCallback(async () => {
     const requestId = ++requestIdRef.current;
@@ -74,6 +228,12 @@ export function PlaceListScreen({
     setState({ status: "loading" });
     void requestPlaces();
   }, [requestPlaces]);
+
+  const clearFilters = useCallback(() => {
+    setNameQuery("");
+    setSelectedCity(null);
+    setSelectedPlaceType(null);
+  }, []);
 
   useEffect(() => {
     const requestId = ++requestIdRef.current;
@@ -151,8 +311,35 @@ export function PlaceListScreen({
           <FlatList
             accessibilityRole="list"
             contentContainerStyle={styles.listContent}
-            data={state.places}
+            data={visiblePlaces}
             keyExtractor={(place) => place.id}
+            ListEmptyComponent={
+              <View
+                accessibilityLiveRegion="polite"
+                style={styles.noMatchesContainer}
+              >
+                <Text accessibilityRole="header" style={styles.stateTitle}>
+                  No matching places
+                </Text>
+                <Text style={styles.stateMessage}>
+                  Try changing or clearing your filters.
+                </Text>
+              </View>
+            }
+            ListHeaderComponent={
+              <PlaceFilters
+                cities={filterOptions.cities}
+                hasActiveFilters={hasActiveFilters}
+                nameQuery={nameQuery}
+                onChangeNameQuery={setNameQuery}
+                onClear={clearFilters}
+                onSelectCity={setSelectedCity}
+                onSelectPlaceType={setSelectedPlaceType}
+                placeTypes={filterOptions.placeTypes}
+                selectedCity={selectedCity}
+                selectedPlaceType={selectedPlaceType}
+              />
+            }
             renderItem={({ item }) => <PlaceRow place={item} />}
             showsVerticalScrollIndicator={false}
             style={styles.list}
@@ -189,6 +376,84 @@ const styles = StyleSheet.create({
     marginTop: 4,
     color: "#3e5b53",
     fontSize: 17,
+  },
+  filters: {
+    borderColor: "#d9d2c3",
+    borderRadius: 14,
+    borderWidth: 1,
+    backgroundColor: "#fffdf8",
+    padding: 16,
+  },
+  filtersHeading: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  filtersTitle: {
+    color: "#173f35",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+  clearButton: {
+    minHeight: 40,
+    justifyContent: "center",
+    paddingHorizontal: 8,
+  },
+  clearButtonPressed: {
+    opacity: 0.65,
+  },
+  clearButtonText: {
+    color: "#176b55",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  filterLabel: {
+    marginBottom: 7,
+    marginTop: 14,
+    color: "#273c36",
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  searchInput: {
+    minHeight: 48,
+    borderColor: "#bfc9c4",
+    borderRadius: 10,
+    borderWidth: 1,
+    backgroundColor: "#ffffff",
+    color: "#173f35",
+    fontSize: 16,
+    paddingHorizontal: 13,
+    paddingVertical: 10,
+  },
+  filterChipGroup: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  filterChip: {
+    minHeight: 44,
+    justifyContent: "center",
+    borderColor: "#aebdb6",
+    borderRadius: 999,
+    borderWidth: 1,
+    backgroundColor: "#ffffff",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  filterChipSelected: {
+    borderColor: "#176b55",
+    backgroundColor: "#176b55",
+  },
+  filterChipPressed: {
+    opacity: 0.75,
+  },
+  filterChipText: {
+    color: "#315248",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  filterChipTextSelected: {
+    color: "#ffffff",
   },
   list: {
     flex: 1,
@@ -240,6 +505,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingBottom: 64,
+    paddingHorizontal: 24,
+  },
+  noMatchesContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 220,
+    paddingBottom: 48,
     paddingHorizontal: 24,
   },
   stateTitle: {

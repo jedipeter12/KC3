@@ -81,9 +81,12 @@ requests throw the stable `PUBLIC_PLACES_UNAVAILABLE` application error without
 including the underlying provider details.
 
 React Native Testing Library component tests exercise the place-list screen's
-loading, ordered results, four visible fields, empty result, sanitized error, and
-retry behavior. Screen dependencies are injected only at the component boundary
-for focused testing; production uses the approved public-place data operation.
+loading, ordered results, four visible fields, derived filter choices, combined
+search/filter interactions, database-empty and no-match states, local clearing,
+sanitized error, and retry behavior. Pure unit tests protect name-query
+normalization, AND semantics, derived choices, and order preservation. Screen
+dependencies are injected only at the component boundary for focused testing;
+production uses the approved public-place data operation.
 
 ### API / UI Tests
 
