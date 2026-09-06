@@ -94,5 +94,7 @@ Use this section for ideas intentionally postponed or rejected so they are not r
 ## Known Bugs / Issues
 
 - Native verification is incomplete: the iOS simulator launches KC3, but UI
-  automation cannot tap its content (AXError.cannotComplete). Android tooling is
-  unavailable. See `docs/ACCESSIBILITY_REVIEW.md` for evidence and remaining checks.
+  automation cannot tap its content (initially `AXError.cannotComplete`; the
+  follow-up returned `noWindowsAvailable`, including after reconnecting).
+  Android tooling is unavailable. See `docs/ACCESSIBILITY_REVIEW.md` for evidence
+  and the manual completion procedure.
