@@ -9,12 +9,11 @@ boundary.
 
 ## In Progress
 
-- [ ] No implementation ticket is active; client-side search and filters are the
-  next ready ticket.
+- [ ] No implementation ticket is active; mobile/Web and baseline accessibility
+  verification is the next ready ticket.
 
 ## Next
 
-- [ ] Add client-side name search and city/place-type filters.
 - [ ] Verify the list-first slice on mobile and Expo Web, including baseline
   accessibility checks.
 - [ ] Add application and database checks to CI after the client tooling is
@@ -73,6 +72,9 @@ boundary.
 - [x] Responsive public place-list screen implemented with ordered four-field
   rows, human-readable place types, explicit loading and empty states, sanitized
   error recovery, retry behavior, and focused component coverage (KC3-17).
+- [x] Client-side place-name search and derived city/place-type filters
+  implemented with AND behavior, local clearing, a distinct no-match state, no
+  additional database calls, and focused unit and interaction coverage (KC3-18).
 
 ## Deferred / Rejected
 

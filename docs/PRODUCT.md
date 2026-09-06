@@ -19,8 +19,9 @@ time, work, or meet others.
 
 ## Core User Outcomes
 
-Find places that match selected needs and preferences. The exact search and
-filter experience remains an MVP scope decision.
+Find places that match selected needs and preferences. The approved first slice
+supports place-name search plus city and place-type filtering over the public
+place list.
 
 ## MVP Scope
 
@@ -62,12 +63,18 @@ RPC contract:
 
 ### Current Implementation
 
-The first screen now loads the approved public projection and renders returned
-places in server order. Each list item shows its name, city, address, and a
-human-readable place type. The screen includes visually distinct loading,
-successful-empty, and sanitized error states; the error state provides a retry
-action. The layout uses a bounded content width on Web and remains scrollable on
-small mobile viewports. Search and filters remain the next client ticket.
+The first screen now loads the approved public projection once and renders
+returned places in server order. Each list item shows its name, city, address,
+and a human-readable place type. Users can search names without case sensitivity
+or surrounding-whitespace sensitivity and select one city and one place type;
+active constraints combine with AND behavior. City and type choices come only
+from the loaded records, clearing restores the full loaded list, and filtering
+does not make another database request. A no-match result is distinct from a
+successful database-empty state.
+
+The screen also includes visually distinct loading and sanitized error states;
+the error state provides a retry action. The layout uses a bounded content width
+on Web and keeps the controls and results scrollable on small mobile viewports.
 
 ## Later Client Feature Candidates (Not Yet Approved)
 

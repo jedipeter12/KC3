@@ -6,8 +6,8 @@ KC3 has an Expo SDK 57 TypeScript client targeting React Native and Expo Web, bu
 no deployed architecture yet. Application code lives in `src/`, a root entry
 point registers the app, and application tests live separately in `tests/`. The
 first screen consumes the typed public-place data operation and presents an
-ordered, responsive list with explicit loading, empty, sanitized error, and
-retry states.
+ordered, responsive list with local name, city, and place-type filtering plus
+explicit loading, database-empty, no-match, sanitized error, and retry states.
 Supabase provides the backend platform and PostgreSQL-based database; the initial
 MVP schema is defined as a migration but has not been applied to production. A transactional,
 idempotent local seed bootstraps 15 representative places without importing
@@ -93,8 +93,10 @@ use the ignored `dist/` directory.
   owns the first screen's request lifecycle and renders the read-only public
   projection with human-readable place types. It ignores stale request results,
   uses safe-area-aware layout, bounds the content width for Web, and keeps the
-  result list vertically scrollable. Client-side name search and city/place-type
-  filters remain the next part of the approved slice.
+  controls and result list vertically scrollable. A pure feature utility trims
+  and normalizes name queries, derives unique city and place-type choices from
+  loaded records, and applies all active constraints with AND behavior while
+  preserving server order. Filter interactions never call the data layer.
 - Supabase client: A typed `@supabase/supabase-js` singleton reads the public
   project URL and publishable key from Expo's `EXPO_PUBLIC_` environment
   boundary. Authentication session behavior is disabled because accounts are not
@@ -160,6 +162,12 @@ a successful empty result. Null, non-array, malformed, rejected, and provider-
 error responses throw `PublicPlacesError` with the
 `PUBLIC_PLACES_UNAVAILABLE` code and a sanitized retry message.
 
+The place-list screen retains the successful RPC result as its source list.
+Search text and selected city/place type are component state, and a memoized
+local projection supplies visible rows. A database-empty response bypasses the
+filter controls, while a nonempty source list with zero filtered rows renders a
+separate no-match state. Clearing controls resets only local filter state.
+
 The schema can retain Google-derived metadata, but ingestion behavior and direct
 Google API integration are not defined. Authentication details and remaining
 failure behavior will be documented when their relevant features are approved.
@@ -219,8 +227,11 @@ state.
   Testing Library provide the application-test baseline. Focused data-layer
   tests cover successful ordered results, exact field projection, empty results,
   malformed responses, and sanitized provider failures. Component tests cover
-  loading, ordered rows and their four visible fields, empty results, sanitized
-  errors, and successful retry. Coverage expectations are not yet selected.
+  loading, ordered rows and their four visible fields, derived controls,
+  combined filter interactions, local clearing, database-empty and no-match
+  results, sanitized errors, and successful retry. Pure utility tests cover
+  normalization, AND behavior, choice derivation, and order preservation.
+  Coverage expectations are not yet selected.
 - Integration tests: Database migration tests are established; API and client
   integration tooling is not selected.
 - End-to-end tests: Not selected. The current Web screen is manually checked at

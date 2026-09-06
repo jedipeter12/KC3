@@ -1,7 +1,8 @@
 # Test Coverage and Reliability Review
 
 **Review date:** 2026-08-23; updated 2026-09-05 for public place access, the
-Expo client scaffold, typed data layer, and place-list component
+Expo client scaffold, typed data layer, place-list component, and client-side
+search and filters
 
 **Scope:** Approved behavior and current implementation in the KC3 repository.
 
@@ -9,10 +10,10 @@ Expo client scaffold, typed data layer, and place-list component
 
 KC3 currently contains an approved Supabase/PostgreSQL data model, local seed,
 anonymous read-only place RPC, and an Expo TypeScript client with a typed public
-data layer and place-list screen. The client does not yet contain search/filter
-behavior, and there is no custom server or automated import workflow. This
-review covers database behavior, the public data contract, and the first screen's
-component states without defining unapproved client behavior.
+data layer and locally filtered place-list screen. There is no custom server or
+automated import workflow. This review covers database behavior, the public data
+contract, and the first screen's component states without defining unapproved
+client behavior.
 
 ## Existing Coverage Assessment
 
@@ -104,12 +105,15 @@ Application tests verify the exact five-field TypeScript RPC contract, public
 configuration validation, ordered and projected data-layer results, explicit
 empty results, malformed responses, and sanitized provider failures. React
 Native Testing Library component tests cover loading, ordered rows and their four
-visible fields, empty results, sanitized error presentation, and retry recovery.
+visible fields, derived city/place-type choices, combined name/city/type
+interactions, clearing without another request, distinct database-empty and
+no-match states, sanitized error presentation, and retry recovery. Pure utility
+tests cover trimmed case-insensitive name matching, whitespace-only queries, AND
+semantics, option derivation, and loaded-order preservation.
 
 ## Deliberately Not Tested
 
-- Approved search/filter behavior and all later detail/map presentation: no such
-  feature implementation exists yet.
+- Later detail/map presentation: no such feature implementation exists yet.
 - Automated HTTP serialization and Expo client integration for the approved RPC,
   plus all future authenticated and administrative CRUD flows: the current unit
   tests mock the provider boundary, and those additional role behaviors are not
@@ -178,10 +182,10 @@ detection.
    ownership, idempotency, duplicate handling, raw-data retention, and transaction
    failure. This prevents reruns from duplicating places or partially refreshing
    data.
-5. **Expand the Jest baseline with feature behavior.** Add unit tests for approved
-   validation, transformations, filters, and multi-branch utilities as they
-   appear. This prevents client behavior from drifting from the database and
-   approved rules.
+5. **Continue expanding the Jest baseline with feature behavior.** Add focused
+   unit and interaction tests for approved validation, transformations, and
+   multi-branch utilities as they appear. This prevents client behavior from
+   drifting from the database and approved rules.
 6. **Expand API/client integration coverage with richer approved fields.** Verify
    enum, nullable boolean, date, time, JSON, and error serialization as those
    values enter the public contract. This prevents type-generation and
@@ -215,8 +219,11 @@ detection.
 - Typecheck: passed with `npm run typecheck`.
 - Application lint: passed with `npm run lint`.
 - Formatting: passed with `npm run format:check`.
-- Application tests: passed with `npm run test:app`; one scaffold baseline test
-  succeeded.
+- Application tests: passed with `npm run test:app`; 26 tests succeeded across
+  six suites.
 - Export: passed with `npm run export`; Expo produced Web, iOS, and Android
   bundles.
 - Expo Web development server: started successfully and returned HTTP 200.
+- Responsive interaction check: passed at 1280×800 and 390×844 with local place
+  fixtures; combined filters, no-match behavior, clearing, and a clean browser
+  console were verified.

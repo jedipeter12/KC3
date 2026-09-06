@@ -69,6 +69,63 @@ describe("place-list screen", () => {
     expect(within(rows[1]).getByText("Coffee shop")).toBeOnTheScreen();
   });
 
+  it("derives city and place-type controls from loaded records", async () => {
+    await render(<PlaceListScreen loadPlaces={async () => PLACES} />);
+
+    expect(
+      await screen.findByLabelText("Search places by name"),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByRole("button", { name: "All cities" }),
+    ).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Olathe" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Lenexa" })).toBeOnTheScreen();
+    expect(screen.getByRole("button", { name: "Library" })).toBeOnTheScreen();
+    expect(
+      screen.getByRole("button", { name: "Coffee shop" }),
+    ).toBeOnTheScreen();
+    expect(
+      screen.queryByRole("button", { name: "Park" }),
+    ).not.toBeOnTheScreen();
+  });
+
+  it("applies combined filters, shows no matches, and clears locally", async () => {
+    const loadPlaces = jest
+      .fn<Promise<PublicPlace[]>, []>()
+      .mockResolvedValue(PLACES);
+    await render(<PlaceListScreen loadPlaces={loadPlaces} />);
+
+    await screen.findByText("Second Place");
+    await fireEvent.press(screen.getByRole("button", { name: "Olathe" }));
+    await fireEvent.press(screen.getByRole("button", { name: "Library" }));
+
+    let rows = screen.getAllByTestId(/^place-row-/);
+    expect(rows).toHaveLength(1);
+    expect(within(rows[0]).getByText("Second Place")).toBeOnTheScreen();
+
+    await fireEvent.changeText(
+      screen.getByLabelText("Search places by name"),
+      "  FIRST  ",
+    );
+
+    expect(screen.getByText("No matching places")).toBeOnTheScreen();
+    expect(screen.queryByText("No places yet")).not.toBeOnTheScreen();
+
+    await fireEvent.press(
+      screen.getByRole("button", { name: "Clear filters" }),
+    );
+
+    rows = screen.getAllByTestId(/^place-row-/);
+    expect(rows).toHaveLength(2);
+    expect(within(rows[0]).getByText("Second Place")).toBeOnTheScreen();
+    expect(within(rows[1]).getByText("First Place")).toBeOnTheScreen();
+    expect(screen.getByLabelText("Search places by name")).toHaveProp(
+      "value",
+      "",
+    );
+    expect(loadPlaces).toHaveBeenCalledTimes(1);
+  });
+
   it("shows an intentional empty state", async () => {
     await render(<PlaceListScreen loadPlaces={async () => []} />);
 
