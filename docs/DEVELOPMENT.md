@@ -80,12 +80,17 @@ RPC array returns `[]`; null or malformed data, provider errors, and rejected
 requests throw the stable `PUBLIC_PLACES_UNAVAILABLE` application error without
 including the underlying provider details.
 
+React Native Testing Library component tests exercise the place-list screen's
+loading, ordered results, four visible fields, empty result, sanitized error, and
+retry behavior. Screen dependencies are injected only at the component boundary
+for focused testing; production uses the approved public-place data operation.
+
 ### API / UI Tests
 
 The approved Supabase RPC authorization behavior is tested at the PostgreSQL role
-level with pgTAP. No client-level API or UI test framework or command has been
-selected. Database migration tests are the only applicable integration tests at
-the current project stage.
+level with pgTAP. Component tests use React Native Testing Library. No client API
+integration or end-to-end framework has been selected at the current project
+stage.
 
 ## Linting / Formatting
 

@@ -5,10 +5,10 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 ## Status
 
 - Stage: Initial client implementation
-- Current focus: Build the public place list with its loading, empty, and error
-  states.
-- Last major milestone: Implemented and verified typed access to the approved
-  public place RPC.
+- Current focus: Add client-side name search and city/place-type filters to the
+  public place list.
+- Last major milestone: Implemented and verified the responsive public place
+  list with loading, empty, sanitized error, and retry states.
 
 ## Quick Start
 
@@ -45,7 +45,11 @@ KC3/
 ├── tsconfig.json
 ├── src/
 │   ├── App.tsx
-│   └── config/
+│   ├── config/
+│   ├── data/
+│   ├── features/
+│   ├── lib/
+│   └── types/
 ├── tests/
 ├── docs/
 │   ├── PRODUCT.md

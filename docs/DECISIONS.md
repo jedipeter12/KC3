@@ -43,6 +43,48 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-05 — Test user-facing components with React Native Testing Library
+
+**Status:** Accepted
+
+**Decision**
+
+Use React Native Testing Library with the existing Jest Expo preset for focused
+component behavior tests. Keep data access injectable at screen boundaries when
+that permits deterministic state testing without replacing the production data
+layer.
+
+**Context**
+
+The first public place-list screen introduces asynchronous loading, ordered
+content, empty results, errors, and retry behavior that should be protected at
+the rendered component boundary. The scaffold selected Jest but intentionally
+left UI test utilities open until user-facing components existed.
+
+**Alternatives considered**
+
+- Test only extracted state-management functions without rendering React Native
+  components.
+- Introduce an end-to-end framework for the first screen.
+
+**Reasoning**
+
+React Native Testing Library exercises behavior through visible text, roles, and
+interactions while remaining compatible with the selected Jest Expo stack. It is
+small enough for ticket-level component coverage; end-to-end tooling would add
+more infrastructure than this slice requires.
+
+**Consequences**
+
+User-facing state transitions can be tested without live Supabase calls.
+Component tests use the library's asynchronous render and event APIs. A future
+end-to-end framework remains a separate decision.
+
+**Follow-up**
+
+- Reuse this component-testing pattern for the approved search and filter ticket.
+- Select end-to-end tooling only when a broader workflow requires it.
+
 ### 2026-09-05 — Scaffold Expo SDK 57 with repository-level quality tooling
 
 **Status:** Accepted
@@ -81,8 +123,9 @@ line until the Expo configuration supports ESLint 10.
 
 Developers use the pinned Node/npm versions and npm lockfile. Application checks
 are available as dedicated scripts, while the existing `npm test`, `test:db`, and
-`lint:db` database behavior remains unchanged. Navigation, UI test utilities,
-coverage targets, CI, hosting, and signed native builds remain later decisions.
+`lint:db` database behavior remains unchanged. UI test utilities were selected
+when the first user-facing screen was implemented; navigation, coverage targets,
+CI, hosting, and signed native builds remain later decisions.
 
 **Follow-up**
 

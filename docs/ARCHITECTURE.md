@@ -2,9 +2,12 @@
 
 ## Current Architecture Summary
 
-KC3 has an Expo SDK 57 TypeScript client scaffold targeting React Native and Expo
-Web, but no deployed architecture yet. Application code lives in `src/`, a root
-entry point registers the app, and application tests live separately in `tests/`.
+KC3 has an Expo SDK 57 TypeScript client targeting React Native and Expo Web, but
+no deployed architecture yet. Application code lives in `src/`, a root entry
+point registers the app, and application tests live separately in `tests/`. The
+first screen consumes the typed public-place data operation and presents an
+ordered, responsive list with explicit loading, empty, sanitized error, and
+retry states.
 Supabase provides the backend platform and PostgreSQL-based database; the initial
 MVP schema is defined as a migration but has not been applied to production. A transactional,
 idempotent local seed bootstraps 15 representative places without importing
@@ -55,7 +58,11 @@ KC3/
 ├── eslint.config.js
 ├── src/
 │   ├── App.tsx
-│   └── config/
+│   ├── config/
+│   ├── data/
+│   ├── features/
+│   ├── lib/
+│   └── types/
 ├── tests/
 ├── docs/
 │   ├── PRODUCT.md
@@ -82,9 +89,12 @@ use the ignored `dist/` directory.
 
 - Expo client: Expo SDK 57 with React Native 0.86, React 19, and Expo Web. The
   scaffold uses a root `index.ts`, `src/App.tsx`, and feature-neutral
-  configuration under `src/config/`. The first slice remains a read-only place
-  list with client-side name search and city/place-type filters over the existing
-  RPC; feature component boundaries are not designed yet.
+  configuration under `src/config/`. `src/features/places/PlaceListScreen.tsx`
+  owns the first screen's request lifecycle and renders the read-only public
+  projection with human-readable place types. It ignores stale request results,
+  uses safe-area-aware layout, bounds the content width for Web, and keeps the
+  result list vertically scrollable. Client-side name search and city/place-type
+  filters remain the next part of the approved slice.
 - Supabase client: A typed `@supabase/supabase-js` singleton reads the public
   project URL and publishable key from Expo's `EXPO_PUBLIC_` environment
   boundary. Authentication session behavior is disabled because accounts are not
@@ -196,19 +206,25 @@ missing or invalid variable by name, point developers to `.env.example`, and do
 not echo configured values. Public-place reads normalize provider failures and
 unexpected response shapes to the same safe application error. The data layer
 does not log or retain provider errors, response details, credentials, or URLs.
+The place-list screen does not render caught error values; every failed request
+uses the stable sanitized message and offers a retry that re-enters the loading
+state.
 
 ## Testing Strategy
 
 - Database tests: pgTAP tests run against the local Supabase PostgreSQL instance.
   They protect the approved schema contract, constraints, defaults, relationships,
   timestamp triggers, seed contract, and public RPC/RLS/privilege boundary.
-- Unit tests: Jest with the `jest-expo` preset provides the application unit-test
-  baseline. Focused data-layer tests cover successful ordered results, exact
-  field projection, empty results, malformed responses, and sanitized provider
-  failures. Coverage expectations are not yet selected.
+- Unit and component tests: Jest with the `jest-expo` preset and React Native
+  Testing Library provide the application-test baseline. Focused data-layer
+  tests cover successful ordered results, exact field projection, empty results,
+  malformed responses, and sanitized provider failures. Component tests cover
+  loading, ordered rows and their four visible fields, empty results, sanitized
+  errors, and successful retry. Coverage expectations are not yet selected.
 - Integration tests: Database migration tests are established; API and client
   integration tooling is not selected.
-- UI / end-to-end tests: Not selected.
+- End-to-end tests: Not selected. The current Web screen is manually checked at
+  desktop and small-mobile viewport sizes in addition to component coverage.
 - Static quality checks: TypeScript strict typechecking, Expo's ESLint flat
   configuration, and Prettier formatting checks run from npm scripts.
 
@@ -221,14 +237,13 @@ decisions.
 
 ## Known Technical Debt
 
-- The typed public-place operation is not yet connected to a UI; loading, empty,
-  and error presentation are the next ticket.
+- Search and filter state is not yet implemented over the place list.
 
 ## Architecture Questions
 
 - Which approved MVP features, if any, require Supabase Auth or Storage?
 - What hosting and release path should be used for Expo Web and mobile builds?
-- Which testing, linting, and formatting tools should be adopted?
+- Which coverage targets and end-to-end tooling should be adopted?
 - Which roles and interfaces are required for future authenticated and
   administrative access?
 
