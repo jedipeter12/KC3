@@ -76,6 +76,11 @@ The screen also includes visually distinct loading and sanitized error states;
 the error state provides a retry action. The layout uses a bounded content width
 on Web and keeps the controls and results scrollable on small mobile viewports.
 
+Filter selection is exposed to assistive technology, controls support Web
+keyboard operation, and iOS request-state changes have explicit announcements.
+Baseline verification is ongoing; native large-text and spoken screen-reader
+checks remain outstanding in `docs/ACCESSIBILITY_REVIEW.md`.
+
 ## Later Client Feature Candidates (Not Yet Approved)
 
 The following client-facing ideas were discussed as a plausible MVP shape. They

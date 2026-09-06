@@ -5,6 +5,7 @@ import {
   screen,
   within,
 } from "@testing-library/react-native";
+import { AccessibilityInfo, Platform } from "react-native";
 
 import { PlaceListScreen } from "../src/features/places/PlaceListScreen";
 import type { PublicPlace } from "../src/types/database";
@@ -44,6 +45,53 @@ function deferred<Value>() {
 }
 
 describe("place-list screen", () => {
+  afterEach(() => jest.restoreAllMocks());
+
+  it("exposes pressed filter states and list items on Web", async () => {
+    jest.replaceProperty(Platform, "OS", "web");
+    await render(<PlaceListScreen loadPlaces={async () => PLACES} />);
+    const allCities = await screen.findByRole("button", { name: "All cities" });
+    expect(allCities).toHaveProp("aria-pressed", true);
+    const olathe = screen.getByRole("button", { name: "Olathe" });
+    expect(olathe).toHaveProp("aria-pressed", false);
+    await fireEvent.press(olathe);
+    expect(screen.getByRole("button", { name: "Olathe" })).toHaveProp(
+      "aria-pressed",
+      true,
+    );
+    expect(screen.getByRole("button", { name: "All cities" })).toHaveProp(
+      "aria-pressed",
+      false,
+    );
+    expect(screen.getByTestId(`place-row-${PLACES[0].id}`)).toHaveProp(
+      "role",
+      "listitem",
+    );
+  });
+
+  it("announces pending, failed, retrying, and recovered requests on iOS", async () => {
+    jest.replaceProperty(Platform, "OS", "ios");
+    const announce = jest
+      .spyOn(AccessibilityInfo, "announceForAccessibility")
+      .mockImplementation(() => {});
+    const initial = deferred<PublicPlace[]>();
+    const retry = deferred<PublicPlace[]>();
+    const loadPlaces = jest
+      .fn<Promise<PublicPlace[]>, []>()
+      .mockReturnValueOnce(initial.promise)
+      .mockReturnValueOnce(retry.promise);
+    await render(<PlaceListScreen loadPlaces={loadPlaces} />);
+    expect(announce).toHaveBeenLastCalledWith("Finding places…");
+    await act(async () => initial.reject(new Error("private provider detail")));
+    expect(announce).toHaveBeenLastCalledWith(
+      "Places are unavailable. We couldn't load places right now. Please try again.",
+    );
+    await fireEvent.press(screen.getByRole("button", { name: "Try again" }));
+    expect(announce).toHaveBeenLastCalledWith("Finding places…");
+    await act(async () => retry.resolve(PLACES));
+    expect(announce).toHaveBeenLastCalledWith("2 places loaded");
+  });
+
   it("shows an intentional loading state while the request is pending", async () => {
     const request = deferred<PublicPlace[]>();
 
@@ -89,6 +137,78 @@ describe("place-list screen", () => {
     ).not.toBeOnTheScreen();
   });
 
+  it("matches mixed-case names and applies each filter independently", async () => {
+    const places: PublicPlace[] = [
+      { ...PLACES[0], name: "Central Library" },
+      { ...PLACES[1], name: "Central Coffee", city: "Olathe" },
+      { ...PLACES[0], id: "third", name: "Central West", city: "Lenexa" },
+      { ...PLACES[0], id: "fourth", name: "South Library" },
+    ];
+    const loadPlaces = jest
+      .fn<Promise<PublicPlace[]>, []>()
+      .mockResolvedValue(places);
+    await render(<PlaceListScreen loadPlaces={loadPlaces} />);
+    const search = await screen.findByLabelText("Search places by name");
+    const rowNames = () =>
+      screen
+        .getAllByTestId(/^place-row-/)
+        .map((row) => within(row).getByRole("header").props.children);
+
+    await fireEvent.changeText(search, "  cEnTrAl  ");
+    expect(rowNames()).toEqual([
+      "Central Library",
+      "Central Coffee",
+      "Central West",
+    ]);
+    await fireEvent.press(screen.getByRole("button", { name: "Olathe" }));
+    expect(rowNames()).toEqual(["Central Library", "Central Coffee"]);
+    await fireEvent.press(screen.getByRole("button", { name: "Library" }));
+    expect(rowNames()).toEqual(["Central Library"]);
+    expect(
+      screen.getByRole("button", { name: "Olathe", selected: true }),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByRole("button", { name: "Library", selected: true }),
+    ).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole("button", { name: "All cities" }));
+    expect(rowNames()).toEqual(["Central Library", "Central West"]);
+    await fireEvent.press(screen.getByRole("button", { name: "All types" }));
+    expect(rowNames()).toEqual([
+      "Central Library",
+      "Central Coffee",
+      "Central West",
+    ]);
+    await fireEvent.changeText(search, "   ");
+    expect(rowNames()).toEqual(places.map((place) => place.name));
+    expect(loadPlaces).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not display IDs or unapproved fields on an expanded runtime record", async () => {
+    const expandedPlace = {
+      ...PLACES[0],
+      google_place_id: "private-google-id",
+      status: "active",
+      seating_notes: "private-curation-note",
+      hours: "private-hours",
+      google_data: { raw_payload: "private-google-payload" },
+    };
+    await render(<PlaceListScreen loadPlaces={async () => [expandedPlace]} />);
+    await screen.findByText(expandedPlace.name);
+    const row = screen.getByTestId(`place-row-${expandedPlace.id}`);
+    expect(within(row).getByText(expandedPlace.address)).toBeOnTheScreen();
+    for (const value of [
+      expandedPlace.id,
+      expandedPlace.google_place_id,
+      expandedPlace.status,
+      expandedPlace.seating_notes,
+      expandedPlace.hours,
+      expandedPlace.google_data.raw_payload,
+    ]) {
+      expect(screen.queryByText(value, { exact: false })).not.toBeOnTheScreen();
+    }
+  });
+
   it("applies combined filters, shows no matches, and clears locally", async () => {
     const loadPlaces = jest
       .fn<Promise<PublicPlace[]>, []>()
@@ -130,6 +250,10 @@ describe("place-list screen", () => {
     await render(<PlaceListScreen loadPlaces={async () => []} />);
 
     expect(await screen.findByText("No places yet")).toBeOnTheScreen();
+    expect(
+      screen.queryByLabelText("Search places by name"),
+    ).not.toBeOnTheScreen();
+    expect(screen.queryByText("No matching places")).not.toBeOnTheScreen();
     expect(
       screen.getByText(
         "Check back soon as we add more Kansas City third places.",

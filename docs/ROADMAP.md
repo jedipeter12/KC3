@@ -9,13 +9,11 @@ boundary.
 
 ## In Progress
 
-- [ ] No implementation ticket is active; mobile/Web and baseline accessibility
-  verification is the next ready ticket.
+- [ ] KC3-21: Web keyboard/responsive checks and accessibility fixes verified;
+  native interactions, large text, and spoken screen-reader checks remain open.
 
 ## Next
 
-- [ ] Verify the list-first slice on mobile and Expo Web, including baseline
-  accessibility checks.
 - [ ] Add application and database checks to CI after the client tooling is
   selected.
 - [ ] Approve a server-controlled, least-privilege administrative import and
@@ -75,6 +73,9 @@ boundary.
 - [x] Client-side place-name search and derived city/place-type filters
   implemented with AND behavior, local clearing, a distinct no-match state, no
   additional database calls, and focused unit and interaction coverage (KC3-18).
+- [x] List-first automated UI coverage verified and strengthened for successful
+  mixed-case search, independent combined filters and resets, selected controls,
+  and exclusion of IDs and unapproved runtime fields (KC3-19).
 
 ## Deferred / Rejected
 
@@ -89,4 +90,6 @@ Use this section for ideas intentionally postponed or rejected so they are not r
 
 ## Known Bugs / Issues
 
-- No runtime bugs are known. Search and filters have not started.
+- Native verification is incomplete: the iOS simulator launches KC3, but UI
+  automation cannot tap its content (AXError.cannotComplete). Android tooling is
+  unavailable. See `docs/ACCESSIBILITY_REVIEW.md` for evidence and remaining checks.

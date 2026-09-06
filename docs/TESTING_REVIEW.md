@@ -1,6 +1,6 @@
 # Test Coverage and Reliability Review
 
-**Review date:** 2026-08-23; updated 2026-09-05 for public place access, the
+**Review date:** 2026-08-23; updated 2026-09-06 for public place access, the
 Expo client scaffold, typed data layer, place-list component, and client-side
 search and filters
 
@@ -40,8 +40,7 @@ place access test adds 24 authorization and response-contract assertions.
   had no regression tests.
 - No CI job runs migration reset, database tests, or database linting.
 - No HTTP integration or end-to-end test exists to verify live RPC serialization
-  and the complete client-to-database path; search/filter behavior is not yet
-  implemented.
+  and the complete client-to-database path.
 
 ## Tests Added
 
@@ -110,6 +109,17 @@ interactions, clearing without another request, distinct database-empty and
 no-match states, sanitized error presentation, and retry recovery. Pure utility
 tests cover trimmed case-insensitive name matching, whitespace-only queries, AND
 semantics, option derivation, and loaded-order preservation.
+
+KC3-19 strengthens component coverage with overlapping name/city/type fixtures:
+each constraint removes a different record, and resetting city or type retains
+the remaining constraints. It verifies a successful trimmed mixed-case query,
+whitespace-only search, selected filter semantics, and a single data request
+throughout these interactions. An expanded runtime fixture proves IDs, Google
+metadata, status, hours, and curation notes are not displayed. Database-empty
+results also explicitly omit search controls and the no-match message.
+
+All KC3-19 acceptance states are covered through focused assertions, without
+snapshots. These are component and unit checks, not live backend or device tests.
 
 ## Deliberately Not Tested
 
@@ -196,6 +206,22 @@ detection.
    MVP.
 
 ## Verification Results
+
+**KC3-21 partial verification: 2026-09-06**
+
+All 30 application tests, typecheck, lint, formatting, and three-platform exports
+passed after accessibility fixes. Manual Web checks and the native launch result
+are recorded in [`ACCESSIBILITY_REVIEW.md`](ACCESSIBILITY_REVIEW.md). Native
+interactions, large text, and spoken screen-reader checks remain incomplete.
+
+**KC3-19 reverified: 2026-09-06**
+
+- `npm run test:app`: 28 tests passed across six suites, with no snapshots.
+- `npm run typecheck`, `npm run lint`, and `npm run format:check`: passed.
+- `npm run export`: Web, iOS, and Android production bundles passed using
+  placeholder public configuration; this does not verify a live backend.
+- Database behavior is unchanged; the database results below are from the prior
+  verification, not a new database run for this test-only ticket.
 
 **Reverified:** 2026-09-05
 
