@@ -70,8 +70,15 @@ warnings; it excludes third-party extension internals installed by the test suit
 ### Application Unit Tests
 
 Run `npm run test:app` for the Jest application suite. Jest uses the `jest-expo`
-preset, application tests live in `tests/`, and the initial smoke test protects
-the shared application identity configuration.
+preset and application tests live in `tests/`. The suite protects the shared
+application identity and Supabase configuration, the exact public database type,
+and the public-place data layer's ordered success, empty, malformed-response,
+and sanitized provider-error behavior.
+
+The public-place data layer calls only `list_public_places()`. A successful empty
+RPC array returns `[]`; null or malformed data, provider errors, and rejected
+requests throw the stable `PUBLIC_PLACES_UNAVAILABLE` application error without
+including the underlying provider details.
 
 ### API / UI Tests
 
