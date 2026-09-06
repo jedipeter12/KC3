@@ -9,7 +9,7 @@ that must exist before KC3 has real users.
 
 **Current project stage:** Initial client implementation. The first read-only
 Supabase RPC and an Expo client configured with its public URL/key boundary exist,
-but the client does not invoke the RPC yet. No custom server, deployed
+and the client invokes the RPC through its typed data layer. No custom server, deployed
 environment, or production database exists in this repository.
 
 ## Executive Security Assessment
@@ -497,6 +497,14 @@ that change was not applied.
 - `supabase/tests/004_timestamps_and_security.test.sql`
 
 ## Checks Performed and Results
+
+KC3-20 adds `npm run test:integration` to exercise the anonymous boundary through
+the real production Supabase client and local Data API. It checks the raw response
+for exactly the five approved fields before projection and requires HTTP 401 with
+permission code `42501` for direct `places` access. Network errors and missing
+relations cannot satisfy the denial assertion. It uses only the local anonymous
+key, rejects non-loopback URLs, ignores ambient Expo credentials, and suppresses
+captured CLI output. The test performs no writes or authorization changes.
 
 **Reverified:** 2026-09-05
 

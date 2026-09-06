@@ -97,15 +97,36 @@ browser, or screen-reader verification.
 
 ### API / UI Tests
 
+Run `npm run test:integration` for the KC3-20 live client-to-RPC smoke suite.
+Start Docker Desktop, run `npm exec -- supabase start`, and then run
+`npm exec -- supabase db reset --local` to prepare the disposable local database.
+Reset replaces local data; preserve any local curation before doing so. The test
+itself only reads and does not start, reset, or mutate the database.
+
+The separate Jest Node configuration uses real network requests and the production
+typed Supabase client and data layer, without provider mocks. It obtains only the
+local API URL and anonymous key from the installed CLI's captured status output,
+requires a loopback endpoint, and overrides ambient Expo configuration. No manual
+key copy, hosted project, or privileged client credential is required. CLI output
+is never printed. Docker/CLI access failures produce prerequisite instructions.
+Run it from the repository root with permission to access Docker and localhost.
+
+The suite expects the unchanged 15-place seed, checks every seed ID and the raw
+five-field response before data-layer projection, compares production data-layer
+results, and requires HTTP 401 / PostgreSQL `42501` for direct `places` reads.
+Missing migrations, seed changes, or API failures fail the suite; they are not
+silently skipped. Run `npm test` and `npm run lint:db` against the same database
+for the complementary 120 pgTAP assertions and schema lint. `test:app` remains
+independent of Docker and excludes the `*.smoke.ts` integration files.
+
 See [`ACCESSIBILITY_REVIEW.md`](ACCESSIBILITY_REVIEW.md) for the KC3-21 manual
 viewport/keyboard results, accessibility fixes, and outstanding native,
 large-text, and spoken screen-reader checks. Use `npm run test:app` for the
 focused Web pressed-state and iOS announcement regression tests.
 
 The approved Supabase RPC authorization behavior is tested at the PostgreSQL role
-level with pgTAP. Component tests use React Native Testing Library. No client API
-integration or end-to-end framework has been selected at the current project
-stage.
+level with pgTAP and over the local Data API with the Jest smoke suite. Component
+tests use React Native Testing Library. No end-to-end framework has been selected.
 
 ## Linting / Formatting
 

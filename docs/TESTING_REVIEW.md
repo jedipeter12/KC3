@@ -39,8 +39,8 @@ place access test adds 24 authorization and response-contract assertions.
 - The four `updated_at` triggers and initial closed-by-default RLS configuration
   had no regression tests.
 - No CI job runs migration reset, database tests, or database linting.
-- No HTTP integration or end-to-end test exists to verify live RPC serialization
-  and the complete client-to-database path.
+- HTTP integration was initially absent; KC3-20 now covers the production client
+  and data layer against the local Data API. Full UI end-to-end coverage is open.
 
 ## Tests Added
 
@@ -124,10 +124,9 @@ snapshots. These are component and unit checks, not live backend or device tests
 ## Deliberately Not Tested
 
 - Later detail/map presentation: no such feature implementation exists yet.
-- Automated HTTP serialization and Expo client integration for the approved RPC,
-  plus all future authenticated and administrative CRUD flows: the current unit
-  tests mock the provider boundary, and those additional role behaviors are not
-  approved.
+- Future authenticated and administrative CRUD flows: these role behaviors are
+  not approved. KC3-20 covers the current anonymous RPC over HTTP; full Expo UI
+  end-to-end coverage remains open.
 - Google ingestion, freshness calculations, and general import normalization: no
   workflows or rules are approved or implemented.
 - Place deduplication, hours overlap/equal-time rules, and consistency between the
@@ -185,9 +184,11 @@ detection.
 2. **Resolve the Product Owner decisions above.** Then add focused positive and
    negative tests for each approved rule. This avoids codifying assumptions while
    closing real data-quality and authorization risks.
-3. **Add HTTP/client integration tests with the first Expo data layer.** Verify
-   the RPC response and error serialization through the generated Supabase client
-   without granting base-table access.
+3. **Keep the KC3-20 HTTP/client integration smoke test current.** Run
+   `npm run test:integration` against the reset local seed; it verifies the typed
+   production client, raw five-field serialization, all 15 seed IDs, data-layer
+   results, and explicit anonymous base-table permission denial. No provider mocks
+   or additional dependencies are used. CI integration remains future work.
 4. **Test future import workflows when approved and implemented.** Cover source
    ownership, idempotency, duplicate handling, raw-data retention, and transaction
    failure. This prevents reruns from duplicating places or partially refreshing
@@ -206,6 +207,21 @@ detection.
    MVP.
 
 ## Verification Results
+
+**KC3-20 verified: 2026-09-06**
+
+- Clean local Supabase start/reset: passed with both migrations and the MVP seed.
+- `npm run test:integration`: all three live tests passed using Node 24.20.0 and
+  npm 11.19.0. Raw RPC results contain all 15 seed IDs and exactly five fields;
+  the production data layer returns the same records; direct anonymous table
+  reads fail with HTTP 401 / `42501`.
+- An unavailable CLI/Docker-access run failed with prerequisite instructions and
+  without exposing captured CLI output.
+- `npm test`: all 120 pgTAP assertions passed; `npm run lint:db`: no schema errors.
+- All 30 application tests, typecheck, lint, formatting, and Web/iOS/Android
+  production exports passed on the pinned Node/npm runtime. Exports used
+  placeholder public configuration; live integration used local anonymous config.
+- No production application code, migrations, seed, or dependencies changed.
 
 **KC3-21 partial verification: 2026-09-06**
 
