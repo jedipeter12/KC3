@@ -60,6 +60,15 @@ RPC contract:
 - Do not add a map, accounts, client writes, hours, Google metadata, or a
   place-detail screen in this slice.
 
+### Current Implementation
+
+The first screen now loads the approved public projection and renders returned
+places in server order. Each list item shows its name, city, address, and a
+human-readable place type. The screen includes visually distinct loading,
+successful-empty, and sanitized error states; the error state provides a retry
+action. The layout uses a bounded content width on Web and remains scrollable on
+small mobile viewports. Search and filters remain the next client ticket.
+
 ## Later Client Feature Candidates (Not Yet Approved)
 
 The following client-facing ideas were discussed as a plausible MVP shape. They

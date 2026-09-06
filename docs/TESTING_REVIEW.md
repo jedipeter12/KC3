@@ -1,18 +1,18 @@
 # Test Coverage and Reliability Review
 
-**Review date:** 2026-08-23; updated 2026-09-05 for public place access and the
-Expo client scaffold
+**Review date:** 2026-08-23; updated 2026-09-05 for public place access, the
+Expo client scaffold, typed data layer, and place-list component
 
 **Scope:** Approved behavior and current implementation in the KC3 repository.
 
 ## Scope and Established Behavior
 
 KC3 currently contains an approved Supabase/PostgreSQL data model, local seed,
-anonymous read-only place RPC, and an Expo TypeScript client scaffold. The client
-does not yet contain a Supabase data layer, search/filter implementation, or
-feature UI, and there is no custom server or automated import workflow. This
-review covers the database behavior plus the scaffold's application quality
-baseline without defining unapproved client behavior.
+anonymous read-only place RPC, and an Expo TypeScript client with a typed public
+data layer and place-list screen. The client does not yet contain search/filter
+behavior, and there is no custom server or automated import workflow. This
+review covers database behavior, the public data contract, and the first screen's
+component states without defining unapproved client behavior.
 
 ## Existing Coverage Assessment
 
@@ -38,8 +38,9 @@ place access test adds 24 authorization and response-contract assertions.
 - The four `updated_at` triggers and initial closed-by-default RLS configuration
   had no regression tests.
 - No CI job runs migration reset, database tests, or database linting.
-- No client data layer or HTTP integration test exists to verify RPC
-  serialization, transformations, search/filter behavior, or end-to-end behavior.
+- No HTTP integration or end-to-end test exists to verify live RPC serialization
+  and the complete client-to-database path; search/filter behavior is not yet
+  implemented.
 
 ## Tests Added
 
@@ -97,22 +98,31 @@ response contract, and exact role and column grants. It executes the RPC as
 internal-reader writes fail. It also proves base tables and unapproved columns
 remain inaccessible and that unapproved Data API roles cannot execute the RPC.
 
+### Typed public-place client and place-list screen
+
+Application tests verify the exact five-field TypeScript RPC contract, public
+configuration validation, ordered and projected data-layer results, explicit
+empty results, malformed responses, and sanitized provider failures. React
+Native Testing Library component tests cover loading, ordered rows and their four
+visible fields, empty results, sanitized error presentation, and retry recovery.
+
 ## Deliberately Not Tested
 
-- Approved list/search/filter behavior and all later detail/map presentation: no
+- Approved search/filter behavior and all later detail/map presentation: no such
   feature implementation exists yet.
 - Automated HTTP serialization and Expo client integration for the approved RPC,
-  plus all future authenticated and administrative CRUD flows: no client data
-  layer exists and those additional role behaviors are not approved.
+  plus all future authenticated and administrative CRUD flows: the current unit
+  tests mock the provider boundary, and those additional role behaviors are not
+  approved.
 - Google ingestion, freshness calculations, and general import normalization: no
   workflows or rules are approved or implemented.
 - Place deduplication, hours overlap/equal-time rules, and consistency between the
   next-day flag and actual clock ordering: approved documents do not define them.
 - Blank-text, Google rating bounds, and closed/next-day semantics remain untested
   because they are not clearly approved behavior.
-- Feature UI, accessibility, performance/load, and end-to-end behavior: the
-  scaffold has no discovery flow yet and the corresponding automated tooling is
-  undecided.
+- Automated accessibility, performance/load, and end-to-end behavior: component
+  tests cover the first screen's primary semantics and a manual Web viewport
+  check has been completed, but broader tooling remains undecided.
 - Automated mobile device launch behavior: the current environment verifies iOS
   and Android bundles, but has no configured simulator target.
 

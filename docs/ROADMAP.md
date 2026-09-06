@@ -9,12 +9,11 @@ boundary.
 
 ## In Progress
 
-- [ ] No implementation ticket is active; the place-list UI is the next ready
-  ticket.
+- [ ] No implementation ticket is active; client-side search and filters are the
+  next ready ticket.
 
 ## Next
 
-- [ ] Build the place list with loading, empty, and sanitized error states.
 - [ ] Add client-side name search and city/place-type filters.
 - [ ] Verify the list-first slice on mobile and Expo Web, including baseline
   accessibility checks.
@@ -71,6 +70,9 @@ boundary.
 - [x] Typed public-place data layer implemented over `list_public_places()` with
   ordered exact-field results, explicit empty behavior, sanitized application
   errors, and focused client-level tests (KC3-16).
+- [x] Responsive public place-list screen implemented with ordered four-field
+  rows, human-readable place types, explicit loading and empty states, sanitized
+  error recovery, retry behavior, and focused component coverage (KC3-17).
 
 ## Deferred / Rejected
 
@@ -85,4 +87,4 @@ Use this section for ideas intentionally postponed or rejected so they are not r
 
 ## Known Bugs / Issues
 
-- No runtime bugs are known. The place-list UI has not started.
+- No runtime bugs are known. Search and filters have not started.
