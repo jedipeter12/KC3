@@ -9,13 +9,11 @@ boundary.
 
 ## In Progress
 
-- [ ] No implementation ticket is active; public Supabase client configuration is
-  the next ready ticket.
+- [ ] No implementation ticket is active; typed public-place data access is the
+  next ready ticket.
 
 ## Next
 
-- [ ] Configure the public Supabase client without placing privileged credentials
-  in the client bundle.
 - [ ] Implement the typed `list_public_places()` data layer and its client-level
   integration coverage.
 - [ ] Build the place list with loading, empty, and sanitized error states.
@@ -69,6 +67,9 @@ boundary.
 - [x] Expo SDK 57 TypeScript application scaffolded with a documented `src/` and
   `tests/` structure, Node/npm pinning, Jest, ESLint, Prettier, strict typechecking,
   and verified Web/iOS/Android export commands.
+- [x] Expo-safe public Supabase client configured with documented public
+  environment variables, sanitized validation, an exact five-field RPC type,
+  focused unit coverage, and no privileged client credentials (KC3-15).
 
 ## Deferred / Rejected
 
@@ -83,5 +84,5 @@ Use this section for ideas intentionally postponed or rejected so they are not r
 
 ## Known Bugs / Issues
 
-- No runtime bugs are known in the scaffold. Client feature implementation has
-  not started.
+- No runtime bugs are known. Typed RPC data access and the place-list UI have not
+  started.

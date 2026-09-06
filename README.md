@@ -5,10 +5,9 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 ## Status
 
 - Stage: Initial client implementation
-- Current focus: Connect the scaffolded Expo client to the approved public
-  Supabase boundary.
-- Last major milestone: Scaffolded and verified the Expo SDK 57 TypeScript
-  application for Web, iOS, and Android.
+- Current focus: Implement typed access to the approved public place RPC.
+- Last major milestone: Configured and verified the Expo-safe public Supabase
+  client and narrow database contract.
 
 ## Quick Start
 
@@ -19,7 +18,7 @@ Use `npm run web`, `npm run ios`, or `npm run android` for a specific supported
 target.
 
 See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) for the development workflow and
-the setup information that still needs to be established during scaffolding.
+the public environment configuration required to run the client.
 
 ## Project Documentation
 

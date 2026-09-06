@@ -19,9 +19,7 @@ From the repository root:
 1. Select Node.js 24.20.0 with your version manager (`nvm use` when using nvm).
 2. Confirm npm 11.19.0 with `npm --version`.
 3. Install the locked dependencies with `npm install`.
-
-The Expo application requires no environment variables until the Supabase client
-configuration ticket establishes the public variable names.
+4. Copy `.env.example` to `.env.local` and set the two public Supabase values.
 
 ## Running Locally
 
@@ -96,12 +94,23 @@ the current project stage.
 
 Never commit production secrets to the repository.
 
-Document required variable names without including their secret values.
+The Expo client requires:
 
-No environment variable names are confirmed yet. Document the exact public client
-configuration and server-side secrets required by Supabase during scaffolding.
-Never place secret values in documentation, source control, or client-exposed
-configuration.
+- `EXPO_PUBLIC_SUPABASE_URL`: the Supabase project URL. Local Expo clients running
+  on a physical device must use a URL reachable from that device rather than
+  `127.0.0.1`.
+- `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: the project's public publishable key. A
+  local or legacy public anonymous key may be used here when applicable.
+
+Both values are intentionally public and Expo embeds them in the application
+bundle. Their access is constrained by Supabase grants and RLS; they must not be
+treated as authorization secrets. Copy `.env.example` to the ignored `.env.local`
+file and fill in the values locally. The application reports missing or malformed
+configuration by variable name without echoing the supplied values.
+
+Never place a Supabase secret/service-role key, database password, connection
+string, or other privileged credential in an `EXPO_PUBLIC_` variable, client
+source, documentation, or source control.
 
 The repository ignores common environment, signing-key, Expo/EAS local-state,
 keystore, and mobile-provisioning files as an accident-prevention measure. Ignore
@@ -170,6 +179,9 @@ Each implementation ticket should direct the developer to:
 - Public place reads: Unauthenticated clients may execute only
   `public.list_public_places()`. Do not query the base tables from client code or
   broaden the returned fields without an approved migration and matching tests.
+- Client database types: Keep the client-visible `Database` type limited to the
+  approved RPC contract. Regenerate or update it whenever an approved migration
+  changes that contract.
 - Privileged credentials: Never place a Supabase secret/service-role key or direct
   database credential in an Expo, Expo Web, or other client bundle.
 

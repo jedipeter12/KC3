@@ -85,6 +85,11 @@ use the ignored `dist/` directory.
   configuration under `src/config/`. The first slice remains a read-only place
   list with client-side name search and city/place-type filters over the existing
   RPC; feature component boundaries are not designed yet.
+- Supabase client: A typed `@supabase/supabase-js` singleton reads the public
+  project URL and publishable key from Expo's `EXPO_PUBLIC_` environment
+  boundary. Authentication session behavior is disabled because accounts are not
+  part of the approved slice. Its TypeScript database contract exposes only the
+  approved `list_public_places()` RPC and does not type base tables as client APIs.
 - Supabase backend: Approved platform for backend services, database, and
   authentication. The initial public place schema is defined in a versioned
   migration. The first anonymous read RPC is implemented; authenticated,
@@ -135,6 +140,9 @@ Supabase is the only approved integration. Anonymous clients may execute
 returns active places ordered by name and ID with exactly `id`, `name`, `city`,
 `address`, and `place_type`. Its dedicated security-definer owner has only the
 source access required by that contract, and `anon` has no direct table access.
+The Expo client initializes `@supabase/supabase-js` with that narrow database type
+and with authentication persistence, token refresh, and URL session detection
+disabled.
 
 The schema can retain Google-derived metadata, but ingestion behavior and direct
 Google API integration are not defined. Authentication details and remaining
@@ -156,8 +164,11 @@ required. Retention, backup, and deletion policies have not been decided.
 
 ## Security Considerations
 
-- Secret handling: Do not commit credentials; required environment variables must
-  be documented without values when the application is scaffolded.
+- Secret handling: The Expo bundle may contain only
+  `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, both of
+  which are public identifiers protected by the database authorization boundary.
+  Service-role/secret keys and direct database credentials must never enter the
+  client bundle or repository.
 - Input validation: Not designed.
 - Authorization boundaries: All public tables have RLS enabled and no Data API
   role has direct table privileges. Anonymous access is limited to executing the
@@ -173,8 +184,11 @@ See `SECURITY_REVIEW.md` for the current risk assessment and pre-launch controls
 
 ## Error Handling
 
-Not designed. Follow established project patterns once they exist and document a
-shared strategy before introducing a new one.
+Supabase client initialization validates required public configuration and the
+project URL before creating the client. Configuration failures identify the
+missing or invalid variable by name, point developers to `.env.example`, and do
+not echo configured values. User-facing RPC error handling remains to be defined
+with the place-list slice.
 
 ## Testing Strategy
 
@@ -198,8 +212,8 @@ decisions.
 
 ## Known Technical Debt
 
-- The scaffold does not yet exercise the approved RPC through a generated
-  Supabase client or validate its serialized TypeScript shape.
+- The configured client does not yet invoke the approved RPC; typed data access
+  and client-level integration coverage are the next ticket.
 
 ## Architecture Questions
 

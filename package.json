@@ -24,6 +24,7 @@
     "lint:db": "supabase db lint --local --schema public --level warning --fail-on warning"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.115.0",
     "expo": "~57.0.20",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",

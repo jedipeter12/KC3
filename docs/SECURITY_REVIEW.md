@@ -1,15 +1,16 @@
 # Defensive Security Review
 
 **Review date:** 2026-08-23; updated 2026-09-05 for public place access and the
-Expo client scaffold
+Expo client with its public configuration
 
 **Scope:** Repository contents and Git history, Supabase migration and local
 configuration, dependency metadata, documented architecture, and the controls
 that must exist before KC3 has real users.
 
 **Current project stage:** Initial client implementation. The first read-only
-Supabase RPC and an unconnected Expo client scaffold exist, but no custom server,
-deployed environment, or production database exists in this repository.
+Supabase RPC and an Expo client configured with its public URL/key boundary exist,
+but the client does not invoke the RPC yet. No custom server, deployed
+environment, or production database exists in this repository.
 
 ## Executive Security Assessment
 
