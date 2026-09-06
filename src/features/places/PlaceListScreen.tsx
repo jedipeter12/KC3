@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  AccessibilityInfo,
   FlatList,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -49,6 +51,7 @@ function FilterChip({ label, onPress, selected }: FilterChipProps) {
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
+      {...(Platform.OS === "web" ? { "aria-pressed": selected } : {})}
       onPress={onPress}
       style={({ pressed }) => [
         styles.filterChip,
@@ -120,7 +123,7 @@ function PlaceFilters({
         autoCorrect={false}
         onChangeText={onChangeNameQuery}
         placeholder="Enter a place name"
-        placeholderTextColor="#71817b"
+        placeholderTextColor="#52665f"
         returnKeyType="search"
         style={styles.searchInput}
         value={nameQuery}
@@ -168,7 +171,11 @@ function PlaceFilters({
 
 function PlaceRow({ place }: Readonly<{ place: PublicPlace }>) {
   return (
-    <View style={styles.card} testID={`place-row-${place.id}`}>
+    <View
+      {...(Platform.OS === "web" ? { role: "listitem" as const } : {})}
+      style={styles.card}
+      testID={`place-row-${place.id}`}
+    >
       <Text accessibilityRole="header" style={styles.placeName}>
         {place.name}
       </Text>
@@ -208,6 +215,20 @@ export function PlaceListScreen({
   );
   const hasActiveFilters =
     nameQuery.length > 0 || selectedCity !== null || selectedPlaceType !== null;
+
+  useEffect(() => {
+    // Native live regions are Android-only; VoiceOver needs an explicit update.
+    if (Platform.OS !== "ios") return;
+    const message =
+      state.status === "loading"
+        ? "Finding places…"
+        : state.status === "error"
+          ? `Places are unavailable. ${PUBLIC_PLACES_ERROR_MESSAGE}`
+          : state.places.length === 0
+            ? "No places yet"
+            : `${state.places.length} places loaded`;
+    AccessibilityInfo.announceForAccessibility(message);
+  }, [state]);
 
   const requestPlaces = useCallback(async () => {
     const requestId = ++requestIdRef.current;
@@ -274,6 +295,7 @@ export function PlaceListScreen({
 
         {state.status === "error" ? (
           <View
+            {...(Platform.OS === "web" ? { role: "alert" as const } : {})}
             accessibilityLiveRegion="assertive"
             style={styles.stateContainer}
           >
@@ -313,6 +335,7 @@ export function PlaceListScreen({
             contentContainerStyle={styles.listContent}
             data={visiblePlaces}
             keyExtractor={(place) => place.id}
+            keyboardShouldPersistTaps="handled"
             ListEmptyComponent={
               <View
                 accessibilityLiveRegion="polite"
@@ -386,6 +409,7 @@ const styles = StyleSheet.create({
   },
   filtersHeading: {
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "space-between",
   },
@@ -395,7 +419,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   clearButton: {
-    minHeight: 40,
+    minHeight: 44,
     justifyContent: "center",
     paddingHorizontal: 8,
   },

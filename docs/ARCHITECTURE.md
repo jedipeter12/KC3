@@ -248,7 +248,8 @@ decisions.
 
 ## Known Technical Debt
 
-- Search and filter state is not yet implemented over the place list.
+- Live client-to-database integration and device accessibility verification
+  remain outstanding.
 
 ## Architecture Questions
 

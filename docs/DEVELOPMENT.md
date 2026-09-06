@@ -88,7 +88,19 @@ normalization, AND semantics, derived choices, and order preservation. Screen
 dependencies are injected only at the component boundary for focused testing;
 production uses the approved public-place data operation.
 
+KC3-19 adds component regression cases for successful mixed-case name search,
+independent city/type constraints, resetting one constraint while retaining the
+others, selected button semantics, and ignoring extra runtime record fields.
+Run these with the same `npm run test:app` command; no live Supabase instance or
+environment configuration is required. These tests do not replace device,
+browser, or screen-reader verification.
+
 ### API / UI Tests
+
+See [`ACCESSIBILITY_REVIEW.md`](ACCESSIBILITY_REVIEW.md) for the KC3-21 manual
+viewport/keyboard results, accessibility fixes, and outstanding native,
+large-text, and spoken screen-reader checks. Use `npm run test:app` for the
+focused Web pressed-state and iOS announcement regression tests.
 
 The approved Supabase RPC authorization behavior is tested at the PostgreSQL role
 level with pgTAP. Component tests use React Native Testing Library. No client API
