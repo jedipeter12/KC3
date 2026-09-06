@@ -33,6 +33,9 @@ boundary.
 
 ## Completed
 
+- [x] Live client-to-RPC smoke suite verifies all 15 seeded places, exact raw
+  five-field serialization, production data-layer results, and explicit anonymous
+  base-table denial; local prerequisites and failure guidance documented (KC3-20).
 - [x] Repository initialized
 - [x] Initial working stack approved: TypeScript, React Native/Expo, Expo Web, and
   Supabase/PostgreSQL.

@@ -232,8 +232,9 @@ state.
   results, sanitized errors, and successful retry. Pure utility tests cover
   normalization, AND behavior, choice derivation, and order preservation.
   Coverage expectations are not yet selected.
-- Integration tests: Database migration tests are established; API and client
-  integration tooling is not selected.
+- Integration tests: A separate Jest Node smoke suite uses the production typed
+  client and data layer against the local Supabase Data API, checking seeded RPC
+  results, exact serialized fields, and direct anonymous table-access denial.
 - End-to-end tests: Not selected. The current Web screen is manually checked at
   desktop and small-mobile viewport sizes in addition to component coverage.
 - Static quality checks: TypeScript strict typechecking, Expo's ESLint flat
@@ -248,8 +249,7 @@ decisions.
 
 ## Known Technical Debt
 
-- Live client-to-database integration and device accessibility verification
-  remain outstanding.
+- Device accessibility and full UI end-to-end verification remain outstanding.
 
 ## Architecture Questions
 
