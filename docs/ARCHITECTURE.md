@@ -90,6 +90,9 @@ use the ignored `dist/` directory.
   boundary. Authentication session behavior is disabled because accounts are not
   part of the approved slice. Its TypeScript database contract exposes only the
   approved `list_public_places()` RPC and does not type base tables as client APIs.
+  The public-place data layer calls that RPC, preserves its ordering, projects
+  exactly the five approved fields, and converts provider or malformed responses
+  to a stable application error without retaining provider details.
 - Supabase backend: Approved platform for backend services, database, and
   authentication. The initial public place schema is defined in a versioned
   migration. The first anonymous read RPC is implemented; authenticated,
@@ -142,7 +145,10 @@ returns active places ordered by name and ID with exactly `id`, `name`, `city`,
 source access required by that contract, and `anon` has no direct table access.
 The Expo client initializes `@supabase/supabase-js` with that narrow database type
 and with authentication persistence, token refresh, and URL session detection
-disabled.
+disabled. Its `listPublicPlaces()` data-layer operation treats an empty array as
+a successful empty result. Null, non-array, malformed, rejected, and provider-
+error responses throw `PublicPlacesError` with the
+`PUBLIC_PLACES_UNAVAILABLE` code and a sanitized retry message.
 
 The schema can retain Google-derived metadata, but ingestion behavior and direct
 Google API integration are not defined. Authentication details and remaining
@@ -187,8 +193,9 @@ See `SECURITY_REVIEW.md` for the current risk assessment and pre-launch controls
 Supabase client initialization validates required public configuration and the
 project URL before creating the client. Configuration failures identify the
 missing or invalid variable by name, point developers to `.env.example`, and do
-not echo configured values. User-facing RPC error handling remains to be defined
-with the place-list slice.
+not echo configured values. Public-place reads normalize provider failures and
+unexpected response shapes to the same safe application error. The data layer
+does not log or retain provider errors, response details, credentials, or URLs.
 
 ## Testing Strategy
 
@@ -196,7 +203,9 @@ with the place-list slice.
   They protect the approved schema contract, constraints, defaults, relationships,
   timestamp triggers, seed contract, and public RPC/RLS/privilege boundary.
 - Unit tests: Jest with the `jest-expo` preset provides the application unit-test
-  baseline. Coverage expectations are not yet selected.
+  baseline. Focused data-layer tests cover successful ordered results, exact
+  field projection, empty results, malformed responses, and sanitized provider
+  failures. Coverage expectations are not yet selected.
 - Integration tests: Database migration tests are established; API and client
   integration tooling is not selected.
 - UI / end-to-end tests: Not selected.
@@ -212,8 +221,8 @@ decisions.
 
 ## Known Technical Debt
 
-- The configured client does not yet invoke the approved RPC; typed data access
-  and client-level integration coverage are the next ticket.
+- The typed public-place operation is not yet connected to a UI; loading, empty,
+  and error presentation are the next ticket.
 
 ## Architecture Questions
 

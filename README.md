@@ -5,9 +5,10 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 ## Status
 
 - Stage: Initial client implementation
-- Current focus: Implement typed access to the approved public place RPC.
-- Last major milestone: Configured and verified the Expo-safe public Supabase
-  client and narrow database contract.
+- Current focus: Build the public place list with its loading, empty, and error
+  states.
+- Last major milestone: Implemented and verified typed access to the approved
+  public place RPC.
 
 ## Quick Start
 

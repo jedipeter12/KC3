@@ -9,13 +9,11 @@ boundary.
 
 ## In Progress
 
-- [ ] No implementation ticket is active; typed public-place data access is the
-  next ready ticket.
+- [ ] No implementation ticket is active; the place-list UI is the next ready
+  ticket.
 
 ## Next
 
-- [ ] Implement the typed `list_public_places()` data layer and its client-level
-  integration coverage.
 - [ ] Build the place list with loading, empty, and sanitized error states.
 - [ ] Add client-side name search and city/place-type filters.
 - [ ] Verify the list-first slice on mobile and Expo Web, including baseline
@@ -70,6 +68,9 @@ boundary.
 - [x] Expo-safe public Supabase client configured with documented public
   environment variables, sanitized validation, an exact five-field RPC type,
   focused unit coverage, and no privileged client credentials (KC3-15).
+- [x] Typed public-place data layer implemented over `list_public_places()` with
+  ordered exact-field results, explicit empty behavior, sanitized application
+  errors, and focused client-level tests (KC3-16).
 
 ## Deferred / Rejected
 
@@ -84,5 +85,4 @@ Use this section for ideas intentionally postponed or rejected so they are not r
 
 ## Known Bugs / Issues
 
-- No runtime bugs are known. Typed RPC data access and the place-list UI have not
-  started.
+- No runtime bugs are known. The place-list UI has not started.
