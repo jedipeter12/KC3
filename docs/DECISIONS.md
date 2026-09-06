@@ -43,6 +43,42 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-06 — Use GitHub Actions for verification CI
+
+**Status:** Accepted
+
+**Decision**
+
+Run separate application and database verification jobs in GitHub Actions using
+Ubuntu 24.04, the repository Node pin, npm 11.19.0, the npm lockfile, and full
+commit pins for external actions. Trigger checks on pull requests and main/codex
+branch pushes. Use disposable local Supabase for database and HTTP tests and
+inert public placeholders for Expo exports.
+
+**Context**
+
+KC3-22 calls for reproducible CI after the application and database commands have
+stabilized. The repository already lives on GitHub.
+
+**Alternatives considered**
+
+- Another CI provider requiring a separate integration.
+- A single combined job or testing against a hosted Supabase project.
+
+**Reasoning**
+
+GitHub Actions attaches results directly to review. Separate jobs let application
+checks run independently of Docker startup. A local database exercises the real
+migrations, seed, and anonymous HTTP boundary without production credentials.
+
+**Consequences / follow-up**
+
+CI verifies exports but does not deploy or produce signed native builds. Hosted
+runner images and Docker registries remain external availability dependencies.
+GitHub branch protection must separately require both job names to enforce merge
+gating. Maintain action/runtime pins and validate workflow changes with passing
+and intentional-failure runs.
+
 ### 2026-09-05 — Test user-facing components with React Native Testing Library
 
 **Status:** Accepted

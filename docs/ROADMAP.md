@@ -9,13 +9,13 @@ boundary.
 
 ## In Progress
 
+- [ ] KC3-22: GitHub Actions application/database workflow implemented; branch
+  success and intentional-failure verification in progress.
 - [ ] KC3-21: Web keyboard/responsive checks and accessibility fixes verified;
   native interactions, large text, and spoken screen-reader checks remain open.
 
 ## Next
 
-- [ ] Add application and database checks to CI after the client tooling is
-  selected.
 - [ ] Approve a server-controlled, least-privilege administrative import and
   curation path; never expose privileged Supabase credentials to a client.
 - [ ] Decide raw Google payload retention/privacy rules before ingestion.

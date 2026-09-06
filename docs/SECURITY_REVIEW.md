@@ -99,7 +99,7 @@ part of KC3's public API.
 
 ### H-04 — Production security and recovery controls do not exist
 
-The repository has no deployment configuration, CI/CD, environment separation,
+The repository has verification CI, but no deployment configuration, environment separation,
 remote Supabase configuration, backup/restore requirements, release approvals,
 or operational access policy. The checked-in Supabase configuration is a local
 development baseline and currently shows database network restrictions and SSL
@@ -157,14 +157,14 @@ establish the required behavior clearly enough.
 The pgTAP suite now covers the initial anonymous RPC's dedicated role, policy,
 function owner and configuration, response fields, active-only status behavior,
 direct-table denial, and read/write grants. Future authenticated, administrative,
-or expanded public behavior remains untested because it is unapproved, and no CI
-currently runs the database suite.
+or expanded public behavior remains untested because it is unapproved. KC3-22
+adds CI for the database suite, database lint, and local HTTP integration checks.
 
 - **Threat:** A later policy or grant change silently opens data.
 - **Required timing:** Add equivalent positive and negative coverage in the same
   change as every future authorization expansion.
-- **Disposition:** The approved initial read boundary is covered; CI remains a
-  follow-up.
+- **Disposition:** The approved initial read boundary is covered locally and by
+  the CI workflow; hosted verification evidence is recorded in `DEVELOPMENT.md`.
 
 ### M-04 — Internal and API objects share the exposed `public` schema
 
