@@ -9,6 +9,9 @@ boundary.
 
 ## In Progress
 
+- [ ] KC3-23: Final automated verification and live Expo Web smoke pass complete;
+  milestone closure remains blocked by KC3-21 and the live mobile smoke check.
+  See `docs/MVP_VERIFICATION.md` for evidence and closeout requirements.
 - [ ] KC3-21: Web keyboard/responsive checks and accessibility fixes verified;
   native interactions, large text, and spoken screen-reader checks remain open.
 
