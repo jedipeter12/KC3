@@ -136,8 +136,9 @@ snapshots. These are component and unit checks, not live backend or device tests
 - Automated accessibility, performance/load, and end-to-end behavior: component
   tests cover the first screen's primary semantics and a manual Web viewport
   check has been completed, but broader tooling remains undecided.
-- Automated mobile device launch behavior: the current environment verifies iOS
-  and Android bundles, but has no configured simulator target.
+- Automated mobile device interaction: iOS has a configured simulator, but UI
+  automation is blocked; Android tooling was unavailable during KC3-21. Bundle
+  exports do not establish device behavior. See `ACCESSIBILITY_REVIEW.md`.
 
 ## Product Owner Decisions Required
 
@@ -207,6 +208,15 @@ detection.
    MVP.
 
 ## Verification Results
+
+**KC3-23 partial verification: 2026-09-06**
+
+All 30 application tests, 120 pgTAP assertions, three live RPC tests, application
+quality checks, database reset/lint, and three-platform exports passed on the
+pinned runtime. Live Expo Web loaded the 15 seeded places and passed combined
+search/filter, no-match, and clearing checks. Native interaction remains blocked
+by simulator automation failure. See [the milestone report](MVP_VERIFICATION.md)
+for acceptance evidence and the remaining closeout gate.
 
 **KC3-20 verified: 2026-09-06**
 
