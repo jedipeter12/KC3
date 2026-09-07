@@ -9,8 +9,6 @@ boundary.
 
 ## In Progress
 
-- [ ] KC3-22: GitHub Actions application/database workflow implemented; branch
-  success and intentional-failure verification in progress.
 - [ ] KC3-21: Web keyboard/responsive checks and accessibility fixes verified;
   native interactions, large text, and spoken screen-reader checks remain open.
 
@@ -33,6 +31,10 @@ boundary.
 
 ## Completed
 
+- [x] GitHub Actions CI installs locked dependencies, checks application quality
+  and all Expo exports, and verifies local Supabase reset, pgTAP, database lint,
+  and live RPC tests without production credentials. Hosted passing and
+  intentional-failure runs verified; temporary probe removed (KC3-22).
 - [x] Live client-to-RPC smoke suite verifies all 15 seeded places, exact raw
   five-field serialization, production data-layer results, and explicit anonymous
   base-table denial; local prerequisites and failure guidance documented (KC3-20).

@@ -233,7 +233,7 @@ that change was not applied.
 - Add automated secret scanning and protected-branch checks before more people,
   CI credentials, or integrations are added. Ignore rules reduce accidents but
   are not a scanner.
-- Use `npm ci` with the pinned Node/npm versions when CI is introduced.
+- CI uses `npm ci` with pinned Node/npm versions.
 - Add scheduled dependency review, lockfile update automation, and an SBOM. Track
   M-07 until the supported Expo dependency line resolves the moderate findings.
 - Disable unused Supabase services in environments where they are not needed.
@@ -450,10 +450,10 @@ that change was not applied.
    avoid rendering raw errors/upstream data. This mitigates injection-adjacent
    output risks, resource abuse, and data corruption; implement during the first
    client/import code.
-5. **Add CI security gates.** Run secret scanning, `npm ci`, `npm audit`, migration
-   reset/lint, and database authorization tests on pull requests. This prevents
-   regressions and leaked credentials; add when CI/tooling is selected and before
-   any hosted client or production access.
+5. **Extend CI security gates before deployment.** KC3-22 runs `npm ci`, migration
+   reset/lint, and database authorization tests on pull requests. Secret scanning
+   and an automated dependency-audit policy remain follow-up work before hosted
+   client or production access; these are not supplied by verification CI alone.
 6. **Keep signup disabled unless accounts are approved.** If they are approved,
    establish confirmation, password/passwordless, session, recovery, CAPTCHA,
    MFA, deletion, and authorization requirements first. This avoids premature

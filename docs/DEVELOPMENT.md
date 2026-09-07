@@ -210,7 +210,14 @@ events can each run CI for an open `codex/**` branch.
   and push, and confirm `Application checks` and the workflow fail. Remove the
   temporary test, push, and require a fresh passing run. Keep run links as evidence.
 
-KC3-22 hosted passing/failing run verification is in progress.
+KC3-22 hosted verification (2026-09-06): the
+[baseline run](https://github.com/jedipeter12/KC3/actions/runs/34067248542)
+passed both jobs, including all three Expo exports, 30 application tests, 120
+pgTAP assertions, database lint, and three live RPC smoke tests. The
+[intentional-failure run](https://github.com/jedipeter12/KC3/actions/runs/34067834303)
+failed with a temporary application test expecting `true` to equal `false`.
+The probe was removed after verification. A fresh final branch run must pass
+before review; no branch-protection settings were changed.
 
 ## Branching / Git Workflow
 

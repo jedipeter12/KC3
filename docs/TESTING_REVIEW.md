@@ -38,7 +38,7 @@ place access test adds 24 authorization and response-contract assertions.
 - Multiple intervals per weekday and overnight intervals had no regression tests.
 - The four `updated_at` triggers and initial closed-by-default RLS configuration
   had no regression tests.
-- No CI job runs migration reset, database tests, or database linting.
+- KC3-22 adds a CI job for migration reset, database tests, and database linting.
 - HTTP integration was initially absent; KC3-20 now covers the production client
   and data layer against the local Data API. Full UI end-to-end coverage is open.
 
@@ -177,7 +177,7 @@ detection.
 
 ## Remaining Gaps and Prioritized Next Work
 
-1. **Add database verification to CI once CI is selected.** Run a clean local
+1. **Maintain database verification in CI (KC3-22).** The workflow runs a clean local
    Supabase start/reset, `npm test`, and `npm run lint:db` for pull requests. This
    prevents later migrations from breaking schema creation, constraints,
    triggers, indexes, or security posture.
@@ -188,7 +188,7 @@ detection.
    `npm run test:integration` against the reset local seed; it verifies the typed
    production client, raw five-field serialization, all 15 seed IDs, data-layer
    results, and explicit anonymous base-table permission denial. No provider mocks
-   or additional dependencies are used. CI integration remains future work.
+   or additional dependencies are used. KC3-22 includes this suite in CI.
 4. **Test future import workflows when approved and implemented.** Cover source
    ownership, idempotency, duplicate handling, raw-data retention, and transaction
    failure. This prevents reruns from duplicating places or partially refreshing
