@@ -164,6 +164,61 @@ The repository ignores common environment, signing-key, Expo/EAS local-state,
 keystore, and mobile-provisioning files as an accident-prevention measure. Ignore
 rules do not replace secret scanning or platform secret management.
 
+## Continuous Integration
+
+`.github/workflows/ci.yml` selects GitHub Actions. It runs on pull requests,
+pushes to `main` and `codex/**` branches, and manual dispatch once available on
+the default branch. Separate `Application checks` and `Database checks` jobs use
+Ubuntu 24.04, Node.js from `.nvmrc`, npm 11.19.0, and `npm ci`. Supabase and all
+application dependencies come from `package-lock.json`; the checkout and Node
+setup actions are pinned to full commit SHAs. Update these pins deliberately.
+
+The application job runs typecheck, lint, formatting, Jest tests, and Expo exports
+for Web, iOS, and Android. Export uses inert public placeholder configuration and
+does not call a hosted Supabase project. Exports are build verification only.
+
+The database job starts a fresh local Supabase stack on the hosted Docker runner,
+resets it with migrations and seed, runs pgTAP, database lint, and the live
+client-to-RPC smoke suite, then stops the stack even after failure. Start output
+suppresses the credential summary. Integration tests capture CLI status without
+printing it and use only the local anonymous key. No repository secrets,
+production credentials, hosted database, Expo login, or deployment are required.
+Jobs have read-only repository permission and do not persist checkout credentials.
+
+Any failing command fails its job; neither job permits check failures. Configure
+both job names as required checks in GitHub branch rules if merge enforcement is
+desired. A failed workflow alone does not configure branch protection. Older
+runs for the same event/ref are cancelled when superseded. Branch pushes and PR
+events can each run CI for an open `codex/**` branch.
+
+### CI troubleshooting and validation
+
+- Open the failed job and first failing step in GitHub Actions. Reproduce with
+  the documented Node/npm versions and the same npm command.
+- For install failures, check runtime pins and lockfile consistency; regenerate
+  the lockfile intentionally rather than replacing `npm ci` with `npm install`.
+- For Supabase startup failures, inspect the retained stderr for Docker image
+  pulls, service health failures, or runner disk exhaustion. Retry transient
+  registry failures. Locally, start Docker before following the database setup
+  steps above. Do not print full CLI status or upload its credential output.
+- For database/integration failures, verify migrations and the unchanged seed on
+  a disposable reset database. Never substitute production connection values.
+- For export failures, check the public placeholder variables and Metro error;
+  successful exports do not replace signed builds or device testing.
+- Validate workflow changes on a branch: first run the normal workflow, then
+  temporarily add a failing TypeScript assertion to an application test, commit
+  and push, and confirm `Application checks` and the workflow fail. Remove the
+  temporary test, push, and require a fresh passing run. Keep run links as evidence.
+
+KC3-22 hosted verification (2026-09-06): the
+[baseline run](https://github.com/jedipeter12/KC3/actions/runs/34067248542)
+passed both jobs, including all three Expo exports, 30 application tests, 120
+pgTAP assertions, database lint, and three live RPC smoke tests. The
+[intentional-failure run](https://github.com/jedipeter12/KC3/actions/runs/34067834303)
+failed with a temporary application test expecting `true` to equal `false`.
+The probe was removed after verification. A fresh final branch run must pass
+before review; no branch-protection settings were changed.
+
 ## Branching / Git Workflow
 
 - Keep `main` in a reviewable state.

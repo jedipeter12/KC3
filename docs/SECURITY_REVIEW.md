@@ -99,7 +99,7 @@ part of KC3's public API.
 
 ### H-04 — Production security and recovery controls do not exist
 
-The repository has no deployment configuration, CI/CD, environment separation,
+The repository has verification CI, but no deployment configuration, environment separation,
 remote Supabase configuration, backup/restore requirements, release approvals,
 or operational access policy. The checked-in Supabase configuration is a local
 development baseline and currently shows database network restrictions and SSL
@@ -157,14 +157,14 @@ establish the required behavior clearly enough.
 The pgTAP suite now covers the initial anonymous RPC's dedicated role, policy,
 function owner and configuration, response fields, active-only status behavior,
 direct-table denial, and read/write grants. Future authenticated, administrative,
-or expanded public behavior remains untested because it is unapproved, and no CI
-currently runs the database suite.
+or expanded public behavior remains untested because it is unapproved. KC3-22
+adds CI for the database suite, database lint, and local HTTP integration checks.
 
 - **Threat:** A later policy or grant change silently opens data.
 - **Required timing:** Add equivalent positive and negative coverage in the same
   change as every future authorization expansion.
-- **Disposition:** The approved initial read boundary is covered; CI remains a
-  follow-up.
+- **Disposition:** The approved initial read boundary is covered locally and by
+  the CI workflow; hosted verification evidence is recorded in `DEVELOPMENT.md`.
 
 ### M-04 — Internal and API objects share the exposed `public` schema
 
@@ -233,7 +233,7 @@ that change was not applied.
 - Add automated secret scanning and protected-branch checks before more people,
   CI credentials, or integrations are added. Ignore rules reduce accidents but
   are not a scanner.
-- Use `npm ci` with the pinned Node/npm versions when CI is introduced.
+- CI uses `npm ci` with pinned Node/npm versions.
 - Add scheduled dependency review, lockfile update automation, and an SBOM. Track
   M-07 until the supported Expo dependency line resolves the moderate findings.
 - Disable unused Supabase services in environments where they are not needed.
@@ -450,10 +450,10 @@ that change was not applied.
    avoid rendering raw errors/upstream data. This mitigates injection-adjacent
    output risks, resource abuse, and data corruption; implement during the first
    client/import code.
-5. **Add CI security gates.** Run secret scanning, `npm ci`, `npm audit`, migration
-   reset/lint, and database authorization tests on pull requests. This prevents
-   regressions and leaked credentials; add when CI/tooling is selected and before
-   any hosted client or production access.
+5. **Extend CI security gates before deployment.** KC3-22 runs `npm ci`, migration
+   reset/lint, and database authorization tests on pull requests. Secret scanning
+   and an automated dependency-audit policy remain follow-up work before hosted
+   client or production access; these are not supplied by verification CI alone.
 6. **Keep signup disabled unless accounts are approved.** If they are approved,
    establish confirmation, password/passwordless, session, recovery, CAPTCHA,
    MFA, deletion, and authorization requirements first. This avoids premature

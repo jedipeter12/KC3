@@ -244,8 +244,10 @@ Relevant tests must be added or updated whenever behavior changes.
 
 ## Deployment / Release Architecture
 
-Not designed. Hosting, environments, CI, and release channels remain open
-decisions.
+GitHub Actions runs application checks and disposable local Supabase database
+checks in separate Ubuntu jobs. See `DEVELOPMENT.md` for triggers, runtime pins,
+and troubleshooting. Hosting, production environments, and release channels
+remain open decisions.
 
 ## Known Technical Debt
 

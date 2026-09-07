@@ -14,8 +14,6 @@ boundary.
 
 ## Next
 
-- [ ] Add application and database checks to CI after the client tooling is
-  selected.
 - [ ] Approve a server-controlled, least-privilege administrative import and
   curation path; never expose privileged Supabase credentials to a client.
 - [ ] Decide raw Google payload retention/privacy rules before ingestion.
@@ -33,6 +31,10 @@ boundary.
 
 ## Completed
 
+- [x] GitHub Actions CI installs locked dependencies, checks application quality
+  and all Expo exports, and verifies local Supabase reset, pgTAP, database lint,
+  and live RPC tests without production credentials. Hosted passing and
+  intentional-failure runs verified; temporary probe removed (KC3-22).
 - [x] Live client-to-RPC smoke suite verifies all 15 seeded places, exact raw
   five-field serialization, production data-layer results, and explicit anonymous
   base-table denial; local prerequisites and failure guidance documented (KC3-20).
