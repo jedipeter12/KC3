@@ -111,7 +111,8 @@ select ok(
         ('public.places'),
         ('public.place_google_data'),
         ('public.place_details'),
-        ('public.place_hours')
+        ('public.place_hours'),
+        ('public.place_overrides')
     ) as tables(table_name)
     cross join (
       values ('select'), ('insert'), ('update'), ('delete')
@@ -146,7 +147,9 @@ select ok(
   not exists (
     select 1
     from (
-      values ('google_place_id'), ('created_at'), ('updated_at')
+      values
+        ('google_place_id'), ('latitude'), ('longitude'), ('time_zone'),
+        ('moved_to_place_id'), ('created_at'), ('updated_at')
     ) as restricted_columns(column_name)
     where has_column_privilege(
       'kc3_public_place_reader',

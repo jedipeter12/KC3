@@ -61,7 +61,9 @@ their fixture data back. The suite covers schema shape, approved enum values,
 required canonical fields, defaults and unknown values, one-to-one ownership,
 cascading deletion, weekly-hours validation, split and overnight intervals,
 automatic update timestamps, the local MVP seed contract, and the anonymous
-public place RPC's role, RLS, column, status, and write-denial boundaries.
+public place RPC's role, RLS, column, status, and write-denial boundaries. It also
+covers Google ingestion storage constraints, move links, source-specific hours,
+effective-dated overrides, and local-time override resolution.
 
 Run PostgreSQL lint checks against the same local database with
 `npm run lint:db`. The command targets KC3's `public` schema and fails on project
@@ -87,6 +89,17 @@ sanitized error, and retry behavior. Pure unit tests protect name-query
 normalization, AND semantics, derived choices, and order preservation. Screen
 dependencies are injected only at the component boundary for focused testing;
 production uses the approved public-place data operation.
+
+`tests/google-contract.test.ts` protects the future importer contract without
+calling Google: the exact field mask, deterministic cosmetic comparison,
+100-meter material-location screening, missing-hours preservation, explicit
+closed schedules, split and overnight intervals, 24/7 normalization, and invalid
+schedule rejection. The authoritative workflow contract is
+[`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md).
+
+The generated client database type remains intentionally unchanged by KC3-24:
+the new storage tables and internal override resolver are not public client APIs,
+and `src/types/database.ts` still exposes exactly `list_public_places()`.
 
 KC3-19 adds component regression cases for successful mixed-case name search,
 independent city/type constraints, resetting one constraint while retaining the
@@ -116,7 +129,7 @@ five-field response before data-layer projection, compares production data-layer
 results, and requires HTTP 401 / PostgreSQL `42501` for direct `places` reads.
 Missing migrations, seed changes, or API failures fail the suite; they are not
 silently skipped. Run `npm test` and `npm run lint:db` against the same database
-for the complementary 120 pgTAP assertions and schema lint. `test:app` remains
+for the complementary 148 pgTAP assertions and schema lint. `test:app` remains
 independent of Docker and excludes the `*.smoke.ts` integration files.
 
 See [`ACCESSIBILITY_REVIEW.md`](ACCESSIBILITY_REVIEW.md) for the KC3-21 manual
@@ -209,6 +222,13 @@ events can each run CI for an open `codex/**` branch.
   temporarily add a failing TypeScript assertion to an application test, commit
   and push, and confirm `Application checks` and the workflow fail. Remove the
   temporary test, push, and require a fresh passing run. Keep run links as evidence.
+
+KC3-24 local verification (2026-09-08): a clean database reset applied all three
+migrations and the unchanged seed. All 148 pgTAP assertions, database lint, three
+live anonymous RPC tests, 44 application tests, typecheck, lint, formatting, and
+`git diff --check` passed. Web, iOS, and Android production exports also passed.
+The generated client database type remained unchanged because the public RPC
+contract did not change. No Google request was made.
 
 KC3-22 hosted verification (2026-09-06): the
 [baseline run](https://github.com/jedipeter12/KC3/actions/runs/34067248542)

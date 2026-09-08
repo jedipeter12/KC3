@@ -101,12 +101,21 @@ and separates data by ownership and purpose:
 
 - `places` stores the canonical name, city, address, place type, optional unique
   Google Place ID, and lifecycle status.
-- `place_google_data` stores optional Google-derived attributes and raw source data
-  separately from KC3-owned details.
+- `place_google_data` stores optional Google-derived attributes separately from
+  KC3-owned details. The approved MVP allowlist and refresh behavior are defined
+  in [`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md); unrestricted
+  raw responses and phone data are not retained by that workflow.
 - `place_details` stores seating notes, outlets, Wi-Fi, work suitability, food and
   beverage level, nullable verified/unknown booleans, and verification metadata.
 - `place_hours` stores zero or more intervals per place and day, including closed
   days, overnight closing, source, and verification metadata.
+- `place_overrides` stores non-destructive, effective-dated KC3 factual overrides
+  while retaining provider values underneath.
+
+Canonical places may retain accepted latitude/longitude and an IANA timezone for
+future map, distance, clustering, navigation, and local-date override behavior.
+An old physical place may link to a distinct replacement place after a move; a
+move never transfers KC3-owned suitability data automatically.
 
 Approved place types are coffee shop, cafe, boba/tea, library, coworking, and park.
 Approved place statuses are active, temporarily closed, permanently closed, and
