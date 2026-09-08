@@ -4,8 +4,8 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Deliver the approved list-first Expo MVP over the existing anonymous public data
-boundary.
+Build the manual Google Places ingestion CLI over the approved KC3-24 contract,
+without broadening the anonymous client boundary.
 
 ## In Progress
 
@@ -17,9 +17,13 @@ boundary.
 
 ## Next
 
+- [ ] KC3-25: Build the manual Google Places importer against the accepted
+  contract, with a server-controlled credential and transactional dry-run/report
+  behavior.
 - [ ] Approve a server-controlled, least-privilege administrative import and
   curation path; never expose privileged Supabase credentials to a client.
-- [ ] Decide raw Google payload retention/privacy rules before ingestion.
+- [ ] Keep unrestricted raw Google payload retention disabled; require a new
+  privacy/licensing/access decision before adding it later.
 - [ ] Define the Google import workflow and any later curated seed expansion.
 - [ ] Select hosting and release tooling when deployment work is approved.
 
@@ -34,6 +38,11 @@ boundary.
 
 ## Completed
 
+- [x] Google Places ingestion contract defines the exact MVP field mask, source
+  ownership, deterministic comparisons, duplicate/new/move/closure semantics,
+  regular-hours normalization, non-destructive overrides, timestamps, and atomic
+  refresh behavior; supporting schema and fixtures added without an importer or
+  API calls (KC3-24).
 - [x] GitHub Actions CI installs locked dependencies, checks application quality
   and all Expo exports, and verifies local Supabase reset, pgTAP, database lint,
   and live RPC tests without production credentials. Hosted passing and

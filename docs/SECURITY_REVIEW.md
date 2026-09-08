@@ -1,7 +1,7 @@
 # Defensive Security Review
 
-**Review date:** 2026-08-23; updated 2026-09-05 for public place access and the
-Expo client with its public configuration
+**Review date:** 2026-08-23; updated 2026-09-08 for the Google ingestion contract
+and previously updated 2026-09-05 for public place access and the Expo client
 
 **Scope:** Repository contents and Git history, Supabase migration and local
 configuration, dependency metadata, documented architecture, and the controls
@@ -16,7 +16,7 @@ environment, or production database exists in this repository.
 
 KC3 has a good early-stage security foundation but is not ready to deploy to real
 users. The Data API now exposes one approved operation: anonymous execution of a
-five-field, active-place RPC. All four base tables remain inaccessible to Data API
+five-field, active-place RPC. All five base tables remain inaccessible to Data API
 roles. The RPC runs as a dedicated `NOLOGIN`, `NOBYPASSRLS` role with column-level
 source privileges and an active-only RLS policy.
 
@@ -25,15 +25,15 @@ authentication flaw, or application remote-code path was found. A live
 production-dependency audit reports 10 moderate findings in Expo's transitive
 CLI/config tooling; M-07 records the current disposition. The most important
 remaining risks are pre-launch design gaps: the administrative write/import path,
-privacy treatment of retained Google payloads, production environment controls,
-backup/restore expectations, and any future account model are not approved. The
-anonymous RPC must not be broadened without a new approval and matching
+Google credential/quota/attribution implementation, production environment
+controls, backup/restore expectations, and any future account model are not
+approved. The anonymous RPC must not be broadened without a new approval and matching
 authorization tests.
 
 Security status by stage:
 
 - **Safe for the current local backend stage:** Yes. The migrations apply from a
-  clean local database, all 120 pgTAP assertions pass, and database lint reports
+  clean local database, all 148 pgTAP assertions pass, and database lint reports
   no schema errors.
 - **Safe for an Expo client to call the approved RPC locally:** Yes. This does not
   approve additional reads, any writes, or production deployment.
@@ -64,11 +64,11 @@ expose hidden or internal data if it bypasses this pattern.
   query, or enabling writes.
 - **Disposition:** **MITIGATED FOR THE APPROVED INITIAL READ.**
 
-### H-02 — Administrative write and Google ingestion trust boundary is undefined
+### H-02 — Administrative import implementation remains pending
 
-KC3 has a credential-free SQL seed for local database resets, but it still needs
-a trusted production path to curate and possibly refresh place data. No
-administrative workflow or server boundary exists. A Supabase
+KC3-24 defines the allowlist, validation, ownership, transaction, and failure
+contract for a manual import, but no credentialed workflow or server boundary
+exists. A Supabase
 secret/service-role credential bypasses RLS and must never be embedded in Expo,
 Expo Web, a public bundle, or other user-controlled runtime. A leaked credential
 would permit broad read/write/delete access and cascading deletion of dependent
@@ -79,23 +79,24 @@ records.
 - **Threat mitigated by recommendation:** Full database compromise through a
   client-exposed or overprivileged administrative secret.
 - **Required timing:** **Immediate MVP blocker before seed/import automation.**
-- **Disposition:** **PRODUCT OWNER DECISION REQUIRED.**
+- **Disposition:** The data contract is accepted; **IMPLEMENTATION REQUIRED IN
+  KC3-25** through a server-controlled least-privilege boundary.
 
-### H-03 — `raw_data` could cross the future public-data boundary
+### H-03 — Unrestricted raw Google retention is excluded from the MVP
 
-`place_google_data.raw_data` can retain arbitrary JSON from an upstream provider.
-Its contents and retention are not defined. RLS is row-level, not a guarantee
-that selected columns are safe. Exposing `place_google_data` directly or using
-`select *` could disclose fields KC3 never reviewed, retain data longer than
-needed, increase response size, and make future upstream schema changes silently
+KC3-24 removes `place_google_data.raw_data` and `google_phone`, then maps only the
+approved response fields. RLS is row-level, not a guarantee that selected columns
+are safe, so future source additions must still receive explicit review. Exposing
+`place_google_data` directly or using `select *` could make later upstream fields
 part of KC3's public API.
 
-- **Current exploitability:** The table is inaccessible to client roles.
+- **Current exploitability:** The table is inaccessible to client roles and has
+  no unrestricted response column.
 - **Threat mitigated by recommendation:** Privacy leakage, unnecessary data
   retention, oversized-response denial of service, and accidental API expansion.
-- **Required timing:** **Before importing Google payloads or exposing any Google-
-  sourced field.**
-- **Disposition:** **PRODUCT OWNER DECISION REQUIRED.**
+- **Required timing:** Revisit before retaining any raw payload or exposing a new
+  Google-sourced field.
+- **Disposition:** **MITIGATED FOR THE APPROVED MVP CONTRACT.**
 
 ### H-04 — Production security and recovery controls do not exist
 
@@ -135,12 +136,12 @@ auth design by default.
 
 ### M-02 — Input and data-integrity limits are only partially defined
 
-The migration uses enums, required fields, foreign keys, and basic hours checks.
-It still accepts blank required text, out-of-range or negative Google rating
-data, a closed row with `closes_next_day = true`, unbounded text/JSON,
-unrestricted URL schemes, and schedules with undefined equal or overlapping-time
-semantics. These rules were not tightened because the approved documents do not
-establish the required behavior clearly enough.
+The migrations now constrain coordinate pairs/ranges, Google rating/count/status/
+price shapes, override dates/overlap, and structured address-component shape.
+The pure ingestion contract rejects malformed, unrepresentable, and overlapping
+Google regular hours. Blank legacy canonical text, unbounded text/JSON, unsafe
+URL schemes at display time, and direct manual creation of inconsistent hours
+remain outside those protections.
 
 - **Threat:** Corrupt schedules, unsafe links at output time, oversized rows,
   expensive queries/responses, and low-quality imported data.
@@ -148,9 +149,8 @@ establish the required behavior clearly enough.
   **before client writes or automated imports**. Output-link validation is needed
   before opening stored URLs. Some database caps may wait until source data is
   sampled.
-- **Disposition:** Business limits and hours semantics are **PRODUCT OWNER
-  DECISION REQUIRED**; implementation should then enforce the approved rules at
-  both the trusted ingestion boundary and database where practical.
+- **Disposition:** **PARTIALLY MITIGATED FOR GOOGLE INGESTION.** Remaining general
+  writer and output limits require later decisions.
 
 ### M-03 — Authorization regression coverage is established for the initial read
 
@@ -168,7 +168,7 @@ adds CI for the database suite, database lint, and local HTTP integration checks
 
 ### M-04 — Internal and API objects share the exposed `public` schema
 
-The four tables and trigger helper are created in a schema listed in the Data API
+The five tables and trigger helper are created in a schema listed in the Data API
 configuration. Explicit revokes now prevent current access, including direct
 execution of the trigger function. As the system grows, keeping raw/internal
 objects alongside intentional API objects raises the chance of accidental grants
@@ -331,8 +331,8 @@ that change was not applied.
 
 ### D-04 — Raw Google data and privacy lifecycle
 
-1. **Issue:** The schema can retain full upstream JSON without a field allowlist,
-   retention period, or public/private classification.
+1. **Decision:** The MVP schema stores only the approved normalized Google fields
+   and has no unrestricted raw-response column.
 2. **Risk:** Unnecessary retention and accidental disclosure of upstream fields,
    plus oversized payload and provider-contract risk.
 3. **Likely options:** Do not store raw payloads; retain them briefly for debugging
@@ -340,10 +340,9 @@ that change was not applied.
 4. **Tradeoffs:** Raw data helps debugging/reprocessing but increases storage,
    privacy, licensing, and exposure risk. Minimized normalized data is safer but
    less flexible.
-5. **Recommendation (not approved):** Store only fields KC3 needs. If raw payloads
-   are temporarily necessary, keep them inaccessible to client roles, redact
-   unnecessary content, set a retention limit, and never include them in a public
-   projection.
+5. **Decision for MVP:** Store only the approved normalized fields and leave
+   `raw_data` null. Any future raw retention requires a separate decision,
+   restricted access, minimization, and deletion policy.
 
 ### D-05 — Validation limits and hours semantics
 
@@ -356,9 +355,10 @@ that change was not applied.
 4. **Tradeoffs:** Strict constraints protect every writer but can reject legitimate
    edge cases. Application-only rules evolve faster but can be bypassed by other
    writers.
-5. **Recommendation (not approved):** Approve edge-case semantics after sampling
-   real source data, then use layered validation: request/source validation plus
-   database checks for stable invariants and explicit payload-size limits.
+5. **Decision for Google ingestion:** Use layered validation: pure importer
+   normalization for source-specific schedules plus database checks for stable
+   coordinates, provider enums/rating data, and override ranges. General payload
+   size and output URL policies remain unapproved.
 
 ### D-06 — Production recovery and operator access
 
@@ -378,8 +378,9 @@ that change was not applied.
 
 ### D-07 — Google integration and external-service governance
 
-1. **Issue:** No Google API integration, key restrictions, quotas, attribution,
-   source allowlist, or failure behavior is approved.
+1. **Issue:** The source allowlist and failure behavior are approved, but no
+   Google API integration, key restrictions, quotas, or attribution implementation
+   exists.
 2. **Risk:** API-key theft, quota/cost abuse, injection of malformed upstream data,
    provider-terms violations, and stale or misleading data.
 3. **Likely options:** Manual seed data; server-side scheduled ingestion; or
@@ -387,10 +388,9 @@ that change was not applied.
 4. **Tradeoffs:** Manual data limits credentials and cost but becomes stale.
    Automation improves freshness while adding secrets, monitoring, quotas, and
    provider dependency.
-5. **Recommendation (not approved):** If integration is approved, call Google
-   only from trusted infrastructure, apply provider-supported API/application
-   restrictions and budgets, validate/map fields through an allowlist, and define
-   retry, staleness, attribution, and deletion behavior.
+5. **Disposition:** KC3-24 accepts the allowlist, preservation, and atomic-failure
+   contract. KC3-25 must call Google only from trusted infrastructure and define
+   key restrictions, budgets, operational retry, and attribution before use.
 
 ## Issues Fixed During This Task
 
@@ -417,12 +417,12 @@ that change was not applied.
 - No account table, MFA rule, or password policy was designed.
 - No schema split, server layer, Edge Function, ingestion service, or admin UI was
   introduced.
-- No text/JSON size cap, URL allowlist, overlapping-hours rule, or 24-hour-place
-  interpretation was invented.
-- No blank-text, Google rating/rating-count, or closed/next-day constraint was
-  added because those data semantics require Product Owner confirmation.
-- `raw_data` was not removed because the approved model includes it; its use and
-  retention need a decision.
+- No general text/JSON size cap or output URL allowlist was invented.
+- No blank-text constraint or general direct-writer hours constraint was added;
+  the future trusted importer rejects blank required values and invalid Google
+  schedules before writing.
+- The unused `raw_data` and `google_phone` columns were removed before any
+  production deployment; adding either behavior later requires explicit review.
 - Local Supabase services were not disabled because future approved development
   needs are unknown and they are not a production deployment.
 - SSL/network/backup settings were not changed because there is no linked hosted
@@ -437,9 +437,9 @@ that change was not applied.
 1. **Approve and implement a server-controlled, least-privilege admin/import
    path.** This prevents a service-role or database credential from reaching a
    client and limits compromise blast radius. Do it before seed/import automation.
-2. **Decide raw-data/privacy/retention rules.** This prevents unnecessary or
-   accidental upstream-data disclosure. Do it before retaining Google payloads or
-   collecting any user information.
+2. **Keep raw payload retention disabled.** The MVP allowlist and schema prevent
+   unrestricted upstream-data storage. Make a new privacy/licensing/retention
+   decision before adding raw storage or collecting any user information.
 3. **Establish production environment and recovery controls.** Separate dev/prod,
    keep secrets in platform stores, require admin MFA, enforce SSL, restrict
    direct DB access, verify Supabase Security Advisor findings, define backups,

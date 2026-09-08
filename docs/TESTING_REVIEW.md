@@ -1,8 +1,9 @@
 # Test Coverage and Reliability Review
 
-**Review date:** 2026-08-23; updated 2026-09-06 for public place access, the
-Expo client scaffold, typed data layer, place-list component, and client-side
-search and filters
+**Review date:** 2026-08-23; updated 2026-09-08 for the Google ingestion
+contract, and previously updated 2026-09-06 for public place access, the Expo
+client scaffold, typed data layer, place-list component, and client-side search
+and filters
 
 **Scope:** Approved behavior and current implementation in the KC3 repository.
 
@@ -11,9 +12,10 @@ search and filters
 KC3 currently contains an approved Supabase/PostgreSQL data model, local seed,
 anonymous read-only place RPC, and an Expo TypeScript client with a typed public
 data layer and locally filtered place-list screen. There is no custom server or
-automated import workflow. This review covers database behavior, the public data
-contract, and the first screen's component states without defining unapproved
-client behavior.
+automated import workflow. KC3-24 defines and tests pure Google normalization
+and database storage invariants without making provider calls. This review
+covers those boundaries, database behavior, the public data contract, and the
+first screen's component states.
 
 ## Existing Coverage Assessment
 
@@ -24,10 +26,11 @@ constraints, defaults, relationships, timestamp triggers, and RLS posture had no
 executable regression protection.
 
 There is no meaningful line-coverage percentage to report for a SQL migration.
-The workspace suite provides 120 behavior and contract assertions across six
-pgTAP files. The first four files provide 84 schema assertions, including three
-for privilege revocations. The seed-data test adds 12 assertions, and the public
-place access test adds 24 authorization and response-contract assertions.
+The workspace suite provides 148 behavior and contract assertions across seven
+pgTAP files. The first four files provide 87 schema assertions, including three
+for privilege revocations. The seed-data test adds 12 assertions, the public
+place access test adds 24 authorization/response-contract assertions, and the
+Google ingestion contract adds 25 assertions.
 
 ## Major Untested Risks Found
 
@@ -46,7 +49,7 @@ place access test adds 24 authorization and response-contract assertions.
 
 ### Schema contract
 
-`001_schema_contract.test.sql` verifies the four approved tables, approved enum
+`001_schema_contract.test.sql` verifies the five approved tables, approved enum
 values, established columns, primary keys, cascading foreign keys, Google Place
 ID uniqueness, hours checks, and lookup indexes. It protects against accidental
 field or classification removal, ownership changes, loss of constraints, and
@@ -71,7 +74,7 @@ overnight-hours support.
 
 ### Timestamps and security posture
 
-`004_timestamps_and_security.test.sql` verifies all four automatic `updated_at`
+`004_timestamps_and_security.test.sql` verifies all five automatic `updated_at`
 triggers, RLS enablement on all approved tables, the bounded policy count, and
 trigger enablement. It protects freshness metadata and prevents unreviewed policy
 growth.
@@ -97,6 +100,17 @@ response contract, and exact role and column grants. It executes the RPC as
 `anon`, proves every non-active status is excluded, and verifies anonymous and
 internal-reader writes fail. It also proves base tables and unapproved columns
 remain inaccessible and that unapproved Data API roles cannot execute the RPC.
+
+### Google ingestion contract
+
+`007_google_ingestion_contract.test.sql` protects canonical/provider coordinate
+pairs and ranges, provider metadata validation, move relationships, KC3-detail
+preservation, source-specific hours replacement, effective-dated override
+constraints and local-time resolution, and denial of override access to Data API
+roles. `tests/google-contract.test.ts` protects the exact Google field mask,
+deterministic cosmetic/substantive comparisons, movement screening, missing and
+temporary-closure hour preservation, closed/split/overnight/24-hour schedules,
+and malformed/overlapping schedule rejection.
 
 ### Typed public-place client and place-list screen
 
@@ -127,12 +141,11 @@ snapshots. These are component and unit checks, not live backend or device tests
 - Future authenticated and administrative CRUD flows: these role behaviors are
   not approved. KC3-20 covers the current anonymous RPC over HTTP; full Expo UI
   end-to-end coverage remains open.
-- Google ingestion, freshness calculations, and general import normalization: no
-  workflows or rules are approved or implemented.
-- Place deduplication, hours overlap/equal-time rules, and consistency between the
-  next-day flag and actual clock ordering: approved documents do not define them.
-- Blank-text, Google rating bounds, and closed/next-day semantics remain untested
-  because they are not clearly approved behavior.
+- Google network calls, credentials, importer orchestration, and transaction
+  execution: KC3-24 defines the contract and pure transformations but KC3-25 is
+  intentionally not implemented.
+- Blank canonical text remains undecided outside the trusted importer, which
+  rejects it for new provider-backed places.
 - Automated accessibility, performance/load, and end-to-end behavior: component
   tests cover the first screen's primary semantics and a manual Web viewport
   check has been completed, but broader tooling remains undecided.
@@ -148,19 +161,6 @@ The approved documents say name, city, and address are required but do not state
 whether empty or whitespace-only values are invalid. Decide and document whether
 blank values must be rejected before adding a constraint and tests.
 
-**PRODUCT OWNER DECISION REQUIRED — Google rating validation**
-
-The approved documents say Google rating attributes are stored but do not define
-their ranges. Decide whether ratings must be 0 through 5 and counts nonnegative
-before adding constraints and tests.
-
-**PRODUCT OWNER DECISION REQUIRED — Additional hours consistency**
-
-The approved documentation does not say whether a closed row may also be marked
-as closing the next day. It also does not decide whether duplicate/overlapping
-intervals, equal open/close times, or a next-day flag with a later closing time
-should be rejected. Confirm the semantics before adding constraints or tests.
-
 **PRODUCT OWNER DECISION REQUIRED — Administrative and future authenticated roles**
 
 Anonymous active-place reads are approved and covered. `authenticated` and
@@ -169,12 +169,11 @@ administrative workflows remain undecided. Define any additional role behavior
 before grants and role-level tests lock it in. See `SECURITY_REVIEW.md` for the
 broader risk analysis.
 
-**PRODUCT OWNER DECISION REQUIRED — Canonical deduplication**
-
-Only a non-null Google Place ID is unique. Two otherwise identical places with no
-Google Place ID are allowed. Decide whether that is intentional or whether a
-curation/import workflow, rather than a database constraint, will own duplicate
-detection.
+Canonical duplicate handling, Google rating bounds, and provider regular-hours
+normalization are now accepted in
+[`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md). Database and pure
+contract tests protect the enforceable portions; the future manual importer owns
+operator review and transactional workflow tests.
 
 ## Remaining Gaps and Prioritized Next Work
 
@@ -208,6 +207,17 @@ detection.
    MVP.
 
 ## Verification Results
+
+**KC3-24 verified: 2026-09-08**
+
+- Clean local reset applied all migrations and the unchanged seed.
+- All 148 pgTAP assertions and database lint passed.
+- All 44 application tests, including 14 pure Google contract cases, passed with
+  typecheck, lint, formatting, `git diff --check`, and all three platform exports.
+- All three live anonymous RPC tests passed; the public response/type contract
+  remained exactly five fields.
+- No Google request, importer, privileged role, or client API expansion was
+  introduced.
 
 **KC3-23 partial verification: 2026-09-06**
 

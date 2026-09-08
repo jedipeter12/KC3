@@ -112,14 +112,17 @@ use the ignored `dist/` directory.
 
 ## Data Model
 
-The approved MVP data model consists of four public tables:
+The approved MVP data model consists of five public tables:
 
 - `places`: Canonical physical-place identity and lifecycle. It has a UUID primary
-  key, required name/city/address/place type, optional unique Google Place ID, and
-  an active-by-default status.
+  key, required name/city/address/place type, optional unique Google Place ID,
+  accepted coordinates/timezone, an optional move relationship to another KC3
+  place, and an active-by-default status.
 - `place_google_data`: Optional one-to-one Google-derived data for a place. Its
-  shared primary key cascades on place deletion and it holds source fields, rating
-  data, raw JSON, and refresh time.
+  shared primary key cascades on place deletion and it holds the allowlisted
+  provider values, structured address/type metadata, coordinates, timezone,
+  move ID, rating data, and provider fetch time. The MVP schema has no phone or
+  unrestricted raw-response storage.
 - `place_details`: Optional one-to-one KC3 detail data for a place. Its shared
   primary key cascades on place deletion and it holds workability classifications,
   nullable verified/unknown booleans, notes, and verification date.
@@ -127,12 +130,17 @@ The approved MVP data model consists of four public tables:
   own UUID, cascades on place deletion, uses Sunday `0` through Saturday `6`, and
   records its Google or KC3 source. Multiple intervals for one place/day are
   intentionally allowed.
+- `place_overrides`: Zero-to-many KC3-owned, effective-dated factual overrides.
+  Inclusive ranges for one place/type cannot overlap; JSON payloads are versioned
+  at the application boundary. An internal invoker-rights function resolves an
+  active override using the accepted place IANA timezone.
 
 The public enum types are `place_type`, `place_status`, `outlet_level`,
 `wifi_type`, `work_suitability`, `food_beverage_level`, and `hours_source`. All
-four tables have creation/update timestamps; a shared trigger maintains
+five tables have creation/update timestamps; a shared trigger maintains
 `updated_at` automatically. Hours checks require valid weekday numbers, null
-times for closed rows, and both times for open rows.
+times for closed rows, and both times for open rows. Coordinate pairs and Google
+rating/count/status/price shapes have database constraints.
 
 Row Level Security is enabled on every table. Direct table privileges for `anon`,
 `authenticated`, and `service_role` remain explicitly revoked. The only current
@@ -168,9 +176,12 @@ local projection supplies visible rows. A database-empty response bypasses the
 filter controls, while a nonempty source list with zero filtered rows renders a
 separate no-match state. Clearing controls resets only local filter state.
 
-The schema can retain Google-derived metadata, but ingestion behavior and direct
-Google API integration are not defined. Authentication details and remaining
-failure behavior will be documented when their relevant features are approved.
+Google ingestion behavior is defined in
+[`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md). The future manual
+CLI must use the exact allowlisted Place Details (New) field mask, validate and
+plan before one-place transactions, preserve missing values and KC3-owned data,
+and report substantive changes. No importer, Google credential, API call, or
+privileged import boundary is implemented yet.
 
 ## Authentication and Authorization
 

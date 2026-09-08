@@ -43,6 +43,57 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-08 — Define a source-preserving Google Places ingestion contract
+
+**Status:** Accepted
+
+**Decision**
+
+Use Google Place ID only as a unique provider identity under KC3's UUID. Keep
+allowlisted provider values in `place_google_data`, accepted physical-place facts
+in `places`, KC3 suitability data in `place_details`, source-tagged weekly
+schedules in `place_hours`, and non-destructive effective-dated manual values in
+`place_overrides`. Use deterministic text and location comparison, regular weekly
+hours only, explicit operator review for substantive changes/duplicates, and one
+transaction per place refresh or resolved move. Do not retain unrestricted raw
+responses or request phone/atmosphere fields in the MVP workflow.
+
+The full field mapping and state machine are normative in
+[`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md).
+
+**Context**
+
+KC3-25 needs to build a manual Google importer without inventing product policy.
+The original schema separated ownership but lacked provider coordinates,
+timezone, move linkage, all approved metadata, and effective-dated overrides.
+
+**Alternatives considered**
+
+- Make Google Place ID the canonical primary key or overwrite all canonical data
+  from each response.
+- Store a single mutable value without retaining the provider value under manual
+  overrides.
+- Treat a moved business as the same physical KC3 place.
+- Retain complete Google payloads or request broader atmosphere fields.
+- Use fuzzy/AI matching for names, addresses, and duplicates.
+
+**Reasoning**
+
+The selected model preserves KC3's durable physical-place identity and
+independent enrichment while still allowing factual provider refreshes.
+Deterministic normalization and conservative operator review are reproducible.
+Separate provider and override values prevent refreshes from destroying KC3
+judgment. Allowlisted storage reduces privacy, licensing, cost, and accidental
+API-expansion risk.
+
+**Consequences / follow-up**
+
+KC3-25 must implement the documented validation, dry-run/report, duplicate
+resolution, and transaction behavior through a trusted credential boundary. It
+must not write KC3 details, use live/current/special hours, delete places, or
+retain raw responses. A public effective-value API, import role, UI, scheduling,
+and raw-data retention remain separate work.
+
 ### 2026-09-06 — Use GitHub Actions for verification CI
 
 **Status:** Accepted

@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = public, extensions;
 
-select plan(10);
+select plan(11);
 
 insert into public.places (
   id, name, city, address, place_type, updated_at
@@ -34,10 +34,23 @@ insert into public.place_hours (
   '2000-01-01 00:00:00+00'
 );
 
+insert into public.place_overrides (
+  place_id, override_type, effective_start_date, effective_end_date,
+  override_value, updated_at
+) values (
+  '50000000-0000-0000-0000-000000000001',
+  'regular_hours',
+  '2026-09-01',
+  '2026-09-02',
+  '[]'::jsonb,
+  '2000-01-01 00:00:00+00'
+);
+
 update public.places set name = name where id = '50000000-0000-0000-0000-000000000001';
 update public.place_google_data set google_name = 'Updated' where place_id = '50000000-0000-0000-0000-000000000001';
 update public.place_details set seating_notes = 'Updated' where place_id = '50000000-0000-0000-0000-000000000001';
 update public.place_hours set source = 'google' where place_id = '50000000-0000-0000-0000-000000000001';
+update public.place_overrides set note = 'Updated' where place_id = '50000000-0000-0000-0000-000000000001';
 
 select ok(
   (select updated_at > '2000-01-01 00:00:00+00' from public.places where id = '50000000-0000-0000-0000-000000000001'),
@@ -59,6 +72,11 @@ select ok(
   'updating hours refreshes updated_at'
 );
 
+select ok(
+  (select updated_at > '2000-01-01 00:00:00+00' from public.place_overrides where place_id = '50000000-0000-0000-0000-000000000001'),
+  'updating an override refreshes updated_at'
+);
+
 select set_eq(
   $$
     select relname::text
@@ -68,7 +86,7 @@ select set_eq(
       and pg_class.relkind = 'r'
       and pg_class.relrowsecurity
   $$,
-  $$ values ('places'), ('place_google_data'), ('place_details'), ('place_hours') $$,
+  $$ values ('places'), ('place_google_data'), ('place_details'), ('place_hours'), ('place_overrides') $$,
   'row level security is enabled on every approved public table'
 );
 
@@ -91,13 +109,14 @@ select is(
       'public.places'::regclass,
       'public.place_google_data'::regclass,
       'public.place_details'::regclass,
-      'public.place_hours'::regclass
+      'public.place_hours'::regclass,
+      'public.place_overrides'::regclass
     )
       and not tgisinternal
       and tgenabled = 'O'
   ),
-  4,
-  'all four updated_at triggers exist and are enabled'
+  5,
+  'all five updated_at triggers exist and are enabled'
 );
 
 select ok(
@@ -109,7 +128,8 @@ select ok(
         ('public.places'),
         ('public.place_google_data'),
         ('public.place_details'),
-        ('public.place_hours')
+        ('public.place_hours'),
+        ('public.place_overrides')
     ) as tables(table_name)
     cross join (
       values ('select'), ('insert'), ('update'), ('delete')

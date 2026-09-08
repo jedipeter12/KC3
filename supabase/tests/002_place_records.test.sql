@@ -181,21 +181,20 @@ select throws_ok(
 select lives_ok(
   $$
     insert into public.place_google_data (
-      place_id, google_rating, google_rating_count, raw_data
+      place_id, google_rating, google_user_rating_count
     ) values (
       '10000000-0000-0000-0000-000000000001',
       4.7,
-      125,
-      '{"source":"google","nested":{"open":true}}'::jsonb
+      125
     )
   $$,
   'Google-derived data can be stored separately from KC3 details'
 );
 
 select is(
-  (select raw_data ->> 'source' from public.place_google_data where place_id = '10000000-0000-0000-0000-000000000001'),
-  'google',
-  'raw Google JSON is retained'
+  (select google_user_rating_count from public.place_google_data where place_id = '10000000-0000-0000-0000-000000000001'),
+  125,
+  'Google rating counts are retained'
 );
 
 select is(

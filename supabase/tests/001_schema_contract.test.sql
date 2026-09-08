@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = public, extensions;
 
-select plan(21);
+select plan(23);
 
 select set_eq(
   $$
@@ -17,7 +17,8 @@ select set_eq(
     ('places'),
     ('place_google_data'),
     ('place_details'),
-    ('place_hours')
+    ('place_hours'),
+    ('place_overrides')
   $$,
   'the approved public tables exist without additional public tables'
 );
@@ -114,7 +115,8 @@ select set_eq(
   $$,
   $$ values
     ('id'), ('name'), ('city'), ('address'), ('place_type'),
-    ('google_place_id'), ('status'), ('created_at'), ('updated_at')
+    ('google_place_id'), ('status'), ('latitude'), ('longitude'),
+    ('time_zone'), ('moved_to_place_id'), ('created_at'), ('updated_at')
   $$,
   'places retains the approved canonical fields'
 );
@@ -126,10 +128,13 @@ select set_eq(
     where table_schema = 'public' and table_name = 'place_google_data'
   $$,
   $$ values
-    ('place_id'), ('google_name'), ('google_address'), ('google_phone'),
-    ('google_website'), ('google_maps_url'), ('google_business_status'),
-    ('google_primary_type'), ('google_rating'), ('google_rating_count'),
-    ('raw_data'), ('last_refreshed_at'), ('created_at'), ('updated_at')
+    ('place_id'), ('google_name'), ('google_address'),
+    ('google_website_uri'), ('google_maps_uri'), ('google_business_status'),
+    ('google_primary_type'), ('google_types'), ('google_rating'),
+    ('google_user_rating_count'), ('google_address_components'),
+    ('google_latitude'), ('google_longitude'), ('google_time_zone'),
+    ('google_moved_place_id'), ('google_price_level'),
+    ('google_fetched_at'), ('created_at'), ('updated_at')
   $$,
   'place_google_data retains the approved source-owned fields'
 );
@@ -157,10 +162,24 @@ select set_eq(
   $$,
   $$ values
     ('id'), ('place_id'), ('day_of_week'), ('open_time'), ('close_time'),
-    ('is_closed'), ('closes_next_day'), ('source'), ('last_verified_at'),
+    ('is_closed'), ('closes_next_day'), ('source'), ('source_observed_at'),
     ('created_at'), ('updated_at')
   $$,
   'place_hours retains the approved schedule fields'
+);
+
+select set_eq(
+  $$
+    select column_name::text
+    from information_schema.columns
+    where table_schema = 'public' and table_name = 'place_overrides'
+  $$,
+  $$ values
+    ('id'), ('place_id'), ('override_type'), ('effective_start_date'),
+    ('effective_end_date'), ('override_value'), ('source'), ('note'),
+    ('created_at'), ('updated_at')
+  $$,
+  'place_overrides stores the effective-dated KC3 override contract'
 );
 
 select ok(
@@ -195,6 +214,14 @@ select ok(
   'place_hours has a primary key'
 );
 
+select ok(
+  exists (
+    select 1 from pg_constraint
+    where conrelid = 'public.place_overrides'::regclass and contype = 'p'
+  ),
+  'place_overrides has a primary key'
+);
+
 select is(
   (
     select count(*)::integer
@@ -202,14 +229,15 @@ select is(
     where conrelid in (
       'public.place_google_data'::regclass,
       'public.place_details'::regclass,
-      'public.place_hours'::regclass
+      'public.place_hours'::regclass,
+      'public.place_overrides'::regclass
     )
       and confrelid = 'public.places'::regclass
       and contype = 'f'
       and confdeltype = 'c'
   ),
-  3,
-  'all three dependent tables cascade when their place is deleted'
+  4,
+  'all four dependent tables cascade when their place is deleted'
 );
 
 select is(
