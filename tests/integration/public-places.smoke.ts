@@ -9,6 +9,10 @@ const prerequisites =
 
 let supabase: typeof import("../../src/lib/supabase").supabase;
 let listPublicPlaces: typeof import("../../src/data/publicPlaces").listPublicPlaces;
+let filterPlaces: typeof import("../../src/features/places/placeFilters").filterPlaces;
+let getPlaceFilterOptions: typeof import("../../src/features/places/placeFilters").getPlaceFilterOptions;
+
+const requireProviderDataset = process.env.KC3_EXPECT_PROVIDER_DATASET === "1";
 
 beforeAll(() => {
   let status: { API_URL?: string; ANON_KEY?: string };
@@ -42,6 +46,9 @@ beforeAll(() => {
   ({ listPublicPlaces } = jest.requireActual<
     typeof import("../../src/data/publicPlaces")
   >("../../src/data/publicPlaces"));
+  ({ filterPlaces, getPlaceFilterOptions } = jest.requireActual<
+    typeof import("../../src/features/places/placeFilters")
+  >("../../src/features/places/placeFilters"));
 });
 
 it("returns active MVP-city places with exactly the five serialized fields", async () => {
@@ -77,6 +84,7 @@ it("returns active MVP-city places with exactly the five serialized fields", asy
       "park",
     ]).toContain(place.place_type);
   }
+  if (requireProviderDataset) expect(data.length).toBeGreaterThan(100);
 });
 
 it("loads the same live RPC result through the production data layer", async () => {
@@ -86,6 +94,50 @@ it("loads the same live RPC result through the production data layer", async () 
   expect(error).toBeNull();
   expect(data?.length).toBeGreaterThan(0);
   await expect(listPublicPlaces()).resolves.toEqual(data);
+});
+
+it("applies production search and city/type filters to the live RPC dataset", async () => {
+  const places = await listPublicPlaces();
+
+  expect(
+    filterPlaces(places, {
+      city: null,
+      nameQuery: "  bLaCk DoG  ",
+      placeType: null,
+    }).map((place) => place.name),
+  ).toContain("Black Dog Coffeehouse");
+
+  const olatheParks = filterPlaces(places, {
+    city: "Olathe",
+    nameQuery: "",
+    placeType: "park",
+  });
+  expect(olatheParks.length).toBeGreaterThan(0);
+  expect(
+    olatheParks.every(
+      (place) => place.city === "Olathe" && place.place_type === "park",
+    ),
+  ).toBe(true);
+
+  const options = getPlaceFilterOptions(places);
+  expect(options.cities).toEqual(
+    expect.arrayContaining(["Lenexa", "Overland Park", "Olathe"]),
+  );
+  expect(options.placeTypes).toEqual(
+    expect.arrayContaining(["coffee_shop", "library", "park"]),
+  );
+  if (requireProviderDataset) {
+    expect(options.placeTypes).toEqual(
+      expect.arrayContaining([
+        "coffee_shop",
+        "cafe",
+        "boba_tea",
+        "library",
+        "coworking",
+        "park",
+      ]),
+    );
+  }
 });
 
 it("denies direct anonymous access to places with a permission error", async () => {

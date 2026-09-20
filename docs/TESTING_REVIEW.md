@@ -1,9 +1,9 @@
 # Test Coverage and Reliability Review
 
-**Review date:** 2026-08-23; updated 2026-09-20 for the real provider-backed
-dataset and explicit reconciliation boundary, 2026-09-19 for Google hours/source
-persistence, and previously updated 2026-09-08 for the Google ingestion contract
-and 2026-09-06 for the client and public-read boundary
+**Review date:** 2026-08-23; updated 2026-09-20 for repeat refresh/integration
+verification and the real provider-backed dataset, 2026-09-19 for Google
+hours/source persistence, and previously updated 2026-09-08 for the Google
+ingestion contract and 2026-09-06 for the client and public-read boundary
 
 **Scope:** Approved behavior and current implementation in the KC3 repository.
 
@@ -28,11 +28,11 @@ constraints, defaults, relationships, timestamp triggers, and RLS posture had no
 executable regression protection.
 
 There is no meaningful line-coverage percentage to report for a SQL migration.
-The workspace suite provides 188 behavior and contract assertions across nine
+The workspace suite provides 190 behavior and contract assertions across nine
 pgTAP files. The first four files provide 87 schema assertions, including three
 for privilege revocations. The seed-data test adds 12 assertions, the public
 place access test adds 24 authorization/response-contract assertions, the Google
-ingestion contract adds 25 assertions, the import-boundary suite adds 32, and the
+ingestion contract adds 25 assertions, the import-boundary suite adds 34, and the
 reconciliation suite adds 8.
 
 ## Major Untested Risks Found
@@ -130,6 +130,10 @@ changed schedule is sent as a complete normalized replacement.
 atomically attaches a provider identity to a stable seed UUID, persists provider
 metadata, preserves unknown KC3 details, denies anonymous execution, and rolls
 the identity attachment back when normalized provider persistence fails.
+KC3-28 adds explicit repeat provider-row counting and re-checks the complete KC3
+detail snapshot after changed, missing, and failed refreshes. Its live rerun also
+found that JSON serialization was sensitive to PostgreSQL JSONB object-key order;
+a regression fixture now proves structurally equal schedules are not replaced.
 
 ### Typed public-place client and place-list screen
 
@@ -211,8 +215,10 @@ automatic or fuzzy merging.
    `npm run test:integration` against either the reset local seed or the reviewed
    provider-backed local dataset; it verifies the typed production client, raw
    five-field serialization and approved city/type values, data-layer results,
-   and explicit anonymous base-table permission denial. No provider mocks or
-   additional dependencies are used.
+   production search and city/type filters, and explicit anonymous base-table
+   permission denial. `KC3_EXPECT_PROVIDER_DATASET=1` also requires production-
+   like volume and all six types. No provider mocks or additional dependencies
+   are used.
    KC3-22 includes the clean-reset form of this suite in CI.
 4. **Keep importer regression coverage current.** The existing suite covers
    source ownership, stable-identity idempotency, regular-hours refresh behavior,
@@ -232,6 +238,23 @@ automatic or fuzzy merging.
    MVP.
 
 ## Verification Results
+
+**KC3-28 locally verified: 2026-09-20**
+
+- The clean bounded live write recorded 263 discoveries, 149 inserts, 15 seed
+  updates, 99 skips, and zero failures. The immediate repeat inserted zero and
+  left 164 canonical rows, 164 provider rows, and 1,118 Google-hour rows.
+- The repeat exposed and corrected JSONB object-key-order sensitivity in
+  unchanged schedule comparison. A post-fix live rerun advanced provider fetch
+  times while 158 refreshed stored schedules retained older source observation
+  times; one unrefreshed ranked omission retained its prior equal timestamps.
+- A controlled verified KC3 detail fixture survived all provider refreshes
+  exactly and was removed after evidence capture. Deterministic fixtures cover
+  changed, missing, closed, malformed, interrupted, and rollback behavior.
+- All 190 pgTAP assertions, 66 application tests, four real-dataset anonymous
+  HTTP tests, database lint, typecheck, lint, formatting, three-platform exports,
+  and Expo Web functional smoke passed. Native UI automation remained blocked by
+  Device Hub timeout after the iOS bundle launched.
 
 **KC3-27 verified: 2026-09-20**
 

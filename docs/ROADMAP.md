@@ -4,11 +4,13 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Verify repeatable refresh and integration behavior against the reviewed Johnson
-County provider-backed dataset.
+Use the refresh-verified Johnson County dataset to drive bounded data-quality and
+list-first UX follow-up without expanding the approved product boundary.
 
 ## In Progress
 
+- [ ] KC3-28: Implementation and local verification are complete; hosted CI and
+  Product Owner review remain pending before closure.
 - [ ] KC3-23: Final automated verification and live Expo Web and iOS Simulator
   functional smoke passes complete; milestone closure remains blocked by the
   KC3-21 native accessibility checks. See `docs/MVP_VERIFICATION.md` for evidence
@@ -18,8 +20,10 @@ County provider-backed dataset.
 
 ## Next
 
-- [ ] KC3-28: Verify real-data refresh and integration behavior against the
-  reviewed bounded dataset.
+- [ ] KC3-29: Review suspicious provider presentation, ambiguous sub-place and
+  category records, and 164-row list scalability exposed by KC3-28; create
+  bounded data corrections or UI/UX tickets rather than silently rewriting
+  provider facts.
 - [ ] Keep unrestricted raw Google payload retention disabled; require a new
   privacy/licensing/access decision before adding it later.
 - [ ] Define the Google import workflow and any later curated seed expansion.

@@ -11,9 +11,10 @@ explicit loading, database-empty, no-match, sanitized error, and retry states.
 Supabase provides the backend platform and PostgreSQL-based database; the initial
 MVP schema is defined as a migration but has not been applied to production. A transactional,
 idempotent local seed bootstraps 15 representative places without importing
-Google data or guessing KC3 details. The reviewed KC3-27 operator run expands the
-current local database to 162 canonical places, 161 provider-backed, while
-preserving that resettable seed boundary and unknown KC3 suitability values. A
+Google data or guessing KC3 details. The KC3-28 verified refresh snapshot expands
+the current local database to 164 canonical/provider-backed places with all 15
+representative seeds reconciled, while preserving that resettable seed boundary
+and unknown KC3 suitability values. A
 read-only Supabase RPC exposes the five
 approved identity fields for active places to unauthenticated clients without
 granting them base-table access. Supabase Auth is the selected authentication
@@ -137,6 +138,8 @@ use the ignored `dist/` directory.
   stored hour rows intact; changed schedules replace the complete Google-owned
   set in the same transaction as provider metadata. Its owner has no privilege
   on `place_details`, `place_overrides`, or KC3-owned hours.
+  KC3-28 verifies structural hour equality across the JSONB/database boundary so
+  object-key ordering cannot trigger a false schedule replacement.
   A third server-only wrapper added for KC3-27 locks an explicitly selected seed,
   attaches the Google identity, and invokes the same normalized import in one
   transaction. Invalid or failed provider persistence therefore rolls the

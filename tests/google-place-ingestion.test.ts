@@ -174,6 +174,32 @@ describe("Google place response transformation", () => {
     expect(plan.payload.hours).toBeUndefined();
   });
 
+  it("compares unchanged stored hours structurally rather than by JSON key order", () => {
+    const result = normalizeGooglePlaceResponse(googleFixture);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const storedWithDatabaseKeyOrder = existingFixture.googleHours.map(
+      (hour) => ({
+        openTime: hour.openTime,
+        isClosed: hour.isClosed,
+        closeTime: hour.closeTime,
+        dayOfWeek: hour.dayOfWeek,
+        closesNextDay: hour.closesNextDay,
+      }),
+    );
+    const plan = planGooglePlaceImport(
+      result.value,
+      "coffee_shop",
+      "2026-09-20T12:00:00.000Z",
+      [{ ...existingFixture, googleHours: storedWithDatabaseKeyOrder }],
+    );
+
+    expect(plan.disposition).toBe("write");
+    if (plan.disposition !== "write") return;
+    expect(plan.payload.hours).toBeUndefined();
+  });
+
   it("includes a complete changed schedule in the atomic import payload", () => {
     const result = normalizeGooglePlaceResponse({
       ...googleFixture,
@@ -224,6 +250,91 @@ describe("Google place response transformation", () => {
     if (plan.disposition !== "write") return;
     expect(plan.payload.fetchedAt).toBe("2026-09-08T14:00:00.000Z");
     expect(plan.payload.hours).toBeUndefined();
+  });
+
+  it("preserves normal hours during temporary closure and updates lifecycle state", () => {
+    const result = normalizeGooglePlaceResponse({
+      ...googleFixture,
+      businessStatus: "CLOSED_TEMPORARILY",
+      regularOpeningHours: { periods: [] },
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const plan = planGooglePlaceImport(
+      result.value,
+      "coffee_shop",
+      "2026-09-20T15:00:00.000Z",
+      [existingFixture],
+    );
+    expect(plan.disposition).toBe("write");
+    if (plan.disposition !== "write") return;
+    expect(plan.payload.canonical.status).toBe("temporarily_closed");
+    expect(plan.payload.hours).toBeUndefined();
+  });
+
+  it("stores an explicit closed schedule during permanent closure", () => {
+    const result = normalizeGooglePlaceResponse({
+      ...googleFixture,
+      businessStatus: "CLOSED_PERMANENTLY",
+      regularOpeningHours: { periods: [] },
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const plan = planGooglePlaceImport(
+      result.value,
+      "coffee_shop",
+      "2026-09-20T16:00:00.000Z",
+      [existingFixture],
+    );
+    expect(plan.disposition).toBe("write");
+    if (plan.disposition !== "write") return;
+    expect(plan.payload.canonical.status).toBe("permanently_closed");
+    expect(plan.payload.hours).toHaveLength(7);
+    expect(plan.payload.hours?.every((hour) => hour.isClosed)).toBe(true);
+  });
+
+  it("never replaces a KC3-hidden lifecycle state", () => {
+    const result = normalizeGooglePlaceResponse({
+      ...googleFixture,
+      businessStatus: "CLOSED_PERMANENTLY",
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const plan = planGooglePlaceImport(
+      result.value,
+      "coffee_shop",
+      "2026-09-20T17:00:00.000Z",
+      [{ ...existingFixture, status: "hidden" }],
+    );
+    expect(plan.disposition).toBe("write");
+    if (plan.disposition !== "write") return;
+    expect(plan.payload.canonical.status).toBeUndefined();
+  });
+
+  it("skips an incomplete new provider record before persistence", () => {
+    const {
+      location: _location,
+      timeZone: _timeZone,
+      ...incomplete
+    } = googleFixture;
+    const result = normalizeGooglePlaceResponse(incomplete);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    expect(
+      planGooglePlaceImport(
+        result.value,
+        "coffee_shop",
+        "2026-09-20T18:00:00.000Z",
+        [],
+      ),
+    ).toEqual({
+      disposition: "skip",
+      reason: "new place is missing coordinates, time zone",
+    });
   });
 
   it("reports a possible canonical duplicate instead of attaching by name", () => {
@@ -444,5 +555,42 @@ describe("operator configuration and run failures", () => {
     expect(summary.messages.join(" ")).not.toMatch(
       /provider-secret|database-secret/,
     );
+  });
+
+  it("reports an interrupted discovery without reading or writing database state", async () => {
+    const provider = {
+      discover: jest.fn().mockRejectedValue(new Error("interrupted-secret")),
+      getDetails: jest.fn(),
+    };
+    const repository = {
+      listExisting: jest.fn(),
+      importPlace: jest.fn(),
+    };
+
+    const summary = await runGoogleImport(
+      {
+        cities: ["Lenexa"],
+        categories: ["coffee_shop"],
+        maxPages: 1,
+        maxPlaces: 10,
+        write: true,
+      },
+      provider,
+      repository,
+    );
+
+    expect(summary).toMatchObject({
+      discovered: 0,
+      inserted: 0,
+      updated: 0,
+      skipped: 0,
+      failed: 1,
+    });
+    expect(summary.messages).toEqual([
+      "Search failed for coffee_shop in Lenexa.",
+    ]);
+    expect(summary.messages.join(" ")).not.toContain("interrupted-secret");
+    expect(repository.listExisting).not.toHaveBeenCalled();
+    expect(repository.importPlace).not.toHaveBeenCalled();
   });
 });
