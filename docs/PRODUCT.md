@@ -105,10 +105,15 @@ and separates data by ownership and purpose:
   KC3-owned details. The approved MVP allowlist and refresh behavior are defined
   in [`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md); unrestricted
   raw responses and phone data are not retained by that workflow.
+  `google_fetched_at` records the latest successful validated provider response;
+  it is provider freshness, not a KC3 verification claim.
 - `place_details` stores seating notes, outlets, Wi-Fi, work suitability, food and
   beverage level, nullable verified/unknown booleans, and verification metadata.
 - `place_hours` stores zero or more intervals per place and day, including closed
   days, overnight closing, source, and verification metadata.
+  Google rows use `source_observed_at` for the response that produced the stored
+  schedule, while KC3 rows use it for their own curation observation. A Google
+  refresh never changes `place_details.last_verified_at`.
 - `place_overrides` stores non-destructive, effective-dated KC3 factual overrides
   while retaining provider values underneath.
 

@@ -158,6 +158,58 @@ describe("Google place response transformation", () => {
     expect(plan.payload.hours).toBeUndefined();
   });
 
+  it("includes a complete changed schedule in the atomic import payload", () => {
+    const result = normalizeGooglePlaceResponse({
+      ...googleFixture,
+      regularOpeningHours: {
+        periods: [
+          {
+            open: { day: 2, hour: 7, minute: 30 },
+            close: { day: 2, hour: 15, minute: 0 },
+          },
+        ],
+      },
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const plan = planGooglePlaceImport(
+      result.value,
+      "coffee_shop",
+      "2026-09-08T13:00:00.000Z",
+      [existingFixture],
+    );
+    expect(plan.disposition).toBe("write");
+    if (plan.disposition !== "write") return;
+    expect(plan.payload.fetchedAt).toBe("2026-09-08T13:00:00.000Z");
+    expect(plan.payload.hours).toHaveLength(7);
+    expect(plan.payload.hours).toContainEqual({
+      dayOfWeek: 2,
+      openTime: "07:30",
+      closeTime: "15:00",
+      isClosed: false,
+      closesNextDay: false,
+    });
+  });
+
+  it("preserves stored hours when the provider omits regular hours", () => {
+    const { regularOpeningHours: _omitted, ...withoutHours } = googleFixture;
+    const result = normalizeGooglePlaceResponse(withoutHours);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+
+    const plan = planGooglePlaceImport(
+      result.value,
+      "coffee_shop",
+      "2026-09-08T14:00:00.000Z",
+      [existingFixture],
+    );
+    expect(plan.disposition).toBe("write");
+    if (plan.disposition !== "write") return;
+    expect(plan.payload.fetchedAt).toBe("2026-09-08T14:00:00.000Z");
+    expect(plan.payload.hours).toBeUndefined();
+  });
+
   it("reports a possible canonical duplicate instead of attaching by name", () => {
     const result = normalizeGooglePlaceResponse(googleFixture);
     expect(result.ok).toBe(true);

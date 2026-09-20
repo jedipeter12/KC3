@@ -4,8 +4,8 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Verify and use the completed manual Google Places ingestion boundary before
-expanding provider persistence or constructing the production JoCo dataset.
+Use the completed and verified manual Google Places ingestion boundary to
+construct the reviewed Johnson County dataset.
 
 ## In Progress
 
@@ -17,8 +17,6 @@ expanding provider persistence or constructing the production JoCo dataset.
 
 ## Next
 
-- [ ] KC3-26: Define Google hours/source persistence beyond the KC3-24 regular
-  weekly-hours contract when product requirements are approved.
 - [ ] KC3-27: Construct the real Johnson County dataset through the reviewed
   operator workflow.
 - [ ] Keep unrestricted raw Google payload retention disabled; require a new
@@ -37,6 +35,10 @@ expanding provider persistence or constructing the production JoCo dataset.
 
 ## Completed
 
+- [x] KC3-26 verifies the KC3-24/KC3-25 Google-owned persistence path for
+  ordinary, closed, split, overnight, unchanged, changed, missing, and failed
+  weekly-hours refreshes; distinguishes provider freshness from KC3 verification;
+  and confirms the existing schema and atomic importer require no expansion.
 - [x] KC3-25 adds a bounded, dry-run-first Google Places CLI; exact KC3-24 field
   masks and normalization; continuation handling; stable identity refreshes; a
   constrained transactional server-only write boundary; ownership-preserving

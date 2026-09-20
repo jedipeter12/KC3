@@ -4,11 +4,13 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 
 ## Status
 
-- Stage: Initial client and provider-ingestion implementation
-- Current focus: Operator verification of the Google ingestion boundary plus the
-  remaining native accessibility checks for the list-first slice.
-- Last major milestone: Implemented the bounded, dry-run-first KC3-25 Google
-  Places ingestion CLI and transactional server-only persistence boundary.
+- Stage: Initial client and provider-backed dataset preparation
+- Current focus: Constructing the reviewed Johnson County dataset through the
+  completed Google ingestion boundary, plus the remaining native accessibility
+  checks for the list-first slice.
+- Last major milestone: Closed KC3-26 by verifying deterministic Google weekly
+  hours replacement, provider freshness metadata, ownership preservation, and
+  transactional failure behavior end to end.
 
 KC3-23 final automated checks and live Expo Web smoke checks pass. Milestone
 closure remains pending native and accessibility verification; see

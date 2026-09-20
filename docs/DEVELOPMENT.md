@@ -137,7 +137,7 @@ five-field response before data-layer projection, compares production data-layer
 results, and requires HTTP 401 / PostgreSQL `42501` for direct `places` reads.
 Missing migrations, seed changes, or API failures fail the suite; they are not
 silently skipped. Run `npm test` and `npm run lint:db` against the same database
-for the complementary 148 pgTAP assertions and schema lint. `test:app` remains
+for the complementary 180 pgTAP assertions and schema lint. `test:app` remains
 independent of Docker and excludes the `*.smoke.ts` integration files.
 
 See [`ACCESSIBILITY_REVIEW.md`](ACCESSIBILITY_REVIEW.md) for the KC3-21 manual
@@ -293,6 +293,12 @@ events can each run CI for an open `codex/**` branch.
   temporarily add a failing TypeScript assertion to an application test, commit
   and push, and confirm `Application checks` and the workflow fail. Remove the
   temporary test, push, and require a fresh passing run. Keep run links as evidence.
+
+KC3-26 local verification (2026-09-19): the existing schema and importer passed
+all 180 pgTAP assertions, database lint, three live anonymous RPC tests, 57
+application tests, typecheck, lint, formatting, and `git diff --check`. Web, iOS,
+and Android production exports passed. The public five-field client contract and
+Google field mask remained unchanged, and no Google request was made.
 
 KC3-25 local verification (2026-09-08): a clean database reset applied the
 server-only import-boundary migration and unchanged seed. All 168 pgTAP
