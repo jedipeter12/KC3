@@ -3,7 +3,8 @@
 ## Status
 
 Locally complete on 2026-09-20 against a clean Supabase reset and live Google
-Places data; hosted CI and Product Owner review remain pending. The bounded
+Places data; hosted application/database CI passed on PR #13, and Product Owner
+review remains pending. The bounded
 import is repeatable and ownership-safe, the anonymous
 five-field RPC and production filters work at 164-record volume, and one
 unchanged-hours comparison defect found by the live rerun was corrected and
@@ -168,8 +169,9 @@ refinement. KC3-28 does not silently correct provider facts or redesign the UI.
 - Expo Web, iOS, and Android export: passed.
 - Generated artifacts contained no configured Google key, server-only variable
   name, or Google Places endpoint.
-- Hosted GitHub Actions: pending the branch push/PR; no local check substitutes
-  for the configured hosted run.
+- Hosted GitHub Actions: application and database checks passed for both the
+  branch-push and PR-event runs on PR #13. Supabase Preview was skipped by its
+  configured integration and was not treated as a failure.
 
 ## Known limitations
 

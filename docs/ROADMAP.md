@@ -9,8 +9,8 @@ list-first UX follow-up without expanding the approved product boundary.
 
 ## In Progress
 
-- [ ] KC3-28: Implementation and local verification are complete; hosted CI and
-  Product Owner review remain pending before closure.
+- [ ] KC3-28: Implementation, local verification, and hosted application/database
+  CI are complete; Product Owner review remains pending before closure.
 - [ ] KC3-23: Final automated verification and live Expo Web and iOS Simulator
   functional smoke passes complete; milestone closure remains blocked by the
   KC3-21 native accessibility checks. See `docs/MVP_VERIFICATION.md` for evidence
