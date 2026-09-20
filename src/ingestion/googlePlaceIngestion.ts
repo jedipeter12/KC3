@@ -106,6 +106,11 @@ export type GooglePlacePlan =
 export type GooglePlaceNormalization =
   { ok: true; value: NormalizedGooglePlace } | { ok: false; reason: string };
 
+export type GoogleImportResolution = Readonly<{
+  existingPlaceId?: string;
+  createNew?: boolean;
+}>;
+
 export function normalizeGooglePlaceResponse(
   input: unknown,
   expectedGooglePlaceId?: string,
@@ -269,10 +274,44 @@ export function planGooglePlaceImport(
   placeType: PlaceType,
   fetchedAt: string,
   existingPlaces: readonly ExistingGooglePlace[],
+  resolution: GoogleImportResolution = {},
 ): GooglePlacePlan {
-  const existing = existingPlaces.find(
+  const providerMatch = existingPlaces.find(
     (candidate) => candidate.googlePlaceId === place.googlePlaceId,
   );
+  if (resolution.existingPlaceId && resolution.createNew) {
+    return {
+      disposition: "skip",
+      reason: "conflicting attach and create resolutions",
+    };
+  }
+  const attachment = resolution.existingPlaceId
+    ? existingPlaces.find(
+        (candidate) => candidate.id === resolution.existingPlaceId,
+      )
+    : undefined;
+  if (resolution.existingPlaceId && !attachment) {
+    return {
+      disposition: "skip",
+      reason: `attach target ${resolution.existingPlaceId} does not exist`,
+    };
+  }
+  if (
+    attachment?.googlePlaceId &&
+    attachment.googlePlaceId !== place.googlePlaceId
+  ) {
+    return {
+      disposition: "skip",
+      reason: `attach target ${attachment.id} already has a different provider identity`,
+    };
+  }
+  if (providerMatch && attachment && providerMatch.id !== attachment.id) {
+    return {
+      disposition: "skip",
+      reason: "provider identity and attach target resolve to different places",
+    };
+  }
+  const existing = providerMatch ?? attachment;
 
   if (place.provider.movedPlaceId) {
     return {
@@ -297,7 +336,7 @@ export function planGooglePlaceImport(
     }
 
     const duplicate = findDuplicateCandidate(place, existingPlaces);
-    if (duplicate) {
+    if (duplicate && !resolution.createNew) {
       return {
         disposition: "skip",
         reason: `possible duplicate of KC3 place ${duplicate.id}; attach or create requires explicit resolution`,
@@ -354,7 +393,9 @@ export function planGooglePlaceImport(
   }
 
   const canonical: GoogleImportPayload["canonical"] = {};
-  const notices: string[] = [];
+  const notices: string[] = attachment
+    ? ["provider identity attached to an existing KC3 place"]
+    : [];
   const nameChange = classifyTextChange(existing.name, place.provider.name);
   if (nameChange === "cosmetic") canonical.name = place.provider.name;
   if (nameChange === "substantive") notices.push("substantive name change");
@@ -483,9 +524,11 @@ function isAddressComponent(value: unknown): boolean {
     isRecord(value) &&
     typeof value.longText === "string" &&
     value.longText.trim().length > 0 &&
-    Array.isArray(value.types) &&
-    value.types.length > 0 &&
-    value.types.every((type) => typeof type === "string" && type.length > 0) &&
+    (value.types == null ||
+      (Array.isArray(value.types) &&
+        value.types.every(
+          (type) => typeof type === "string" && type.trim().length > 0,
+        ))) &&
     (value.shortText == null || typeof value.shortText === "string") &&
     (value.languageCode == null || typeof value.languageCode === "string")
   );

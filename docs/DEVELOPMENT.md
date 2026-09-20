@@ -132,13 +132,15 @@ key copy, hosted project, or privileged client credential is required. CLI outpu
 is never printed. Docker/CLI access failures produce prerequisite instructions.
 Run it from the repository root with permission to access Docker and localhost.
 
-The suite expects the unchanged 15-place seed, checks every seed ID and the raw
-five-field response before data-layer projection, compares production data-layer
-results, and requires HTTP 401 / PostgreSQL `42501` for direct `places` reads.
-Missing migrations, seed changes, or API failures fail the suite; they are not
-silently skipped. Run `npm test` and `npm run lint:db` against the same database
-for the complementary 180 pgTAP assertions and schema lint. `test:app` remains
-independent of Docker and excludes the `*.smoke.ts` integration files.
+The suite supports both the clean 15-place seed and a reviewed provider-backed
+local dataset. It checks every returned row's exact raw five-field shape and
+approved city/type bounds, compares the production data-layer result, and
+requires HTTP 401 / PostgreSQL `42501` for direct `places` reads. Missing
+migrations, an empty dataset, or API failures fail the suite; they are not
+silently skipped. Run `npm test` and `npm run lint:db` against a clean reset and
+again after importing. Database fixtures and seed assertions are scoped so the
+same suite supports provider-enriched local state. `test:app` remains independent
+of Docker and excludes the `*.smoke.ts` integration files.
 
 See [`ACCESSIBILITY_REVIEW.md`](ACCESSIBILITY_REVIEW.md) for the KC3-21 manual
 viewport/keyboard results, accessibility fixes, and outstanding native,
@@ -186,7 +188,19 @@ each KC3 category, deduplicates IDs, then uses the exact KC3-24 Place Details
 field mask. `boba_tea` uses Google's `tea_house` discovery type. Results whose
 resolved city is outside the requested city, malformed records, movement
 candidates, moved listings, and unresolved canonical duplicates are skipped and
-reported.
+reported. Every requested city/category query is attempted even if the global
+unique-place selection bound has already been reached. The query summary records
+pages fetched, a remaining provider continuation (`provider capped=yes`), and
+IDs omitted by the global bound (`selection capped=yes`); either cap means the
+run is bounded evidence, not exhaustive coverage.
+
+KC3-27 adds two explicit review resolutions. Repeat `--attach
+<GoogleID=KC3UUID>` to bind a provider result to an existing canonical place, or
+repeat `--create <GoogleID>` only after confirming that a deterministic duplicate
+candidate is a different physical place. Attachments preserve the existing KC3
+UUID, classification, and details. The provider identity and normalized provider
+data commit in one transaction; any rejected payload rolls both back. Neither
+option performs a fuzzy or automatic merge.
 
 Review dry-run counts and notices, then repeat the identical bounds with
 `--write` to commit one transaction per valid place:
@@ -203,6 +217,56 @@ nonzero. Skips are safe review outcomes and do not by themselves fail the run.
 Re-running the write command matches by Google Place ID and refreshes the same
 KC3 place. Missing provider fields are preserved, and the database function has
 no ability to write `place_details`, `place_overrides`, or KC3-owned hours.
+
+### Recreate or refresh the KC3 MVP dataset
+
+Use a disposable local database unless a separately authorized target is named.
+Do not reset a database that contains unexported KC3 curation.
+
+1. Run `npm exec -- supabase db reset --local`, `npm test`, and `npm run
+   lint:db`. This proves the clean seed and import boundary before provider data
+   changes the local state.
+2. Recreate the recorded KC3-27 bound with one page per category and a 200-place
+   city cap. Run Lenexa's five non-park categories together, Lenexa park
+   separately with `--max-pages 3` (the recorded search ended naturally after
+   two), and all six categories together for each other city. This attempts all
+   18 pairs without allowing one city's results to consume another city's cap.
+3. Record every query's count and cap flags in
+   [`KC3_27_DATASET.md`](KC3_27_DATASET.md). Review every planned insert against
+   the 15 representative seed records. Add an `--attach` mapping when both refer
+   to the same physical place; use `--create` only for a confirmed false-positive
+   duplicate. A representative seed left without an identity must be investigated
+   or documented as a coverage gap.
+4. Repeat the same dry-run with all resolutions. It must show the reviewed seed
+   places as updates, not inserts. Then repeat the identical command with
+   `--write`. Keep the query bounds and resolutions unchanged between those two
+   runs.
+5. Run the read-only queries in
+   [`supabase/audits/kc3_27_dataset.sql`](../supabase/audits/kc3_27_dataset.sql).
+   Record aggregate counts and resolve or document every nonempty issue result.
+   Spot-check at least one stored canonical/provider/hours record from each city.
+6. Run `npm test`, `npm run lint:db`, and `npm run test:integration` against the
+   imported state. Then launch `npm run web` with the local public URL/key and
+   confirm the list loads through `list_public_places()`. Do not add a direct-table
+   client path. Record Web and, when available, mobile smoke results.
+
+The complete pair matrix is the Cartesian product of:
+
+- Cities: Lenexa, Overland Park, Olathe.
+- Categories: `coffee_shop`, `cafe`, `boba_tea`, `library`, `coworking`, `park`.
+
+For example, the recorded Lenexa coffee/cafe/boba/library/coworking bound and one
+of its reviewed attachments are:
+
+```sh
+npm run ingest:google -- --city Lenexa --category coffee_shop,cafe,boba_tea,library,coworking --max-pages 1 --max-places 200
+npm run ingest:google -- --city Lenexa --category coffee_shop,cafe,boba_tea,library,coworking --max-pages 1 --max-places 200 --attach 'ChIJW4FqNKmUwIcRDtDZHMN3rV8=6b633300-0000-4000-8000-000000000002' --write
+```
+
+Pass every applicable reviewed mapping from `KC3_27_DATASET.md` to its command.
+Never reuse a mapping without reviewing that live result. The current run evidence
+and known coverage limitations belong in that document, not only in terminal
+history.
 
 Normal tests and CI never invoke Google. An operator may use the small dry run
 above and its matching `--write` command as an explicitly billable live smoke

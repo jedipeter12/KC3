@@ -117,21 +117,31 @@ select is(
 select is(
   (
     select count(*)::integer
-    from public.place_google_data
-    where place_id in (select id from expected_mvp_seed_places)
+    from public.places as places
+    left join public.place_google_data as google on google.place_id = places.id
+    where places.id in (select id from expected_mvp_seed_places)
+      and (
+        (places.google_place_id is null) <> (google.place_id is null)
+        or (places.google_place_id is not null and google.google_fetched_at is null)
+      )
   ),
   0,
-  'the seed does not invent Google-owned data'
+  'seed identities have no partial provider identity or metadata state'
 );
 
 select is(
   (
     select count(*)::integer
-    from public.place_hours
-    where place_id in (select id from expected_mvp_seed_places)
+    from public.place_hours as hours
+    join public.places as places on places.id = hours.place_id
+    where places.id in (select id from expected_mvp_seed_places)
+      and (
+        hours.source_observed_at is null
+        or (hours.source = 'google' and places.google_place_id is null)
+      )
   ),
   0,
-  'the seed does not store volatile hours without source metadata'
+  'seed identities never have unobserved or identity-less provider hours'
 );
 
 select lives_ok(

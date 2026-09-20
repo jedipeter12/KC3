@@ -64,6 +64,9 @@ City extraction is deterministic: find the first component by priority
 `locality`, `postal_town`, then `administrative_area_level_3`, considering types
 rather than component order, and use its `longText`. No match means “not supplied”
 for refreshes and blocks creation of a new place whose required city is unknown.
+Google may omit `types` from an individual non-city address component; valid
+untyped components are retained, while only typed components participate in city
+extraction.
 
 ### Writable table ownership
 
@@ -294,8 +297,10 @@ and must not advance freshness separately.
 
 ## Deferred beyond KC3-26
 
-- Interactive duplicate attachment and the two-listing moved-place resolution
-  transaction. KC3-25 reports these cases without mutating them.
+- Interactive duplicate selection remains deferred. KC3-27 adds a noninteractive
+  explicit `GoogleID=KC3UUID` operator attachment and an explicit false-positive
+  create resolution; neither performs fuzzy or automatic merging. The
+  two-listing moved-place resolution transaction remains deferred.
 - Override creation/display UI or a public effective-value API.
 - Scheduled refresh, retry policy, monitoring, map/navigation UI, and the real
   Johnson County dataset.

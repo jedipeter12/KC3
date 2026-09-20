@@ -8,6 +8,7 @@ import {
 } from "./googlePlaceIngestion";
 import type {
   DiscoveredPlaceId,
+  GoogleDiscoveryResult,
   MvpCity,
   MvpPlaceCategory,
 } from "./googlePlacesProvider";
@@ -18,6 +19,18 @@ export type GoogleImportOptions = Readonly<{
   maxPages: number;
   maxPlaces: number;
   write: boolean;
+  attachments?: Readonly<Record<string, string>>;
+  explicitCreates?: readonly string[];
+}>;
+
+export type GoogleQuerySummary = Readonly<{
+  city: MvpCity;
+  category: MvpPlaceCategory;
+  discovered: number;
+  pagesFetched: number;
+  providerCapped: boolean;
+  selectionCapped: boolean;
+  failed: boolean;
 }>;
 
 export type GoogleImportSummary = {
@@ -26,6 +39,7 @@ export type GoogleImportSummary = {
   updated: number;
   skipped: number;
   failed: number;
+  queries: GoogleQuerySummary[];
   messages: string[];
 };
 
@@ -34,7 +48,7 @@ export type GooglePlacesProvider = {
     city: MvpCity,
     category: MvpPlaceCategory,
     maxPages: number,
-  ): Promise<DiscoveredPlaceId[]>;
+  ): Promise<GoogleDiscoveryResult>;
   getDetails(googlePlaceId: string): Promise<unknown>;
 };
 
@@ -57,28 +71,54 @@ export async function runGoogleImport(
     updated: 0,
     skipped: 0,
     failed: 0,
+    queries: [],
     messages: [],
   };
   const discoveries = new Map<string, DiscoveredPlaceId>();
+  const explicitCreates = new Set(options.explicitCreates ?? []);
 
   for (const city of options.cities) {
     for (const category of options.categories) {
-      if (discoveries.size >= options.maxPlaces) break;
       try {
-        const results = await provider.discover(
+        const result = await provider.discover(
           city,
           category,
           options.maxPages,
         );
-        for (const result of results) {
-          if (discoveries.size >= options.maxPlaces) break;
+        let selectionCapped = false;
+        for (const place of result.places) {
+          if (
+            discoveries.size >= options.maxPlaces &&
+            !discoveries.has(place.googlePlaceId)
+          ) {
+            selectionCapped = true;
+            continue;
+          }
           discoveries.set(
-            result.googlePlaceId,
-            discoveries.get(result.googlePlaceId) ?? result,
+            place.googlePlaceId,
+            discoveries.get(place.googlePlaceId) ?? place,
           );
         }
+        summary.queries.push({
+          city,
+          category,
+          discovered: result.places.length,
+          pagesFetched: result.pagesFetched,
+          providerCapped: result.capped,
+          selectionCapped,
+          failed: false,
+        });
       } catch {
         summary.failed += 1;
+        summary.queries.push({
+          city,
+          category,
+          discovered: 0,
+          pagesFetched: 0,
+          providerCapped: false,
+          selectionCapped: false,
+          failed: true,
+        });
         summary.messages.push(`Search failed for ${category} in ${city}.`);
       }
     }
@@ -142,6 +182,10 @@ export async function runGoogleImport(
       discovery.category as PlaceType,
       now().toISOString(),
       existingPlaces,
+      {
+        existingPlaceId: options.attachments?.[discovery.googlePlaceId],
+        createNew: explicitCreates.has(discovery.googlePlaceId),
+      },
     );
     if (plan.disposition === "skip") {
       summary.skipped += 1;
@@ -151,12 +195,18 @@ export async function runGoogleImport(
       continue;
     }
 
+    summary.messages.push(
+      `${options.write ? "Importing" : "Plan"} Google place ${discovery.googlePlaceId}: ${plan.action} ${reviewText(normalized.value.provider.name)} at ${reviewText(normalized.value.provider.address)}.`,
+    );
+
     if (options.write) {
       try {
         const result = await repository.importPlace(plan.payload);
         summary[result.action] += 1;
         if (result.action === "inserted") {
           existingPlaces.push(toExistingPlace(plan.payload, result.placeId));
+        } else if (plan.payload.expectedPlaceId) {
+          existingPlaces = attachIdentityInMemory(existingPlaces, plan.payload);
         }
       } catch {
         summary.failed += 1;
@@ -171,6 +221,8 @@ export async function runGoogleImport(
         existingPlaces.push(
           toExistingPlace(plan.payload, `dry-run:${discovery.googlePlaceId}`),
         );
+      } else if (plan.payload.expectedPlaceId) {
+        existingPlaces = attachIdentityInMemory(existingPlaces, plan.payload);
       }
     }
 
@@ -182,6 +234,23 @@ export async function runGoogleImport(
   }
 
   return summary;
+}
+
+function reviewText(value: string | undefined): string {
+  if (!value) return "[not supplied]";
+  const oneLine = value.replace(/[\p{Cc}\p{Cf}]+/gu, " ").replace(/\s+/g, " ");
+  return JSON.stringify(oneLine.slice(0, 240));
+}
+
+function attachIdentityInMemory(
+  places: ExistingGooglePlace[],
+  payload: GoogleImportPayload,
+): ExistingGooglePlace[] {
+  return places.map((place) =>
+    place.id === payload.expectedPlaceId
+      ? { ...place, googlePlaceId: payload.googlePlaceId }
+      : place,
+  );
 }
 
 function toExistingPlace(

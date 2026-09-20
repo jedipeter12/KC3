@@ -4,21 +4,22 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Use the completed and verified manual Google Places ingestion boundary to
-construct the reviewed Johnson County dataset.
+Verify repeatable refresh and integration behavior against the reviewed Johnson
+County provider-backed dataset.
 
 ## In Progress
 
-- [ ] KC3-23: Final automated verification and live Expo Web smoke pass complete;
-  milestone closure remains blocked by KC3-21 and the live mobile smoke check.
-  See `docs/MVP_VERIFICATION.md` for evidence and closeout requirements.
+- [ ] KC3-23: Final automated verification and live Expo Web and iOS Simulator
+  functional smoke passes complete; milestone closure remains blocked by the
+  KC3-21 native accessibility checks. See `docs/MVP_VERIFICATION.md` for evidence
+  and closeout requirements.
 - [ ] KC3-21: Web keyboard/responsive checks and accessibility fixes verified;
   native interactions, large text, and spoken screen-reader checks remain open.
 
 ## Next
 
-- [ ] KC3-27: Construct the real Johnson County dataset through the reviewed
-  operator workflow.
+- [ ] KC3-28: Verify real-data refresh and integration behavior against the
+  reviewed bounded dataset.
 - [ ] Keep unrestricted raw Google payload retention disabled; require a new
   privacy/licensing/access decision before adding it later.
 - [ ] Define the Google import workflow and any later curated seed expansion.
@@ -35,6 +36,12 @@ construct the reviewed Johnson County dataset.
 
 ## Completed
 
+- [x] KC3-27 constructs and audits the first provider-backed local MVP dataset:
+  all 18 city/category queries attempted, 162 canonical places stored, 161
+  provider-backed, 14 representative seeds atomically reconciled, caps and gaps
+  recorded, no material duplicate/source/hours/ownership issue left unresolved,
+  and the anonymous RPC plus Expo Web and iOS Simulator verified against real
+  data.
 - [x] KC3-26 verifies the KC3-24/KC3-25 Google-owned persistence path for
   ordinary, closed, split, overnight, unchanged, changed, missing, and failed
   weekly-hours refreshes; distinguishes provider freshness from KC3 verification;
@@ -113,8 +120,9 @@ Use this section for ideas intentionally postponed or rejected so they are not r
 
 ## Known Bugs / Issues
 
-- Native verification is incomplete: the iOS simulator launches KC3, but UI
-  automation cannot tap its content (initially `AXError.cannotComplete`; the
-  follow-up returned `noWindowsAvailable`, including after reconnecting).
-  Android tooling is unavailable. See `docs/ACCESSIBILITY_REVIEW.md` for evidence
-  and the manual completion procedure.
+- Manual iOS Simulator functional smoke passes, but native accessibility
+  verification remains incomplete: UI automation cannot tap the app's content
+  (initially `AXError.cannotComplete`; the follow-up returned
+  `noWindowsAvailable`, including after reconnecting). Android tooling is
+  unavailable. See `docs/ACCESSIBILITY_REVIEW.md` for evidence and the manual
+  completion procedure.

@@ -4,16 +4,17 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 
 ## Status
 
-- Stage: Initial client and provider-backed dataset preparation
-- Current focus: Constructing the reviewed Johnson County dataset through the
-  completed Google ingestion boundary, plus the remaining native accessibility
-  checks for the list-first slice.
-- Last major milestone: Closed KC3-26 by verifying deterministic Google weekly
-  hours replacement, provider freshness metadata, ownership preservation, and
-  transactional failure behavior end to end.
+- Stage: Initial client with a reviewed provider-backed local MVP dataset
+- Current focus: Real-data refresh/integration verification and the remaining
+  native accessibility checks for the list-first slice.
+- Last major milestone: Closed KC3-27 with a bounded 162-place Lenexa, Overland
+  Park, and Olathe dataset, 14 atomic seed reconciliations, documented coverage
+  limits, a clean post-import audit, and live Expo Web and iOS Simulator smoke
+  passes.
 
-KC3-23 final automated checks and live Expo Web smoke checks pass. Milestone
-closure remains pending native and accessibility verification; see
+KC3-23 final automated checks and live Expo Web and iOS Simulator functional
+smoke checks pass. Milestone closure remains pending native accessibility
+verification; see
 [`docs/MVP_VERIFICATION.md`](docs/MVP_VERIFICATION.md).
 
 ## Quick Start
@@ -39,6 +40,7 @@ the public environment configuration required to run the client.
 - [`docs/TESTING_REVIEW.md`](docs/TESTING_REVIEW.md) — database coverage review, remaining gaps, and decisions required
 - [`docs/SEED_DATA.md`](docs/SEED_DATA.md) — local seed behavior, data provenance, and maintenance rules
 - [`docs/GOOGLE_INGESTION_CONTRACT.md`](docs/GOOGLE_INGESTION_CONTRACT.md) — approved Google field, ownership, normalization, refresh, and override rules
+- [`docs/KC3_27_DATASET.md`](docs/KC3_27_DATASET.md) — bounded MVP dataset run record, counts, review findings, and coverage limitations
 - [`AGENTS.md`](AGENTS.md) — standing instructions for AI coding agents
 
 ## Repository Structure

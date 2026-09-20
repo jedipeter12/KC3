@@ -11,7 +11,10 @@ explicit loading, database-empty, no-match, sanitized error, and retry states.
 Supabase provides the backend platform and PostgreSQL-based database; the initial
 MVP schema is defined as a migration but has not been applied to production. A transactional,
 idempotent local seed bootstraps 15 representative places without importing
-Google data or guessing KC3 details. A read-only Supabase RPC exposes the five
+Google data or guessing KC3 details. The reviewed KC3-27 operator run expands the
+current local database to 162 canonical places, 161 provider-backed, while
+preserving that resettable seed boundary and unknown KC3 suitability values. A
+read-only Supabase RPC exposes the five
 approved identity fields for active places to unauthenticated clients without
 granting them base-table access. Supabase Auth is the selected authentication
 platform if later approved features require accounts, and Supabase Storage may be
@@ -121,7 +124,11 @@ use the ignored `dist/` directory.
   Table A type filter; each ID is then fetched through Place Details with the
   exact KC3-24 field mask. Pure TypeScript validates, normalizes, checks city
   bounds and duplicate/movement review rules, and builds a complete change plan
-  before persistence.
+  before persistence. Each city/category query reports fetched pages and whether
+  a provider continuation or the global selection bound truncated it. Reviewed
+  `--attach` resolutions bind a newly discovered Google identity to an existing
+  KC3 UUID; reviewed `--create` resolutions may override only the deterministic
+  duplicate-review stop.
 - Google import database boundary: Two functions executable only by
   `service_role` expose the minimum planning projection and one-place import
   transaction. Both are owned by a constrained `NOLOGIN`, non-bypass-RLS role.
@@ -130,6 +137,10 @@ use the ignored `dist/` directory.
   stored hour rows intact; changed schedules replace the complete Google-owned
   set in the same transaction as provider metadata. Its owner has no privilege
   on `place_details`, `place_overrides`, or KC3-owned hours.
+  A third server-only wrapper added for KC3-27 locks an explicitly selected seed,
+  attaches the Google identity, and invokes the same normalized import in one
+  transaction. Invalid or failed provider persistence therefore rolls the
+  identity attachment back as well.
 
 ## Data Model
 
@@ -275,11 +286,11 @@ state.
   client and data layer against the local Supabase Data API, checking seeded RPC
   results, exact serialized fields, and direct anonymous table-access denial.
 - Importer tests: Offline Jest fixtures protect transformation, field masks,
-  continuation, duplicate/change planning, configuration failures, and sanitized
-  provider/database errors. pgTAP runs the real import function for insert,
-  unchanged, changed, missing, and failed hours refreshes, KC3 ownership
-  preservation, source metadata, permissions, and rollback. Normal CI never
-  calls Google.
+  continuation and cap reporting, duplicate/change/reconciliation planning,
+  configuration failures, and sanitized provider/database errors. pgTAP runs
+  the real import functions for insert, explicit seed attachment, unchanged,
+  changed, missing, and failed hours refreshes, KC3 ownership preservation,
+  source metadata, permissions, and rollback. Normal CI never calls Google.
 - End-to-end tests: Not selected. The current Web screen is manually checked at
   desktop and small-mobile viewport sizes in addition to component coverage.
 - Static quality checks: TypeScript strict typechecking, Expo's ESLint flat

@@ -2,12 +2,10 @@
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 
-import type { PublicPlace } from "../../src/types/database";
-
 const prerequisites =
   "KC3 integration prerequisites: start Docker Desktop, run npm exec -- supabase start, " +
   "then npm exec -- supabase db reset --local against the disposable local database. " +
-  "See docs/DEVELOPMENT.md. This test requires the unchanged 15-place seed.";
+  "See docs/DEVELOPMENT.md. The clean seed and a reviewed provider-backed local dataset are both supported.";
 
 let supabase: typeof import("../../src/lib/supabase").supabase;
 let listPublicPlaces: typeof import("../../src/data/publicPlaces").listPublicPlaces;
@@ -46,7 +44,7 @@ beforeAll(() => {
   >("../../src/data/publicPlaces"));
 });
 
-it("returns every seeded active place with exactly the five serialized fields", async () => {
+it("returns active MVP-city places with exactly the five serialized fields", async () => {
   const { data, error, status } = await supabase
     .rpc("list_public_places")
     .abortSignal(AbortSignal.timeout(5000));
@@ -55,14 +53,7 @@ it("returns every seeded active place with exactly the five serialized fields", 
       `Local public RPC failed (HTTP ${status}). ${prerequisites}`,
     );
   }
-  expect(data).toHaveLength(15);
-  expect(data.map((place) => place.id).sort()).toEqual(
-    Array.from(
-      { length: 15 },
-      (_, index) =>
-        `6b633300-0000-4000-8000-${String(index + 1).padStart(12, "0")}`,
-    ),
-  );
+  expect(data.length).toBeGreaterThan(0);
   for (const place of data) {
     // Check the raw RPC result before the data layer can strip extra fields.
     expect(Object.keys(place).sort()).toEqual([
@@ -76,14 +67,16 @@ it("returns every seeded active place with exactly the five serialized fields", 
       expect(typeof value).toBe("string");
       expect(value.length).toBeGreaterThan(0);
     }
+    expect(["Lenexa", "Overland Park", "Olathe"]).toContain(place.city);
+    expect([
+      "coffee_shop",
+      "cafe",
+      "boba_tea",
+      "library",
+      "coworking",
+      "park",
+    ]).toContain(place.place_type);
   }
-  expect(data).toContainEqual({
-    id: "6b633300-0000-4000-8000-000000000001",
-    name: "Lenexa City Center Library",
-    city: "Lenexa",
-    address: "8778 Penrose Ln, Lenexa, KS 66219",
-    place_type: "library",
-  } satisfies PublicPlace);
 });
 
 it("loads the same live RPC result through the production data layer", async () => {
@@ -91,7 +84,7 @@ it("loads the same live RPC result through the production data layer", async () 
     .rpc("list_public_places")
     .abortSignal(AbortSignal.timeout(5000));
   expect(error).toBeNull();
-  expect(data).toHaveLength(15);
+  expect(data?.length).toBeGreaterThan(0);
   await expect(listPublicPlaces()).resolves.toEqual(data);
 });
 
