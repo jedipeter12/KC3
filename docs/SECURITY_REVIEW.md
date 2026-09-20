@@ -1,16 +1,18 @@
 # Defensive Security Review
 
-**Review date:** 2026-08-23; updated 2026-09-08 for the Google ingestion contract
-and previously updated 2026-09-05 for public place access and the Expo client
+**Review date:** 2026-08-23; updated 2026-09-19 for the verified Google import
+boundary and previously updated 2026-09-08 for the Google ingestion contract
 
 **Scope:** Repository contents and Git history, Supabase migration and local
 configuration, dependency metadata, documented architecture, and the controls
 that must exist before KC3 has real users.
 
-**Current project stage:** Initial client implementation. The first read-only
-Supabase RPC and an Expo client configured with its public URL/key boundary exist,
-and the client invokes the RPC through its typed data layer. No custom server, deployed
-environment, or production database exists in this repository.
+**Current project stage:** Initial client and provider-ingestion implementation.
+The first read-only Supabase RPC and an Expo client configured with its public
+URL/key boundary exist, and the client invokes the RPC through its typed data
+layer. A manual bounded Google CLI writes through a constrained server-only
+transaction. No deployed environment or production database exists in this
+repository.
 
 ## Executive Security Assessment
 
@@ -24,16 +26,15 @@ No critical or high-severity dependency advisory, committed credential, custom
 authentication flaw, or application remote-code path was found. A live
 production-dependency audit reports 10 moderate findings in Expo's transitive
 CLI/config tooling; M-07 records the current disposition. The most important
-remaining risks are pre-launch design gaps: the administrative write/import path,
-Google credential/quota/attribution implementation, production environment
-controls, backup/restore expectations, and any future account model are not
-approved. The anonymous RPC must not be broadened without a new approval and matching
-authorization tests.
+remaining risks are pre-launch design gaps: operator credential/quota controls,
+Google attribution requirements, production environment controls, backup/restore
+expectations, and any future account model are not approved. The anonymous RPC
+must not be broadened without a new approval and matching authorization tests.
 
 Security status by stage:
 
 - **Safe for the current local backend stage:** Yes. The migrations apply from a
-  clean local database, all 148 pgTAP assertions pass, and database lint reports
+  clean local database, all 180 pgTAP assertions pass, and database lint reports
   no schema errors.
 - **Safe for an Expo client to call the approved RPC locally:** Yes. This does not
   approve additional reads, any writes, or production deployment.
@@ -64,23 +65,24 @@ expose hidden or internal data if it bypasses this pattern.
   query, or enabling writes.
 - **Disposition:** **MITIGATED FOR THE APPROVED INITIAL READ.**
 
-### H-02 — Administrative import implementation remains pending
+### H-02 — Administrative import boundary is implemented for the manual workflow
 
-KC3-24 defines the allowlist, validation, ownership, transaction, and failure
-contract for a manual import, but no credentialed workflow or server boundary
-exists. A Supabase
-secret/service-role credential bypasses RLS and must never be embedded in Expo,
-Expo Web, a public bundle, or other user-controlled runtime. A leaked credential
-would permit broad read/write/delete access and cascading deletion of dependent
-records.
+KC3-25 implements the allowlisted manual importer with server-only environment
+variables and a constrained transactional function owned by a `NOLOGIN`,
+`NOBYPASSRLS` role. The Expo graph does not reference its variables. The operator
+still authenticates the RPC using a Supabase service-role credential, which
+bypasses RLS at the gateway and must never enter Expo, Expo Web, logs, or source
+control. A leaked credential would retain broader platform impact than the
+function owner's database privileges.
 
-- **Current exploitability:** The local seed uses no credential or network
-  ingestion. No automated or production ingestion code exists.
+- **Current exploitability:** Limited to an attended local operator workflow;
+  normal tests and CI use no Google credential or live provider request.
 - **Threat mitigated by recommendation:** Full database compromise through a
   client-exposed or overprivileged administrative secret.
-- **Required timing:** **Immediate MVP blocker before seed/import automation.**
-- **Disposition:** The data contract is accepted; **IMPLEMENTATION REQUIRED IN
-  KC3-25** through a server-controlled least-privilege boundary.
+- **Required timing:** Re-review before deployment, scheduled refresh, or any
+  broader administrative operation.
+- **Disposition:** **MITIGATED FOR THE APPROVED MANUAL IMPORT.** Production secret
+  storage, rotation, audit logging, and operator access remain release work.
 
 ### H-03 — Unrestricted raw Google retention is excluded from the MVP
 
@@ -378,19 +380,20 @@ that change was not applied.
 
 ### D-07 — Google integration and external-service governance
 
-1. **Issue:** The source allowlist and failure behavior are approved, but no
-   Google API integration, key restrictions, quotas, or attribution implementation
-   exists.
+1. **Issue:** The source allowlist and manual Google integration are implemented,
+   but production key storage/rotation, quotas, and attribution requirements are
+   not defined.
 2. **Risk:** API-key theft, quota/cost abuse, injection of malformed upstream data,
    provider-terms violations, and stale or misleading data.
-3. **Likely options:** Manual seed data; server-side scheduled ingestion; or
-   on-demand server-side refresh.
-4. **Tradeoffs:** Manual data limits credentials and cost but becomes stale.
-   Automation improves freshness while adding secrets, monitoring, quotas, and
-   provider dependency.
-5. **Disposition:** KC3-24 accepts the allowlist, preservation, and atomic-failure
-   contract. KC3-25 must call Google only from trusted infrastructure and define
-   key restrictions, budgets, operational retry, and attribution before use.
+3. **Likely options:** Keep the attended manual CLI; add server-side scheduled
+   ingestion; or add on-demand server-side refresh.
+4. **Tradeoffs:** The manual workflow bounds credentials and cost but requires
+   operator discipline and becomes stale between runs. Automation improves
+   freshness while adding secrets, monitoring, quotas, and provider dependency.
+5. **Disposition:** KC3-24 through KC3-26 implement and verify the manual
+   allowlist, preservation, and atomic-failure contract. Restrict the Google key
+   to Places API (New) where practical; define budgets, production secret
+   handling, operational retry, and attribution before deployment or automation.
 
 ## Issues Fixed During This Task
 

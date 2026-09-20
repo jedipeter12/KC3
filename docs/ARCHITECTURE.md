@@ -126,8 +126,10 @@ use the ignored `dist/` directory.
   `service_role` expose the minimum planning projection and one-place import
   transaction. Both are owned by a constrained `NOLOGIN`, non-bypass-RLS role.
   The mutation accepts only normalized allowlisted JSON, serializes on Google
-  Place ID, and replaces only Google hours. Its owner has no privilege on
-  `place_details`, `place_overrides`, or KC3-owned hours.
+  Place ID, and replaces only Google hours. Unchanged or missing schedules leave
+  stored hour rows intact; changed schedules replace the complete Google-owned
+  set in the same transaction as provider metadata. Its owner has no privilege
+  on `place_details`, `place_overrides`, or KC3-owned hours.
 
 ## Data Model
 
@@ -141,14 +143,15 @@ The approved MVP data model consists of five public tables:
   shared primary key cascades on place deletion and it holds the allowlisted
   provider values, structured address/type metadata, coordinates, timezone,
   move ID, rating data, and provider fetch time. The MVP schema has no phone or
-  unrestricted raw-response storage.
+  unrestricted raw-response storage. `google_fetched_at` is the latest committed
+  validated provider response time and never represents KC3 verification.
 - `place_details`: Optional one-to-one KC3 detail data for a place. Its shared
   primary key cascades on place deletion and it holds workability classifications,
   nullable verified/unknown booleans, notes, and verification date.
 - `place_hours`: Zero-to-many weekly schedule rows for a place. Each row has its
   own UUID, cascades on place deletion, uses Sunday `0` through Saturday `6`, and
-  records its Google or KC3 source. Multiple intervals for one place/day are
-  intentionally allowed.
+  records its Google or KC3 source and source observation time. Multiple
+  intervals for one place/day are intentionally allowed.
 - `place_overrides`: Zero-to-many KC3-owned, effective-dated factual overrides.
   Inclusive ranges for one place/type cannot overlap; JSON payloads are versioned
   at the application boundary. An internal invoker-rights function resolves an
@@ -274,8 +277,9 @@ state.
 - Importer tests: Offline Jest fixtures protect transformation, field masks,
   continuation, duplicate/change planning, configuration failures, and sanitized
   provider/database errors. pgTAP runs the real import function for insert,
-  repeat refresh, KC3 ownership preservation, source-specific hours,
-  permissions, and rollback. Normal CI never calls Google.
+  unchanged, changed, missing, and failed hours refreshes, KC3 ownership
+  preservation, source metadata, permissions, and rollback. Normal CI never
+  calls Google.
 - End-to-end tests: Not selected. The current Web screen is manually checked at
   desktop and small-mobile viewport sizes in addition to component coverage.
 - Static quality checks: TypeScript strict typechecking, Expo's ESLint flat

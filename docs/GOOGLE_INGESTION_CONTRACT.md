@@ -1,9 +1,10 @@
 # Google Places Ingestion Contract
 
-**Status:** Accepted for KC3-24  
+**Status:** Accepted for KC3-24 and persistence-verified by KC3-26
 **Applies to:** the manual KC3-25 importer and later refresh workflows
 **Implementation:** KC3-25 implements the bounded single-place create/refresh
-path; explicit duplicate attachment and moved-listing resolution remain deferred
+path; KC3-26 verifies its hours, freshness, ownership, and rollback behavior.
+Explicit duplicate attachment and moved-listing resolution remain deferred.
 
 This is the durable policy and transformation contract for Google Places data.
 Repository schema and tests enforce stable storage invariants; the trusted
@@ -259,7 +260,10 @@ and must not advance freshness separately.
   only when a successful validated refresh transaction commits, including a
   repeat with no data changes.
 - `place_hours.source_observed_at`: same fetch time for rows sourced from Google;
-  KC3 observation time for rows sourced from KC3.
+  KC3 observation time for rows sourced from KC3. For Google rows this is the
+  response that produced the currently stored schedule. An unchanged or missing
+  schedule preserves the rows and their observation time while
+  `google_fetched_at` still records the newer validated provider response.
 - `created_at`: database row creation time.
 - `updated_at`: database mutation time maintained by trigger; not a source
   verification claim.
@@ -288,7 +292,7 @@ and must not advance freshness separately.
 | Expired override | Provider value becomes effective without deleting override history |
 | Partial response/interruption | Validation failure or transaction rollback leaves prior state intact |
 
-## Deferred beyond KC3-25
+## Deferred beyond KC3-26
 
 - Interactive duplicate attachment and the two-listing moved-place resolution
   transaction. KC3-25 reports these cases without mutating them.

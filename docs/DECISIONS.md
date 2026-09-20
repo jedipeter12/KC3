@@ -43,6 +43,58 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-19 — Distinguish provider freshness from stored-schedule observation
+
+**Status:** Accepted
+
+**Decision**
+
+Use `place_google_data.google_fetched_at` as the latest successfully committed,
+validated Google response time. Use a Google `place_hours.source_observed_at` as
+the response time that produced the currently stored regular schedule. When a
+valid refresh omits regular hours or returns an unchanged normalized schedule,
+preserve the existing hour rows and their observation time while advancing
+`google_fetched_at`. Do not add current, special, secondary, or open-now hours to
+KC3-26.
+
+**Context**
+
+KC3-26 requires deterministic Google weekly-hours persistence and source/fetch
+metadata without treating provider activity as KC3 verification. KC3-25 already
+implemented the accepted KC3-24 transaction and ownership rules, but the two
+provider timestamps needed an explicit semantic distinction and end-to-end
+coverage.
+
+**Alternatives considered**
+
+- Delete and recreate unchanged Google hours solely to advance their row-level
+  observation timestamps.
+- Treat `source_observed_at` or `google_fetched_at` as KC3 verification.
+- Expand the provider mask and schema to current, holiday, secondary, or
+  open-now hours.
+
+**Reasoning**
+
+Preserving unchanged rows makes repeat imports deterministic and avoids
+meaningless row churn. The listing-level timestamp still proves that KC3
+successfully validated a newer provider response, while the row-level timestamp
+identifies the response that established the stored schedule. Keeping provider
+freshness separate prevents automated imports from overstating human KC3
+verification. Richer time-sensitive hours are separate product behavior and are
+not required by the KC3-26 ticket.
+
+**Consequences**
+
+No schema or production-code change is required for KC3-26. Reads that need the
+latest provider contact use `google_fetched_at`; audits of the current stored
+schedule use `source_observed_at`; KC3 verification continues to use KC3-owned
+fields. A future current/special-hours feature requires its own approved storage,
+retention, refresh, and display contract.
+
+**Follow-up**
+
+- Build the real Johnson County dataset through the verified operator workflow.
+
 ### 2026-09-08 — Use a dry-run-first CLI and constrained transactional RPC for Google ingestion
 
 **Status:** Accepted

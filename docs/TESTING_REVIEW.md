@@ -1,21 +1,21 @@
 # Test Coverage and Reliability Review
 
-**Review date:** 2026-08-23; updated 2026-09-08 for the Google ingestion
-contract, and previously updated 2026-09-06 for public place access, the Expo
-client scaffold, typed data layer, place-list component, and client-side search
-and filters
+**Review date:** 2026-08-23; updated 2026-09-19 for Google hours/source
+persistence, and previously updated 2026-09-08 for the Google ingestion contract
+and 2026-09-06 for the client and public-read boundary
 
 **Scope:** Approved behavior and current implementation in the KC3 repository.
 
 ## Scope and Established Behavior
 
 KC3 currently contains an approved Supabase/PostgreSQL data model, local seed,
-anonymous read-only place RPC, and an Expo TypeScript client with a typed public
-data layer and locally filtered place-list screen. There is no custom server or
-automated import workflow. KC3-24 defines and tests pure Google normalization
-and database storage invariants without making provider calls. This review
-covers those boundaries, database behavior, the public data contract, and the
-first screen's component states.
+anonymous read-only place RPC, an Expo TypeScript client with a typed public data
+layer and locally filtered place-list screen, and an operator-run Google Places
+ingestion CLI. KC3-24 defines the Google normalization and ownership contract,
+KC3-25 implements its bounded server-only workflow, and KC3-26 verifies weekly
+hours and provider-freshness persistence. This review covers those boundaries,
+database behavior, the public data contract, and the first screen's component
+states without making live Google calls.
 
 ## Existing Coverage Assessment
 
@@ -26,11 +26,11 @@ constraints, defaults, relationships, timestamp triggers, and RLS posture had no
 executable regression protection.
 
 There is no meaningful line-coverage percentage to report for a SQL migration.
-The workspace suite provides 148 behavior and contract assertions across seven
+The workspace suite provides 180 behavior and contract assertions across eight
 pgTAP files. The first four files provide 87 schema assertions, including three
 for privilege revocations. The seed-data test adds 12 assertions, the public
-place access test adds 24 authorization/response-contract assertions, and the
-Google ingestion contract adds 25 assertions.
+place access test adds 24 authorization/response-contract assertions, the Google
+ingestion contract adds 25 assertions, and the import-boundary suite adds 32.
 
 ## Major Untested Risks Found
 
@@ -112,6 +112,16 @@ deterministic cosmetic/substantive comparisons, movement screening, missing and
 temporary-closure hour preservation, closed/split/overnight/24-hour schedules,
 and malformed/overlapping schedule rejection.
 
+### Google import boundary and hours/source persistence
+
+`008_google_import_boundary.test.sql` exercises the constrained importer role,
+server-only function grants, normalized allowlist, initial provider and schedule
+creation, unchanged refreshes, changed wholesale Google-hours replacement,
+missing-hours preservation, KC3-owned detail/hour preservation, source/fetch
+timestamps, and transactional rollback. Planner fixtures additionally prove
+that an unchanged or omitted schedule is excluded from the write payload while a
+changed schedule is sent as a complete normalized replacement.
+
 ### Typed public-place client and place-list screen
 
 Application tests verify the exact five-field TypeScript RPC contract, public
@@ -141,9 +151,9 @@ snapshots. These are component and unit checks, not live backend or device tests
 - Future authenticated and administrative CRUD flows: these role behaviors are
   not approved. KC3-20 covers the current anonymous RPC over HTTP; full Expo UI
   end-to-end coverage remains open.
-- Google network calls, credentials, importer orchestration, and transaction
-  execution: KC3-24 defines the contract and pure transformations but KC3-25 is
-  intentionally not implemented.
+- Live Google network calls and credentials: provider and importer behavior is
+  covered with fixtures, mocked HTTP, and the real local database boundary;
+  normal tests and CI intentionally make no billable provider request.
 - Blank canonical text remains undecided outside the trusted importer, which
   rejects it for new provider-backed places.
 - Automated accessibility, performance/load, and end-to-end behavior: component
@@ -169,11 +179,11 @@ administrative workflows remain undecided. Define any additional role behavior
 before grants and role-level tests lock it in. See `SECURITY_REVIEW.md` for the
 broader risk analysis.
 
-Canonical duplicate handling, Google rating bounds, and provider regular-hours
-normalization are now accepted in
-[`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md). Database and pure
-contract tests protect the enforceable portions; the future manual importer owns
-operator review and transactional workflow tests.
+Canonical duplicate handling, Google rating bounds, provider regular-hours
+normalization, and freshness semantics are accepted in
+[`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md). Database, pure
+contract, and importer tests protect the enforceable portions; explicit duplicate
+attachment and moved-listing resolution remain deferred operator workflows.
 
 ## Remaining Gaps and Prioritized Next Work
 
@@ -189,10 +199,10 @@ operator review and transactional workflow tests.
    production client, raw five-field serialization, all 15 seed IDs, data-layer
    results, and explicit anonymous base-table permission denial. No provider mocks
    or additional dependencies are used. KC3-22 includes this suite in CI.
-4. **Test future import workflows when approved and implemented.** Cover source
-   ownership, idempotency, duplicate handling, raw-data retention, and transaction
-   failure. This prevents reruns from duplicating places or partially refreshing
-   data.
+4. **Keep importer regression coverage current.** The existing suite covers
+   source ownership, stable-identity idempotency, regular-hours refresh behavior,
+   and transaction failure. Add matching coverage when duplicate attachment,
+   move resolution, or any new retained provider field is approved.
 5. **Continue expanding the Jest baseline with feature behavior.** Add focused
    unit and interaction tests for approved validation, transformations, and
    multi-branch utilities as they appear. This prevents client behavior from
@@ -207,6 +217,15 @@ operator review and transactional workflow tests.
    MVP.
 
 ## Verification Results
+
+**KC3-26 verified: 2026-09-19**
+
+- All 180 pgTAP assertions cover the existing schema and the expanded real
+  import-boundary refresh scenarios.
+- All 57 application tests include changed, unchanged, and omitted weekly-hours
+  planning without a Google request.
+- The public response/type contract remains exactly five fields; no schema,
+  client API, or field-mask expansion was required.
 
 **KC3-24 verified: 2026-09-08**
 
