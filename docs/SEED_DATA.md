@@ -24,6 +24,10 @@ cover every approved place type.
   production provenance/refresh workflow is not approved.
 - This local bootstrap is not a general deduplication system or a production
   administrative/import path.
+- The KC3-27 operator workflow may atomically attach a reviewed Google identity
+  and provider data to a stable seed UUID. That enrichment is not authored by
+  this seed and is lost when the disposable database is reset unless the
+  provider import is repeated.
 
 ## Initial Sources
 

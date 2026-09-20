@@ -151,13 +151,23 @@ select throws_ok(
 );
 
 select is(
-  (select is_closed from public.place_hours where day_of_week = 0),
+  (
+    select is_closed
+    from public.place_hours
+    where place_id = '30000000-0000-0000-0000-000000000001'
+      and day_of_week = 0
+  ),
   false,
   'hours default to an open interval'
 );
 
 select is(
-  (select closes_next_day from public.place_hours where day_of_week = 0),
+  (
+    select closes_next_day
+    from public.place_hours
+    where place_id = '30000000-0000-0000-0000-000000000001'
+      and day_of_week = 0
+  ),
   false,
   'hours default to closing on the same day'
 );
@@ -166,7 +176,8 @@ select ok(
   (
     select open_time is null and close_time is null
     from public.place_hours
-    where day_of_week = 6
+    where place_id = '30000000-0000-0000-0000-000000000001'
+      and day_of_week = 6
   ),
   'closed days retain null opening and closing times'
 );

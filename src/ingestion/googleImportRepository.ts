@@ -16,7 +16,7 @@ type ImportDatabase = {
         Args: never;
         Returns: ExistingGooglePlace[];
       };
-      kc3_import_google_place: {
+      kc3_reconcile_google_place: {
         Args: { payload: GoogleImportPayload };
         Returns: { placeId: string; action: "inserted" | "updated" };
       };
@@ -51,7 +51,7 @@ export function createGoogleImportRepository(
     },
 
     async importPlace(payload) {
-      const { data, error } = await client.rpc("kc3_import_google_place", {
+      const { data, error } = await client.rpc("kc3_reconcile_google_place", {
         payload,
       });
       if (

@@ -43,6 +43,48 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-20 — Reconcile provider identities through explicit atomic attachments
+
+**Status:** Accepted
+
+**Decision**
+
+Permit the manual Google importer to accept an explicit reviewed mapping from one
+Google Place ID to one existing KC3 UUID. Lock and attach that identity in a
+server-only wrapper, then invoke the existing normalized import in the same
+transaction. Also report query page/selection caps and allow an explicit
+operator `create` resolution for a deterministic duplicate false positive.
+Never infer an attachment from name alone or perform an automatic fuzzy merge.
+
+**Context**
+
+KC3-25 intentionally stopped at duplicate reporting. KC3-27 must transition the
+15 representative seed records to provider-backed identities without creating a
+second canonical record and without hand-writing provider rows. The live bounded
+run also needs evidence for all 18 city/category queries and honest cap reporting.
+
+**Alternatives considered**
+
+- Update seed Google IDs or provider tables manually in SQL.
+- Automatically merge provider results using fuzzy names or proximity.
+- Delete the seed and let Google imports create unrelated new KC3 UUIDs.
+- Attach the provider identity in one transaction and import metadata in another.
+
+**Reasoning**
+
+An explicit mapping makes the operator decision reviewable while preserving the
+stable KC3 identity and KC3-owned details. One database transaction prevents a
+failed import from leaving a provider identity without matching source/fetch
+metadata. Cap reporting distinguishes bounded discovery from exhaustive
+coverage.
+
+**Consequences / follow-up**
+
+Operators must run and inspect dry-run output, pass reviewed resolutions back to
+the identical bounded command, and audit the result. Database reset still returns
+to the representative seed; recreating the real local dataset requires rerunning
+the documented provider procedure. Moved-place resolution remains separate work.
+
 ### 2026-09-19 — Distinguish provider freshness from stored-schedule observation
 
 **Status:** Accepted

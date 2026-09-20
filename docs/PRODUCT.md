@@ -34,6 +34,10 @@ place list.
 - An initial local-development seed of 15 real places across Lenexa, Overland
   Park, and Olathe, using only verified canonical names and addresses while
   leaving unverified details, Google metadata, and hours unknown.
+- A reviewed, bounded local MVP dataset built through the Google ingestion path:
+  162 canonical places across the same three cities, 161 provider-backed, with
+  search caps and the remaining seed/provider coverage gap documented rather
+  than represented as exhaustive.
 - Anonymous, read-only discovery of active places through an approved public
   projection containing only place ID, name, city, address, and place type.
 - The approved public discovery boundary does not require accounts and does not

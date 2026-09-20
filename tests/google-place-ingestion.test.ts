@@ -98,6 +98,22 @@ describe("Google place response transformation", () => {
     expect(result.value.hours.disposition).toBe("replace");
   });
 
+  it("accepts untyped non-city address components while using a typed city", () => {
+    const addressComponents = [
+      { longText: "West 87th Street Parkway", languageCode: "en" },
+      { longText: "Lenexa", types: ["locality", "political"] },
+    ];
+    const result = normalizeGooglePlaceResponse({
+      ...googleFixture,
+      addressComponents,
+    });
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.cityCandidate).toBe("Lenexa");
+    expect(result.value.provider.addressComponents).toEqual(addressComponents);
+  });
+
   it.each([
     ["wrong id", { ...googleFixture, id: "different" }],
     [
@@ -238,6 +254,42 @@ describe("Google place response transformation", () => {
       ).disposition,
     ).toBe("skip");
   });
+
+  it("plans an explicit seed attachment without replacing KC3 identity or type", () => {
+    const result = normalizeGooglePlaceResponse(googleFixture);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const candidate = {
+      ...existingFixture,
+      googlePlaceId: null,
+      placeType: "cafe" as const,
+      latitude: null,
+      longitude: null,
+      timeZone: null,
+    };
+
+    const plan = planGooglePlaceImport(
+      result.value,
+      "coffee_shop",
+      "2026-09-20T12:00:00.000Z",
+      [candidate],
+      { existingPlaceId: candidate.id },
+    );
+
+    expect(plan.disposition).toBe("write");
+    if (plan.disposition !== "write") return;
+    expect(plan.action).toBe("updated");
+    expect(plan.payload.expectedPlaceId).toBe("kc3-1");
+    expect(plan.payload.placeType).toBe("cafe");
+    expect(plan.payload.canonical).toMatchObject({
+      latitude: 38.95,
+      longitude: -94.73,
+      timeZone: "America/Chicago",
+    });
+    expect(plan.notices).toContain(
+      "provider identity attached to an existing KC3 place",
+    );
+  });
 });
 
 describe("Google provider paging and field masks", () => {
@@ -263,10 +315,22 @@ describe("Google provider paging and field masks", () => {
       );
     const client = new GooglePlacesClient("not-a-real-key", fetchMock);
 
-    await expect(client.discover("Lenexa", "coffee_shop", 3)).resolves.toEqual([
-      { googlePlaceId: "google-1", city: "Lenexa", category: "coffee_shop" },
-      { googlePlaceId: "google-2", city: "Lenexa", category: "coffee_shop" },
-    ]);
+    await expect(client.discover("Lenexa", "coffee_shop", 3)).resolves.toEqual({
+      places: [
+        {
+          googlePlaceId: "google-1",
+          city: "Lenexa",
+          category: "coffee_shop",
+        },
+        {
+          googlePlaceId: "google-2",
+          city: "Lenexa",
+          category: "coffee_shop",
+        },
+      ],
+      pagesFetched: 2,
+      capped: false,
+    });
     const firstSearch = fetchMock.mock.calls[0][1]!;
     const secondSearch = fetchMock.mock.calls[1][1]!;
     expect(new Headers(firstSearch.headers).get("X-Goog-FieldMask")).toBe(
@@ -291,6 +355,27 @@ describe("Google provider paging and field masks", () => {
       new Headers(fetchMock.mock.calls[2][1]?.headers).get("X-Goog-FieldMask"),
     ).toBe(GOOGLE_PLACE_DETAILS_FIELD_MASK);
   });
+
+  it("reports when a provider continuation is cut off by the page bound", async () => {
+    const fetchMock: jest.MockedFunction<typeof fetch> = jest
+      .fn()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            places: [{ id: "google-1" }],
+            nextPageToken: "not-fetched",
+          }),
+          { status: 200 },
+        ),
+      );
+    const client = new GooglePlacesClient("not-a-real-key", fetchMock);
+
+    await expect(client.discover("Lenexa", "park", 1)).resolves.toMatchObject({
+      pagesFetched: 1,
+      capped: true,
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe("operator configuration and run failures", () => {
@@ -309,18 +394,22 @@ describe("operator configuration and run failures", () => {
 
   it("reports provider and database failures without leaking their errors", async () => {
     const provider = {
-      discover: jest.fn().mockResolvedValue([
-        {
-          googlePlaceId: "google-1",
-          city: "Lenexa",
-          category: "coffee_shop",
-        },
-        {
-          googlePlaceId: "google-2",
-          city: "Lenexa",
-          category: "coffee_shop",
-        },
-      ]),
+      discover: jest.fn().mockResolvedValue({
+        places: [
+          {
+            googlePlaceId: "google-1",
+            city: "Lenexa",
+            category: "coffee_shop",
+          },
+          {
+            googlePlaceId: "google-2",
+            city: "Lenexa",
+            category: "coffee_shop",
+          },
+        ],
+        pagesFetched: 1,
+        capped: false,
+      }),
       getDetails: jest
         .fn()
         .mockResolvedValueOnce(googleFixture)

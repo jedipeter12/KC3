@@ -36,6 +36,12 @@ export type DiscoveredPlaceId = Readonly<{
   category: MvpPlaceCategory;
 }>;
 
+export type GoogleDiscoveryResult = Readonly<{
+  places: readonly DiscoveredPlaceId[];
+  pagesFetched: number;
+  capped: boolean;
+}>;
+
 export class GooglePlacesProviderError extends Error {
   constructor(
     readonly operation: "search" | "details",
@@ -59,9 +65,11 @@ export class GooglePlacesClient {
     city: MvpCity,
     category: MvpPlaceCategory,
     maxPages: number,
-  ): Promise<DiscoveredPlaceId[]> {
+  ): Promise<GoogleDiscoveryResult> {
     const discovered: DiscoveredPlaceId[] = [];
     let pageToken: string | undefined;
+    let pagesFetched = 0;
+    let capped = false;
 
     for (let page = 0; page < maxPages; page += 1) {
       const categoryQuery = categoryQueries[category];
@@ -87,6 +95,7 @@ export class GooglePlacesClient {
       if (!isRecord(response)) {
         throw new GooglePlacesProviderError("search");
       }
+      pagesFetched += 1;
 
       const places = response.places;
       if (places != null && !Array.isArray(places)) {
@@ -112,10 +121,14 @@ export class GooglePlacesClient {
       if (typeof response.nextPageToken !== "string") {
         throw new GooglePlacesProviderError("search");
       }
+      if (page + 1 >= maxPages) {
+        capped = true;
+        break;
+      }
       pageToken = response.nextPageToken;
     }
 
-    return discovered;
+    return { places: discovered, pagesFetched, capped };
   }
 
   async getDetails(googlePlaceId: string): Promise<unknown> {

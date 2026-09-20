@@ -1,6 +1,7 @@
 # Test Coverage and Reliability Review
 
-**Review date:** 2026-08-23; updated 2026-09-19 for Google hours/source
+**Review date:** 2026-08-23; updated 2026-09-20 for the real provider-backed
+dataset and explicit reconciliation boundary, 2026-09-19 for Google hours/source
 persistence, and previously updated 2026-09-08 for the Google ingestion contract
 and 2026-09-06 for the client and public-read boundary
 
@@ -12,10 +13,11 @@ KC3 currently contains an approved Supabase/PostgreSQL data model, local seed,
 anonymous read-only place RPC, an Expo TypeScript client with a typed public data
 layer and locally filtered place-list screen, and an operator-run Google Places
 ingestion CLI. KC3-24 defines the Google normalization and ownership contract,
-KC3-25 implements its bounded server-only workflow, and KC3-26 verifies weekly
-hours and provider-freshness persistence. This review covers those boundaries,
-database behavior, the public data contract, and the first screen's component
-states without making live Google calls.
+KC3-25 implements its bounded server-only workflow, KC3-26 verifies weekly hours
+and provider-freshness persistence, and KC3-27 adds atomic reviewed seed
+attachment and constructs the first real local dataset. This review covers those
+boundaries, database behavior, the public data contract, the first screen's
+component states, and the offline tests surrounding the attended live workflow.
 
 ## Existing Coverage Assessment
 
@@ -26,11 +28,12 @@ constraints, defaults, relationships, timestamp triggers, and RLS posture had no
 executable regression protection.
 
 There is no meaningful line-coverage percentage to report for a SQL migration.
-The workspace suite provides 180 behavior and contract assertions across eight
+The workspace suite provides 188 behavior and contract assertions across nine
 pgTAP files. The first four files provide 87 schema assertions, including three
 for privilege revocations. The seed-data test adds 12 assertions, the public
 place access test adds 24 authorization/response-contract assertions, the Google
-ingestion contract adds 25 assertions, and the import-boundary suite adds 32.
+ingestion contract adds 25 assertions, the import-boundary suite adds 32, and the
+reconciliation suite adds 8.
 
 ## Major Untested Risks Found
 
@@ -91,6 +94,8 @@ the initial place types, active defaults, unknown/unverified KC3 detail shells,
 and the absence of guessed Google data or weekly hours. Repeat execution of the
 actual seed is also verified during seed-workflow changes because pgTAP receives
 the post-seed database rather than executing the seed file itself.
+The identity/provider and hours assertions are scoped so the same test remains
+valid after reviewed provider enrichment and rejects partial source state.
 
 ### Anonymous public place access
 
@@ -121,6 +126,10 @@ missing-hours preservation, KC3-owned detail/hour preservation, source/fetch
 timestamps, and transactional rollback. Planner fixtures additionally prove
 that an unchanged or omitted schedule is excluded from the write payload while a
 changed schedule is sent as a complete normalized replacement.
+`009_google_reconciliation.test.sql` proves that the reviewed server-only wrapper
+atomically attaches a provider identity to a stable seed UUID, persists provider
+metadata, preserves unknown KC3 details, denies anonymous execution, and rolls
+the identity attachment back when normalized provider persistence fails.
 
 ### Typed public-place client and place-list screen
 
@@ -159,9 +168,10 @@ snapshots. These are component and unit checks, not live backend or device tests
 - Automated accessibility, performance/load, and end-to-end behavior: component
   tests cover the first screen's primary semantics and a manual Web viewport
   check has been completed, but broader tooling remains undecided.
-- Automated mobile device interaction: iOS has a configured simulator, but UI
-  automation is blocked; Android tooling was unavailable during KC3-21. Bundle
-  exports do not establish device behavior. See `ACCESSIBILITY_REVIEW.md`.
+- Automated mobile device interaction: manual iOS Simulator functional smoke
+  passes against the real local dataset, but UI automation is blocked; Android
+  tooling was unavailable during KC3-21. Bundle exports do not establish device
+  behavior. See `ACCESSIBILITY_REVIEW.md`.
 
 ## Product Owner Decisions Required
 
@@ -183,7 +193,10 @@ Canonical duplicate handling, Google rating bounds, provider regular-hours
 normalization, and freshness semantics are accepted in
 [`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md). Database, pure
 contract, and importer tests protect the enforceable portions; explicit duplicate
-attachment and moved-listing resolution remain deferred operator workflows.
+selection and moved-listing resolution remain deferred operator workflows. The
+manual CLI now supports a noninteractive explicit attachment to a known KC3 UUID
+and an explicit create resolution for a reviewed false positive; neither performs
+automatic or fuzzy merging.
 
 ## Remaining Gaps and Prioritized Next Work
 
@@ -195,14 +208,16 @@ attachment and moved-listing resolution remain deferred operator workflows.
    negative tests for each approved rule. This avoids codifying assumptions while
    closing real data-quality and authorization risks.
 3. **Keep the KC3-20 HTTP/client integration smoke test current.** Run
-   `npm run test:integration` against the reset local seed; it verifies the typed
-   production client, raw five-field serialization, all 15 seed IDs, data-layer
-   results, and explicit anonymous base-table permission denial. No provider mocks
-   or additional dependencies are used. KC3-22 includes this suite in CI.
+   `npm run test:integration` against either the reset local seed or the reviewed
+   provider-backed local dataset; it verifies the typed production client, raw
+   five-field serialization and approved city/type values, data-layer results,
+   and explicit anonymous base-table permission denial. No provider mocks or
+   additional dependencies are used.
+   KC3-22 includes the clean-reset form of this suite in CI.
 4. **Keep importer regression coverage current.** The existing suite covers
    source ownership, stable-identity idempotency, regular-hours refresh behavior,
-   and transaction failure. Add matching coverage when duplicate attachment,
-   move resolution, or any new retained provider field is approved.
+   atomic seed attachment, and transaction failure. Add matching coverage when
+   moved-listing resolution or any new retained provider field is approved.
 5. **Continue expanding the Jest baseline with feature behavior.** Add focused
    unit and interaction tests for approved validation, transformations, and
    multi-branch utilities as they appear. This prevents client behavior from
@@ -217,6 +232,21 @@ attachment and moved-listing resolution remain deferred operator workflows.
    MVP.
 
 ## Verification Results
+
+**KC3-27 verified: 2026-09-20**
+
+- All 188 pgTAP assertions and database lint passed against both a clean reset
+  and the 162-place imported local dataset.
+- All 60 application/importer tests, typecheck, lint, formatting, and all three
+  Expo exports passed; the server-only key value was absent from generated files.
+- All three live anonymous RPC tests passed against the real dataset, and direct
+  anonymous table access remained denied.
+- Live Expo Web loaded the real dataset and passed name plus combined city/type
+  filtering through the unchanged five-field RPC boundary.
+- The committed audit found no exact canonical duplicate, invalid city/type,
+  missing source/fetch metadata, malformed stored hours, or fabricated KC3
+  suitability value. Coverage caps and the one unreconciled seed are recorded in
+  `KC3_27_DATASET.md`.
 
 **KC3-26 verified: 2026-09-19**
 

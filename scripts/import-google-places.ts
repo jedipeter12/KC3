@@ -20,6 +20,9 @@ Required bounds:
 Options:
   --max-pages <1-3>    Search pages per city/category (default: 3)
   --max-places <1-200> Global unique-place cap (default: 60)
+  --attach <GoogleID=KC3UUID>
+                       Attach one reviewed provider identity to an existing place
+  --create <GoogleID>  Create despite one deterministic duplicate candidate
   --write              Commit validated records (default is dry-run)
   --help               Show this help
 `;
@@ -50,6 +53,11 @@ async function main(): Promise<void> {
   );
   console.log(`Skipped: ${summary.skipped}`);
   console.log(`Failed: ${summary.failed}`);
+  for (const query of summary.queries) {
+    console.log(
+      `Query ${query.category} in ${query.city}: ${query.failed ? "failed" : `${query.discovered} IDs across ${query.pagesFetched} page(s); provider capped=${query.providerCapped ? "yes" : "no"}; selection capped=${query.selectionCapped ? "yes" : "no"}`}`,
+    );
+  }
   for (const message of summary.messages) console.log(`- ${message}`);
 
   if (summary.failed > 0) process.exitCode = 1;
@@ -63,11 +71,45 @@ function parseArguments(arguments_: string[]): GoogleImportOptions | undefined {
   let maxPages = 3;
   let maxPlaces = 60;
   let write = false;
+  const attachments: Record<string, string> = {};
+  const explicitCreates: string[] = [];
 
   for (let index = 0; index < arguments_.length; index += 1) {
     const argument = arguments_[index];
     if (argument === "--write") {
       write = true;
+      continue;
+    }
+    if (argument === "--attach" || argument === "--create") {
+      const value = arguments_[index + 1];
+      if (!value || value.startsWith("--")) {
+        throw new Error(`${argument} requires a value.`);
+      }
+      index += 1;
+      if (argument === "--create") {
+        if (!value.trim()) throw new Error("--create requires a Google ID.");
+        explicitCreates.push(value.trim());
+      } else {
+        const separator = value.lastIndexOf("=");
+        const googlePlaceId = value.slice(0, separator).trim();
+        const placeId = value.slice(separator + 1).trim();
+        if (
+          separator <= 0 ||
+          !googlePlaceId ||
+          !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+            placeId,
+          )
+        ) {
+          throw new Error("--attach must use GoogleID=KC3UUID.");
+        }
+        if (
+          attachments[googlePlaceId] &&
+          attachments[googlePlaceId] !== placeId
+        ) {
+          throw new Error(`Conflicting --attach values for ${googlePlaceId}.`);
+        }
+        attachments[googlePlaceId] = placeId;
+      }
       continue;
     }
     if (
@@ -100,6 +142,8 @@ function parseArguments(arguments_: string[]): GoogleImportOptions | undefined {
     maxPages,
     maxPlaces,
     write,
+    attachments,
+    explicitCreates: [...new Set(explicitCreates)],
   };
 }
 

@@ -34,7 +34,8 @@ must not be broadened without a new approval and matching authorization tests.
 Security status by stage:
 
 - **Safe for the current local backend stage:** Yes. The migrations apply from a
-  clean local database, all 180 pgTAP assertions pass, and database lint reports
+  clean local database, all 188 pgTAP assertions pass against clean and imported
+  local state, and database lint reports
   no schema errors.
 - **Safe for an Expo client to call the approved RPC locally:** Yes. This does not
   approve additional reads, any writes, or production deployment.
@@ -70,6 +71,9 @@ expose hidden or internal data if it bypasses this pattern.
 KC3-25 implements the allowlisted manual importer with server-only environment
 variables and a constrained transactional function owned by a `NOLOGIN`,
 `NOBYPASSRLS` role. The Expo graph does not reference its variables. The operator
+may explicitly attach a reviewed provider identity to an existing KC3 UUID
+through the KC3-27 wrapper; the attachment and normalized import share one
+transaction, and role tests deny that wrapper to client roles. The operator
 still authenticates the RPC using a Supabase service-role credential, which
 bypasses RLS at the gateway and must never enter Expo, Expo Web, logs, or source
 control. A leaked credential would retain broader platform impact than the
