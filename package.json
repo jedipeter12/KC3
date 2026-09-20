@@ -13,10 +13,11 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "ingest:google": "node --env-file-if-exists=.env.local --import tsx scripts/import-google-places.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"tests/**/*.{ts,tsx}\" index.ts eslint.config.js app.json tsconfig.json package.json",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"tests/**/*.{ts,tsx}\" index.ts eslint.config.js app.json tsconfig.json package.json",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"scripts/**/*.ts\" \"tests/**/*.{ts,tsx}\" index.ts eslint.config.js app.json tsconfig.json package.json",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"scripts/**/*.ts\" \"tests/**/*.{ts,tsx}\" index.ts eslint.config.js app.json tsconfig.json package.json",
     "test:app": "jest --runInBand",
     "test:integration": "jest --config jest.integration.config.js --runInBand",
     "export": "expo export --platform all --output-dir dist",
@@ -37,6 +38,7 @@
   "devDependencies": {
     "@testing-library/react-native": "^14.0.1",
     "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.1",
     "@types/react": "~19.2.2",
     "@types/react-test-renderer": "^19.1.0",
     "eslint": "^9.39.5",
@@ -46,6 +48,7 @@
     "prettier": "^3.9.0",
     "react-test-renderer": "^19.2.3",
     "supabase": "^2.115.0",
+    "tsx": "^4.20.5",
     "typescript": "~6.0.3"
   },
   "jest": {

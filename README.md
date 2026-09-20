@@ -4,11 +4,11 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 
 ## Status
 
-- Stage: Initial client implementation
-- Current focus: Verify the completed list-first slice on mobile and Expo Web,
-  including baseline accessibility checks.
-- Last major milestone: Implemented and verified client-side name search and
-  city/place-type filters over the loaded public place list.
+- Stage: Initial client and provider-ingestion implementation
+- Current focus: Operator verification of the Google ingestion boundary plus the
+  remaining native accessibility checks for the list-first slice.
+- Last major milestone: Implemented the bounded, dry-run-first KC3-25 Google
+  Places ingestion CLI and transactional server-only persistence boundary.
 
 KC3-23 final automated checks and live Expo Web smoke checks pass. Milestone
 closure remains pending native and accessibility verification; see
@@ -17,8 +17,9 @@ closure remains pending native and accessibility verification; see
 ## Quick Start
 
 The repository contains the Expo client scaffold, product and engineering
-documentation, the Supabase schema and public-read migrations, and a local MVP
-seed. Use Node.js 24.20.0 and npm 11.19.0, then run `npm install` and `npm start`.
+documentation, the Supabase schema and public-read migrations, a local MVP seed,
+and a manual server-side Google Places ingestion CLI. Use Node.js 24.20.0 and npm
+11.19.0, then run `npm install` and `npm start`.
 Use `npm run web`, `npm run ios`, or `npm run android` for a specific supported
 target.
 
@@ -48,6 +49,7 @@ KC3/
 ├── index.ts
 ├── package.json
 ├── tsconfig.json
+├── scripts/
 ├── src/
 │   ├── App.tsx
 │   ├── config/

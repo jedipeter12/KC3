@@ -90,15 +90,21 @@ select set_eq(
   'row level security is enabled on every approved public table'
 );
 
-select is(
-  (
-    select count(*)::integer
+select set_eq(
+  $$
+    select policyname::text
     from pg_policies
     where schemaname = 'public'
       and tablename in ('places', 'place_google_data', 'place_details', 'place_hours')
-  ),
-  1,
-  'only the approved public place reader policy opens table rows'
+  $$,
+  $$
+    values
+      ('public_place_reader_selects_active_places'),
+      ('google_importer_accesses_places'),
+      ('google_importer_accesses_google_data'),
+      ('google_importer_accesses_hours')
+  $$,
+  'only the approved public-reader and server-import policies open table rows'
 );
 
 select is(

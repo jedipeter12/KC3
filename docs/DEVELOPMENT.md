@@ -90,12 +90,20 @@ normalization, AND semantics, derived choices, and order preservation. Screen
 dependencies are injected only at the component boundary for focused testing;
 production uses the approved public-place data operation.
 
-`tests/google-contract.test.ts` protects the future importer contract without
+`tests/google-contract.test.ts` protects the shared importer contract without
 calling Google: the exact field mask, deterministic cosmetic comparison,
 100-meter material-location screening, missing-hours preservation, explicit
 closed schedules, split and overnight intervals, 24/7 normalization, and invalid
 schedule rejection. The authoritative workflow contract is
 [`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md).
+
+`tests/google-place-ingestion.test.ts` uses provider fixtures and mocked HTTP and
+database boundaries. It verifies Place Details transformation, Text Search
+continuation, exact masks, duplicate/change planning, missing server
+configuration, malformed records, and sanitized provider/database failures
+without a Google credential or billable request. The pgTAP importer suite
+exercises actual insert/repeat transactions, provider refreshes, KC3 field and
+hours preservation, permissions, and rollback against local Supabase.
 
 The generated client database type remains intentionally unchanged by KC3-24:
 the new storage tables and internal override resolver are not public client APIs,
@@ -141,6 +149,65 @@ The approved Supabase RPC authorization behavior is tested at the PostgreSQL rol
 level with pgTAP and over the local Data API with the Jest smoke suite. Component
 tests use React Native Testing Library. No end-to-end framework has been selected.
 
+## Manual Google Places Ingestion
+
+The KC3-25 importer is an operator-run command, not an application feature or
+scheduled job. It uses billable Google Places API (New) Text Search and Place
+Details calls. Confirm the Google project has billing and Places API (New)
+enabled, restrict the key to that API where practical, and prepare the target
+Supabase database with all migrations before running it.
+
+Set these values in the ignored `.env.local` file or in the operator process
+environment:
+
+- `GOOGLE_PLACES_API_KEY`: server/operator Google Places key.
+- `KC3_SUPABASE_URL`: target Supabase API URL.
+- `KC3_SUPABASE_SERVICE_ROLE_KEY`: target server-side service-role key.
+
+These names intentionally do not use `EXPO_PUBLIC_`. Never copy their values into
+app configuration, command examples, logs, screenshots, issues, or commits. The
+CLI identifies missing variable names but never prints configured values,
+provider response bodies, or database error details.
+
+Every run requires explicit city and KC3 category allowlists. Supported cities
+are Lenexa, Overland Park, and Olathe. Supported categories are `coffee_shop`,
+`cafe`, `boba_tea`, `library`, `coworking`, and `park`. Start with a small dry
+run:
+
+```sh
+npm run ingest:google -- --city Lenexa --category coffee_shop --max-pages 1 --max-places 20
+```
+
+Use comma-separated quoted values for multiple bounds. The command defaults to
+at most three 20-result pages per city/category and 60 unique places globally;
+`--max-pages` accepts 1–3 and `--max-places` accepts 1–200. It requests only IDs
+and continuation from Text Search, applies a strict supported Google type for
+each KC3 category, deduplicates IDs, then uses the exact KC3-24 Place Details
+field mask. `boba_tea` uses Google's `tea_house` discovery type. Results whose
+resolved city is outside the requested city, malformed records, movement
+candidates, moved listings, and unresolved canonical duplicates are skipped and
+reported.
+
+Review dry-run counts and notices, then repeat the identical bounds with
+`--write` to commit one transaction per valid place:
+
+```sh
+npm run ingest:google -- --city Lenexa --category coffee_shop --max-pages 1 --max-places 20 --write
+```
+
+Output identifies the mode and aggregate `Discovered`, `Inserted`/`Would
+insert`, `Updated`/`Would update`, `Skipped`, and `Failed` counts, followed by
+sanitized record notices. Any failed provider query, detail call, database-state
+read, or database write contributes to `Failed`; a run with failures exits
+nonzero. Skips are safe review outcomes and do not by themselves fail the run.
+Re-running the write command matches by Google Place ID and refreshes the same
+KC3 place. Missing provider fields are preserved, and the database function has
+no ability to write `place_details`, `place_overrides`, or KC3-owned hours.
+
+Normal tests and CI never invoke Google. An operator may use the small dry run
+above and its matching `--write` command as an explicitly billable live smoke
+check after reviewing the target and bounds; this is not a CI or release gate.
+
 ## Linting / Formatting
 
 - `npm run typecheck` runs strict TypeScript checking without emitting files.
@@ -172,6 +239,10 @@ configuration by variable name without echoing the supplied values.
 Never place a Supabase secret/service-role key, database password, connection
 string, or other privileged credential in an `EXPO_PUBLIC_` variable, client
 source, documentation, or source control.
+
+The Google importer additionally uses the three server-only variables documented
+in “Manual Google Places Ingestion.” They are read only by the CLI entry point;
+they are not referenced by the Expo client or its public Supabase configuration.
 
 The repository ignores common environment, signing-key, Expo/EAS local-state,
 keystore, and mobile-provisioning files as an accident-prevention measure. Ignore
@@ -222,6 +293,15 @@ events can each run CI for an open `codex/**` branch.
   temporarily add a failing TypeScript assertion to an application test, commit
   and push, and confirm `Application checks` and the workflow fail. Remove the
   temporary test, push, and require a fresh passing run. Keep run links as evidence.
+
+KC3-25 local verification (2026-09-08): a clean database reset applied the
+server-only import-boundary migration and unchanged seed. All 168 pgTAP
+assertions, database lint, three live anonymous RPC tests, 55 application tests,
+typecheck, lint, formatting, and `git diff --check` passed. A direct local
+production repository smoke read returned the validated 15-place planning
+projection through the local service-role boundary. Web, iOS, and
+Android production exports passed, and an export scan found no Google API URL or
+server-only ingestion variable names. No Google request was made.
 
 KC3-24 local verification (2026-09-08): a clean database reset applied all three
 migrations and the unchanged seed. All 148 pgTAP assertions, database lint, three

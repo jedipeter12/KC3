@@ -43,6 +43,55 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-08 — Use a dry-run-first CLI and constrained transactional RPC for Google ingestion
+
+**Status:** Accepted
+
+**Decision**
+
+Run Google discovery manually from a TypeScript CLI that requires allowlisted
+MVP city and KC3 category bounds, limits pages and total unique places, and
+defaults to dry-run. Use Text Search only for `places.id` and
+`nextPageToken`, pair each category with a strict supported Google discovery
+type, fetch every selected record with KC3-24's exact Place Details mask, and
+build the normalized change plan in memory. Persist each place through
+a server-only JSON RPC owned by a constrained `NOLOGIN` database role and
+executable only by `service_role`. The RPC accepts only the normalized allowlist,
+serializes on Google Place ID, and has no privilege over KC3 details, overrides,
+or KC3-owned hours.
+
+**Context**
+
+KC3-25 requires a repeatable operator command, atomic stable-identity upserts,
+and server-only credentials without expanding the anonymous Expo API. KC3-24
+already defines transformation and ownership policy but intentionally did not
+select an execution boundary.
+
+**Alternatives considered**
+
+- Put Google or privileged Supabase access in the Expo client.
+- Give the CLI direct unrestricted table access through a PostgreSQL connection.
+- Store Text Search's broad place payload directly instead of fetching details
+  with the accepted field mask.
+- Automatically attach duplicate candidates or moved listings.
+- Schedule imports or call Google from CI.
+
+**Reasoning**
+
+The CLI keeps billable calls and credentials in an attended operator process.
+Required bounds and write opt-in make scope and mutation explicit. A constrained
+function provides PostgreSQL transactionality while preserving the existing
+table revocations and unchanged public client type. Separate discovery and
+details masks keep search continuation possible without defining a second
+retained-data policy. Review cases remain non-destructive.
+
+**Consequences / follow-up**
+
+Operators must provision the Google key and Supabase service-role key locally,
+review dry-run output, and opt into writes. Normal CI remains fully mocked and
+credential-free. Duplicate attachment and move resolution require a later
+explicit operator workflow; KC3-26 and KC3-27 may now build on this boundary.
+
 ### 2026-09-08 — Define a source-preserving Google Places ingestion contract
 
 **Status:** Accepted
