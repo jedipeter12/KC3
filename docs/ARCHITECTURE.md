@@ -15,7 +15,10 @@ Google data or guessing KC3 details. A read-only Supabase RPC exposes the five
 approved identity fields for active places to unauthenticated clients without
 granting them base-table access. Supabase Auth is the selected authentication
 platform if later approved features require accounts, and Supabase Storage may be
-used if an approved feature needs object storage.
+used if an approved feature needs object storage. A separate operator-run
+TypeScript CLI performs bounded Google Places discovery and persists normalized
+records through a server-only transactional function; neither its Google key nor
+its Supabase service-role key is part of the Expo environment or import graph.
 
 ## Technology Stack
 
@@ -56,6 +59,8 @@ KC3/
 ├── package.json
 ├── tsconfig.json
 ├── eslint.config.js
+├── scripts/
+│   └── import-google-places.ts
 ├── src/
 │   ├── App.tsx
 │   ├── config/
@@ -107,8 +112,22 @@ use the ignored `dist/` directory.
   to a stable application error without retaining provider details.
 - Supabase backend: Approved platform for backend services, database, and
   authentication. The initial public place schema is defined in a versioned
-  migration. The first anonymous read RPC is implemented; authenticated,
-  administrative, import, and remaining service boundaries are not designed yet.
+  migration. The first anonymous read RPC is implemented; authenticated and
+  remaining administrative boundaries are not designed yet.
+- Google ingestion CLI: A manual `npm run ingest:google` entry point requires
+  allowlisted MVP cities and KC3 place categories, caps pages and unique places,
+  defaults to dry-run, and requires `--write` to persist. Text Search requests
+  only `places.id,nextPageToken` and applies the corresponding strict Google
+  Table A type filter; each ID is then fetched through Place Details with the
+  exact KC3-24 field mask. Pure TypeScript validates, normalizes, checks city
+  bounds and duplicate/movement review rules, and builds a complete change plan
+  before persistence.
+- Google import database boundary: Two functions executable only by
+  `service_role` expose the minimum planning projection and one-place import
+  transaction. Both are owned by a constrained `NOLOGIN`, non-bypass-RLS role.
+  The mutation accepts only normalized allowlisted JSON, serializes on Google
+  Place ID, and replaces only Google hours. Its owner has no privilege on
+  `place_details`, `place_overrides`, or KC3-owned hours.
 
 ## Data Model
 
@@ -177,11 +196,12 @@ filter controls, while a nonempty source list with zero filtered rows renders a
 separate no-match state. Clearing controls resets only local filter state.
 
 Google ingestion behavior is defined in
-[`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md). The future manual
-CLI must use the exact allowlisted Place Details (New) field mask, validate and
-plan before one-place transactions, preserve missing values and KC3-owned data,
-and report substantive changes. No importer, Google credential, API call, or
-privileged import boundary is implemented yet.
+[`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md). The manual CLI
+uses the exact allowlisted Place Details (New) field mask, validates and plans
+before one-place transactions, preserves missing values and KC3-owned data, and
+reports substantive changes. Provider and database failures become sanitized
+per-query or per-record output. Moved listings and unresolved duplicate
+candidates remain explicit operator-review skips rather than automatic merges.
 
 ## Authentication and Authorization
 
@@ -203,8 +223,13 @@ required. Retention, backup, and deletion policies have not been decided.
   `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, both of
   which are public identifiers protected by the database authorization boundary.
   Service-role/secret keys and direct database credentials must never enter the
-  client bundle or repository.
-- Input validation: Not designed.
+  client bundle or repository. The importer reads `GOOGLE_PLACES_API_KEY`,
+  `KC3_SUPABASE_URL`, and `KC3_SUPABASE_SERVICE_ROLE_KEY` only from its operator
+  process environment; none use the Expo `EXPO_PUBLIC_` prefix.
+- Input validation: The public client validates its narrow response shape. The
+  importer additionally validates CLI bounds, Google response types/enums,
+  required creation fields, coordinates, time zones, URLs, and weekly hours
+  before calling a database function that rejects unsupported normalized keys.
 - Authorization boundaries: All public tables have RLS enabled and no Data API
   role has direct table privileges. Anonymous access is limited to executing the
   approved active-place RPC; its constrained owner is filtered by RLS. Add an
@@ -246,6 +271,11 @@ state.
 - Integration tests: A separate Jest Node smoke suite uses the production typed
   client and data layer against the local Supabase Data API, checking seeded RPC
   results, exact serialized fields, and direct anonymous table-access denial.
+- Importer tests: Offline Jest fixtures protect transformation, field masks,
+  continuation, duplicate/change planning, configuration failures, and sanitized
+  provider/database errors. pgTAP runs the real import function for insert,
+  repeat refresh, KC3 ownership preservation, source-specific hours,
+  permissions, and rollback. Normal CI never calls Google.
 - End-to-end tests: Not selected. The current Web screen is manually checked at
   desktop and small-mobile viewport sizes in addition to component coverage.
 - Static quality checks: TypeScript strict typechecking, Expo's ESLint flat

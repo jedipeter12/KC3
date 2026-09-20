@@ -4,8 +4,8 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Build the manual Google Places ingestion CLI over the approved KC3-24 contract,
-without broadening the anonymous client boundary.
+Verify and use the completed manual Google Places ingestion boundary before
+expanding provider persistence or constructing the production JoCo dataset.
 
 ## In Progress
 
@@ -17,11 +17,10 @@ without broadening the anonymous client boundary.
 
 ## Next
 
-- [ ] KC3-25: Build the manual Google Places importer against the accepted
-  contract, with a server-controlled credential and transactional dry-run/report
-  behavior.
-- [ ] Approve a server-controlled, least-privilege administrative import and
-  curation path; never expose privileged Supabase credentials to a client.
+- [ ] KC3-26: Define Google hours/source persistence beyond the KC3-24 regular
+  weekly-hours contract when product requirements are approved.
+- [ ] KC3-27: Construct the real Johnson County dataset through the reviewed
+  operator workflow.
 - [ ] Keep unrestricted raw Google payload retention disabled; require a new
   privacy/licensing/access decision before adding it later.
 - [ ] Define the Google import workflow and any later curated seed expansion.
@@ -38,6 +37,11 @@ without broadening the anonymous client boundary.
 
 ## Completed
 
+- [x] KC3-25 adds a bounded, dry-run-first Google Places CLI; exact KC3-24 field
+  masks and normalization; continuation handling; stable identity refreshes; a
+  constrained transactional server-only write boundary; ownership-preserving
+  database behavior; sanitized summaries; offline provider/error tests; and
+  documented operator usage without client credentials or live CI calls.
 - [x] Google Places ingestion contract defines the exact MVP field mask, source
   ownership, deterministic comparisons, duplicate/new/move/closure semantics,
   regular-hours normalization, non-destructive overrides, timestamps, and atomic
