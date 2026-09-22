@@ -9,6 +9,8 @@ const prerequisites =
 
 let supabase: typeof import("../../src/lib/supabase").supabase;
 let listPublicPlaces: typeof import("../../src/data/publicPlaces").listPublicPlaces;
+let listPublicPlaceSummaries: typeof import("../../src/data/publicPlaces").listPublicPlaceSummaries;
+let getPublicPlaceDetail: typeof import("../../src/data/publicPlaces").getPublicPlaceDetail;
 let filterPlaces: typeof import("../../src/features/places/placeFilters").filterPlaces;
 let getPlaceFilterOptions: typeof import("../../src/features/places/placeFilters").getPlaceFilterOptions;
 
@@ -43,9 +45,10 @@ beforeAll(() => {
   ({ supabase } = jest.requireActual<typeof import("../../src/lib/supabase")>(
     "../../src/lib/supabase",
   ));
-  ({ listPublicPlaces } = jest.requireActual<
-    typeof import("../../src/data/publicPlaces")
-  >("../../src/data/publicPlaces"));
+  ({ listPublicPlaces, listPublicPlaceSummaries, getPublicPlaceDetail } =
+    jest.requireActual<typeof import("../../src/data/publicPlaces")>(
+      "../../src/data/publicPlaces",
+    ));
   ({ filterPlaces, getPlaceFilterOptions } = jest.requireActual<
     typeof import("../../src/features/places/placeFilters")
   >("../../src/features/places/placeFilters"));
@@ -149,4 +152,86 @@ it("denies direct anonymous access to places with a permission error", async () 
   expect(data).toBeNull();
   expect(status).toBe(401);
   expect(error?.code).toBe("42501");
+});
+
+it("returns the exact expanded anonymous summary contract", async () => {
+  const { data, error, status } = await supabase
+    .rpc("list_public_place_summaries")
+    .abortSignal(AbortSignal.timeout(5000));
+  if (error || !data) {
+    throw new Error(
+      `Local expanded public RPC failed (HTTP ${status}). ${prerequisites}`,
+    );
+  }
+
+  expect(data.length).toBeGreaterThan(0);
+  for (const place of data) {
+    expect(Object.keys(place).sort()).toEqual([
+      "address",
+      "address_precision",
+      "bathroom_available",
+      "city",
+      "drive_thru_available",
+      "drive_thru_only",
+      "food_beverage",
+      "id",
+      "kc3_last_verified_at",
+      "kc3_verification_state",
+      "name",
+      "outlets",
+      "phone_calls_allowed",
+      "place_type",
+      "regular_hours_available",
+      "regular_hours_next_transition_at",
+      "regular_hours_observed_at",
+      "regular_hours_state",
+      "wifi",
+      "work_suitability",
+    ]);
+    expect(place).not.toHaveProperty("google_place_id");
+    expect(place).not.toHaveProperty("time_zone");
+    expect(place).not.toHaveProperty("verification_notes");
+  }
+
+  await expect(listPublicPlaceSummaries()).resolves.toEqual(data);
+});
+
+it("returns one exact active-place detail and hides unknown IDs", async () => {
+  const summaries = await listPublicPlaceSummaries();
+  const selected = summaries[0];
+  expect(selected).toBeDefined();
+
+  const { data, error } = await supabase.rpc("get_public_place_detail", {
+    target_place_id: selected!.id,
+  });
+  expect(error).toBeNull();
+  expect(data).toHaveLength(1);
+  expect(Object.keys(data![0]).sort()).toEqual([
+    "address",
+    "address_precision",
+    "bathroom_available",
+    "city",
+    "drive_thru_available",
+    "drive_thru_only",
+    "food_beverage",
+    "id",
+    "kc3_last_verified_at",
+    "kc3_verification_state",
+    "name",
+    "outlets",
+    "phone_calls_allowed",
+    "place_type",
+    "regular_hours",
+    "regular_hours_available",
+    "regular_hours_next_transition_at",
+    "regular_hours_observed_at",
+    "regular_hours_state",
+    "seating_notes",
+    "wifi",
+    "work_suitability",
+  ]);
+  await expect(getPublicPlaceDetail(selected!.id)).resolves.toEqual(data![0]);
+  await expect(
+    getPublicPlaceDetail("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+  ).resolves.toBeNull();
 });

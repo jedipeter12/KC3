@@ -63,7 +63,11 @@ cascading deletion, weekly-hours validation, split and overnight intervals,
 automatic update timestamps, the local MVP seed contract, and the anonymous
 public place RPC's role, RLS, column, status, and write-denial boundaries. It also
 covers Google ingestion storage constraints, move links, source-specific hours,
-effective-dated overrides, and local-time override resolution.
+effective-dated overrides, and local-time override resolution. KC3-30 coverage
+also verifies address precision, drive-thru combinations, exact expanded RPC
+shapes, effective-hours priority, open/closed transitions, 24-hour schedules,
+14-day hours freshness, 180-day KC3 freshness, and expanded least-privilege
+authorization.
 
 Run PostgreSQL lint checks against the same local database with
 `npm run lint:db`. The command targets KC3's `public` schema and fails on project
@@ -77,10 +81,13 @@ application identity and Supabase configuration, the exact public database type,
 and the public-place data layer's ordered success, empty, malformed-response,
 and sanitized provider-error behavior.
 
-The public-place data layer calls only `list_public_places()`. A successful empty
-RPC array returns `[]`; null or malformed data, provider errors, and rejected
-requests throw the stable `PUBLIC_PLACES_UNAVAILABLE` application error without
-including the underlying provider details.
+The current screen calls only `list_public_places()`. KC3-30 also provides typed
+`listPublicPlaceSummaries()` and `getPublicPlaceDetail()` data operations for
+KC3-31. Successful empty list responses return `[]`, and an unavailable detail
+ID returns null. Null, malformed, impossible drive-thru combinations, invalid
+nested schedules, provider errors, and rejected requests throw the stable
+`PUBLIC_PLACES_UNAVAILABLE` application error without including underlying
+details.
 
 React Native Testing Library component tests exercise the place-list screen's
 loading, ordered results, four visible fields, derived filter choices, combined
@@ -105,9 +112,9 @@ without a Google credential or billable request. The pgTAP importer suite
 exercises actual insert/repeat transactions, provider refreshes, KC3 field and
 hours preservation, permissions, and rollback against local Supabase.
 
-The generated client database type remains intentionally unchanged by KC3-24:
-the new storage tables and internal override resolver are not public client APIs,
-and `src/types/database.ts` still exposes exactly `list_public_places()`.
+The hand-maintained client database type exposes only the three approved public
+place RPCs. Base tables and internal ingestion, hours-resolution, and override
+helpers are not client APIs.
 
 KC3-19 adds component regression cases for successful mixed-case name search,
 independent city/type constraints, resetting one constraint while retaining the
@@ -133,10 +140,12 @@ is never printed. Docker/CLI access failures produce prerequisite instructions.
 Run it from the repository root with permission to access Docker and localhost.
 
 The suite supports both the clean 15-place seed and a reviewed provider-backed
-local dataset. It checks every returned row's exact raw five-field shape and
-approved city/type bounds, compares the production data-layer result, exercises
-the production name/city/place-type filters against the live response, and
-requires HTTP 401 / PostgreSQL `42501` for direct `places` reads. Missing
+local dataset. It checks every legacy row's exact raw five-field shape and
+approved city/type bounds, verifies the exact expanded summary/detail shapes,
+compares all three production data-layer operations, confirms unknown detail IDs
+remain hidden, exercises production name/city/place-type filters against the
+live response, and requires HTTP 401 / PostgreSQL `42501` for direct `places`
+reads. Missing
 migrations, an empty dataset, or API failures fail the suite; they are not
 silently skipped. Run `npm test` and `npm run lint:db` against a clean reset and
 again after importing. Database fixtures and seed assertions are scoped so the
@@ -400,6 +409,17 @@ events can each run CI for an open `codex/**` branch.
   temporarily add a failing TypeScript assertion to an application test, commit
   and push, and confirm `Application checks` and the workflow fail. Remove the
   temporary test, push, and require a fresh passing run. Keep run links as evidence.
+
+KC3-30 local verification (2026-09-22): a clean reset applied the expanded
+anonymous public-place migration and unchanged seed. All 225 pgTAP assertions,
+database lint, six live anonymous integration tests, 73 application tests,
+typecheck, ESLint, formatting, `git diff --check`, and Web/iOS/Android production
+exports passed. The legacy five-field consumer remained compatible. No Google
+request or privileged client credential was used. A hosted branch run remains
+required before review is merged. A rolled-back 164-place probe with 1,043
+schedule rows completed in 35.9 ms after write-boundary timezone validation
+replaced per-place catalog scans; the pre-fix empty-schedule probe took 4.53
+seconds.
 
 KC3-28 local verification (2026-09-20): a clean bounded live import inserted 149,
 updated 15, skipped 99, and failed zero records. The immediate repeat inserted

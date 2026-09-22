@@ -43,6 +43,7 @@ the public environment configuration required to run the client.
 - [`docs/KC3_27_DATASET.md`](docs/KC3_27_DATASET.md) — bounded MVP dataset run record, counts, review findings, and coverage limitations
 - [`docs/KC3_28_VERIFICATION.md`](docs/KC3_28_VERIFICATION.md) — repeat import, ownership, timestamp, anonymous integration, and real-data UI verification record
 - [`docs/KC3_29_PLACE_EXPERIENCE.md`](docs/KC3_29_PLACE_EXPERIENCE.md) — approved real-data-driven list, detail, field, state, responsive, and accessibility contract
+- [`docs/KC3_30_PUBLIC_PLACE_CONTRACT.md`](docs/KC3_30_PUBLIC_PLACE_CONTRACT.md) — implemented expanded anonymous summary/detail data, freshness, compatibility, and authorization contract
 - [`AGENTS.md`](AGENTS.md) — standing instructions for AI coding agents
 
 ## Repository Structure

@@ -10,6 +10,10 @@ the anonymous read boundary.
 
 ## In Progress
 
+- [ ] KC3-30: Expanding the anonymous public summary/detail contract with
+  structured address precision, effective regular hours and source-specific
+  freshness, KC3-owned suitability fields, and separate nullable drive-thru
+  values while retaining least-privilege RPC-only access.
 - [ ] KC3-23: Final automated verification and live Expo Web and iOS Simulator
   functional smoke passes complete; milestone closure remains blocked by the
   KC3-21 native accessibility checks. See `docs/MVP_VERIFICATION.md` for evidence
@@ -19,11 +23,6 @@ the anonymous read boundary.
 
 ## Next
 
-- [ ] KC3-30: Define and implement the expanded anonymous public place summary
-  and detail contract required by `docs/KC3_29_PLACE_EXPERIENCE.md`, including
-  structured unknown/freshness states, effective regular hours, address
-  precision, separate drive-thru fields, and least-privilege authorization
-  tests.
 - [ ] KC3-31: Implement the approved mobile-first and Expo Web list/detail
   experience after KC3-30, including richer filters, focus/history preservation,
   all loading/empty/error states, and automated plus manual accessibility

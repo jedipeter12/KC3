@@ -95,14 +95,20 @@ select set_eq(
     select policyname::text
     from pg_policies
     where schemaname = 'public'
-      and tablename in ('places', 'place_google_data', 'place_details', 'place_hours')
+      and tablename in (
+        'places', 'place_google_data', 'place_details', 'place_hours',
+        'place_overrides'
+      )
   $$,
   $$
     values
       ('public_place_reader_selects_active_places'),
       ('google_importer_accesses_places'),
       ('google_importer_accesses_google_data'),
-      ('google_importer_accesses_hours')
+      ('google_importer_accesses_hours'),
+      ('public_place_reader_selects_active_details'),
+      ('public_place_reader_selects_active_hours'),
+      ('public_place_reader_selects_active_overrides')
   $$,
   'only the approved public-reader and server-import policies open table rows'
 );
@@ -121,8 +127,8 @@ select is(
       and not tgisinternal
       and tgenabled = 'O'
   ),
-  5,
-  'all five updated_at triggers exist and are enabled'
+  7,
+  'updated_at, address-precision, and timezone-validation triggers are enabled'
 );
 
 select ok(

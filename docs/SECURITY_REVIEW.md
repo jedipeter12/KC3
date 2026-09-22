@@ -1,6 +1,7 @@
 # Defensive Security Review
 
-**Review date:** 2026-08-23; updated 2026-09-20 for live repeat import and
+**Review date:** 2026-08-23; updated 2026-09-22 for the expanded anonymous
+summary/detail boundary, 2026-09-20 for live repeat import and
 anonymous real-dataset verification, 2026-09-19 for the verified Google import
 boundary, and previously 2026-09-08 for the Google ingestion contract
 
@@ -18,10 +19,11 @@ repository.
 ## Executive Security Assessment
 
 KC3 has a good early-stage security foundation but is not ready to deploy to real
-users. The Data API now exposes one approved operation: anonymous execution of a
-five-field, active-place RPC. All five base tables remain inaccessible to Data API
-roles. The RPC runs as a dedicated `NOLOGIN`, `NOBYPASSRLS` role with column-level
-source privileges and an active-only RLS policy.
+users. The Data API exposes three approved operations: the compatible five-field
+active-place RPC plus bounded active-place summary and by-ID detail RPCs. All
+five base tables remain inaccessible to Data API roles. The RPCs run as a
+dedicated `NOLOGIN`, `NOBYPASSRLS` role with column-level source privileges and
+active-place RLS policies.
 
 No critical or high-severity dependency advisory, committed credential, custom
 authentication flaw, or application remote-code path was found. A live
@@ -35,9 +37,8 @@ must not be broadened without a new approval and matching authorization tests.
 Security status by stage:
 
 - **Safe for the current local backend stage:** Yes. The migrations apply from a
-  clean local database, all 190 pgTAP assertions pass against clean and imported
-  local state, and database lint reports
-  no schema errors.
+  clean local database, all 225 pgTAP assertions pass against clean local state,
+  and database lint reports no schema errors.
 - **Safe for an Expo client to call the approved RPC locally:** Yes. This does not
   approve additional reads, any writes, or production deployment.
 - **Safe for production users:** No. Hosting, environment separation, secrets
@@ -53,11 +54,12 @@ None found in the current repository.
 ### H-01 — Initial client authorization boundary is implemented
 
 All place tables are in the exposed `public` schema, but direct Data API role
-privileges remain revoked. `anon` may execute only `list_public_places()`, which
-returns five approved fields for active places. Its constrained owner has only
-the six source-column privileges needed to project and filter those records, and
-RLS enforces the same active-only boundary. A future broad grant could still
-expose hidden or internal data if it bypasses this pattern.
+privileges remain revoked. `anon` may execute only the three approved public
+place RPCs. Their constrained owner has only the source-column privileges needed
+to build the bounded projections, and RLS restricts every contributing table to
+active places. Provider identities, URIs, ratings, coordinates, timezone,
+lifecycle status, and internal notes remain excluded. A future broad grant could
+still expose hidden or internal data if it bypasses this pattern.
 
 - **Current exploitability:** Limited to the explicitly approved public place
   fields and active rows through the RPC.
@@ -162,13 +164,14 @@ remain outside those protections.
 - **Disposition:** **PARTIALLY MITIGATED FOR GOOGLE INGESTION.** Remaining general
   writer and output limits require later decisions.
 
-### M-03 — Authorization regression coverage is established for the initial read
+### M-03 — Authorization regression coverage is established for public reads
 
-The pgTAP suite now covers the initial anonymous RPC's dedicated role, policy,
-function owner and configuration, response fields, active-only status behavior,
-direct-table denial, and read/write grants. Future authenticated, administrative,
-or expanded public behavior remains untested because it is unapproved. KC3-22
-adds CI for the database suite, database lint, and local HTTP integration checks.
+The pgTAP suite covers all three anonymous RPCs' dedicated role, policies,
+function owners and configuration, exact response fields, active-only behavior,
+direct-table denial, and read/write grants. The live integration suite exercises
+the three operations through the anonymous Data API client. Future authenticated,
+administrative, or further-expanded public behavior remains untested because it
+is unapproved. KC3-22 runs database tests, lint, and local HTTP checks in CI.
 
 - **Threat:** A later policy or grant change silently opens data.
 - **Required timing:** Add equivalent positive and negative coverage in the same
@@ -178,7 +181,7 @@ adds CI for the database suite, database lint, and local HTTP integration checks
 
 ### M-04 — Internal and API objects share the exposed `public` schema
 
-The five tables and trigger helper are created in a schema listed in the Data API
+The five tables and internal helpers are created in a schema listed in the Data API
 configuration. Explicit revokes now prevent current access, including direct
 execution of the trigger function. As the system grows, keeping raw/internal
 objects alongside intentional API objects raises the chance of accidental grants
@@ -186,10 +189,11 @@ or function exposure.
 
 - **Threat:** Accidental API surface growth and exposure of internal tables or
   routines.
-- **Required timing:** Not required to review the current MVP migration. Revisit
-  **before adding multiple RPCs, internal tables, or client-write features**.
-- **Disposition:** A schema split is an architecture decision and was not made in
-  this review.
+- **Required timing:** Revisited for KC3-30. Revisit again **before adding
+  client writes, broader administrative reads, or more public domains**.
+- **Disposition:** KC3-30 retains the schema with explicit function revokes,
+  exact grants, fixed search paths, constrained owners, and regression tests. A
+  schema split remains a later architecture decision.
 
 ### M-05 — Privacy, retention, and deletion requirements are undocumented
 
@@ -267,12 +271,12 @@ that change was not applied.
 
 ## Security Controls Already Implemented Well
 
-- Every current application table has RLS enabled. The sole policy applies only
-  to the constrained public reader role and active `places` rows.
+- Every current application table has RLS enabled. Public-reader policies apply
+  only to the constrained role and data belonging to active places.
 - Current table grants and automatic Data API grants for future
   `postgres`-owned project objects are explicitly revoked in the migration;
   project access must be granted intentionally.
-- Anonymous clients have only `EXECUTE` on the approved RPC. Its dedicated
+- Anonymous clients have only `EXECUTE` on the approved RPCs. Their dedicated
   `NOLOGIN`, `NOBYPASSRLS` owner has narrowly enumerated source columns, a fixed
   empty `search_path`, no write privileges, and no lasting schema-create grant.
 - The trigger helper sets an empty `search_path`, reducing object-shadowing risk,
@@ -299,14 +303,15 @@ that change was not applied.
 
 ### D-01 — Public data and authorization boundary
 
-1. **Decision:** Anonymous clients may call a read-only RPC that returns active
-   place ID, name, city, address, and place type. Base tables and writes remain
-   inaccessible.
-2. **Implementation:** `list_public_places()` is owned by a dedicated constrained
+1. **Decision:** Anonymous clients may call the compatible five-field list RPC
+   plus bounded active-place summary and by-ID detail RPCs. Base tables and
+   writes remain inaccessible.
+2. **Implementation:** All three functions are owned by a dedicated constrained
    reader role whose source access is restricted by column grants and RLS.
 3. **Coverage:** Role, function, policy, status, column, and write-denial behavior
    is protected by pgTAP.
-4. **Disposition:** **ACCEPTED AND IMPLEMENTED 2026-09-05.** See `DECISIONS.md`.
+4. **Disposition:** **ACCEPTED AND IMPLEMENTED 2026-09-05; EXPANDED
+   2026-09-22.** See `DECISIONS.md`.
 
 ### D-02 — Administrative curation and import path
 
@@ -510,13 +515,14 @@ that change was not applied.
 
 ## Checks Performed and Results
 
-KC3-20 adds `npm run test:integration` to exercise the anonymous boundary through
-the real production Supabase client and local Data API. It checks the raw response
-for exactly the five approved fields before projection and requires HTTP 401 with
-permission code `42501` for direct `places` access. Network errors and missing
-relations cannot satisfy the denial assertion. It uses only the local anonymous
-key, rejects non-loopback URLs, ignores ambient Expo credentials, and suppresses
-captured CLI output. The test performs no writes or authorization changes.
+`npm run test:integration` exercises the anonymous boundary through the real
+production Supabase client and local Data API. It checks the legacy five-field
+response and the exact expanded summary/detail responses before projection and
+requires HTTP 401 with permission code `42501` for direct `places` access.
+Network errors and missing relations cannot satisfy the denial assertion. It
+uses only the local anonymous key, rejects non-loopback URLs, ignores ambient
+Expo credentials, and suppresses captured CLI output. The test performs no
+writes or authorization changes.
 
 **Reverified:** 2026-09-05
 

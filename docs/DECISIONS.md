@@ -43,6 +43,71 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-22 — Add compatible purpose-specific anonymous place projections
+
+**Status:** Accepted
+
+**Decision**
+
+Keep `list_public_places()` unchanged while adding
+`list_public_place_summaries()` and `get_public_place_detail(uuid)` behind the
+existing constrained reader role. Put card/filter fields in the summary and the
+complete effective weekly schedule plus seating notes in detail. Return typed
+states and timestamps, not English display copy. Compute current hours and KC3
+verification freshness server-side using the accepted place timezone, without
+exposing that timezone. Validate non-null canonical timezones when written and
+validate existing values once during migration; do not scan PostgreSQL's
+timezone catalog once per returned place.
+
+Resolve regular hours through active complete override, complete KC3 base
+schedule, complete Google schedule, then unavailable. Preserve the selected
+schedule's observation time independently from provider fetch time. Add explicit
+address precision, separate nullable drive-thru fields, and a database constraint
+that drive-thru-only true requires drive-thru availability true.
+
+**Context**
+
+KC3-29 approved a list/detail split and exact freshness semantics. The current
+five-field client is working and KC3-31 has not yet implemented the new UI, so an
+in-place breaking response change would couple the database migration to an
+unfinished client. Open-now and 180-day verification states require the place
+timezone, but that internal evaluation input is explicitly excluded from the
+anonymous response.
+
+**Alternatives considered**
+
+- Replace the existing five-field function immediately.
+- Return one oversized projection containing full schedules and seating for all
+  list rows.
+- Expose the place timezone and make every client implement freshness and
+  current-state calculations.
+- Return preformatted English open/closed and verification strings.
+- Treat provider fetch time as schedule observation or KC3 verification.
+- Infer drive-thru or address precision in the client from provider categories
+  or address punctuation.
+
+**Reasoning**
+
+Separate operations minimize list payloads and preserve a rollback-safe consumer
+boundary. Server-side time-zone evaluation gives mobile and Web identical
+boundary behavior while typed states keep presentation in KC3-31. A constrained
+function owner can read only the columns needed for the approved outputs, so
+expanding usefulness does not require base-table access or privileged client
+credentials. Explicit storage constraints keep unknown and impossible
+drive-thru combinations from becoming UI heuristics. Write-boundary timezone
+validation keeps invalid identifiers out of storage without adding a catalog
+scan to every summary row.
+
+**Consequences / follow-up**
+
+KC3-31 may adopt the new operations without changing storage or authorization.
+Until then, both public contracts coexist and the live screen continues to use
+the original function. The public reader now has column-level access and active-
+row RLS policies for approved details, hours, and overrides, while Data API roles
+still have no direct table privileges. Rollback after KC3-31 must coordinate the
+client and database versions. The exact contract is documented in
+[`KC3_30_PUBLIC_PLACE_CONTRACT.md`](KC3_30_PUBLIC_PLACE_CONTRACT.md).
+
 ### 2026-09-21 — Approve a source-aware place summary and details experience
 
 **Status:** Accepted

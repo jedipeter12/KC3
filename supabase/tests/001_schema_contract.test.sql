@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = public, extensions;
 
-select plan(23);
+select plan(26);
 
 select set_eq(
   $$
@@ -107,6 +107,39 @@ select results_eq(
   'hours_source contains the approved ownership values'
 );
 
+select results_eq(
+  $$
+    select enumlabel::text collate "default"
+    from pg_enum
+    where enumtypid = 'public.address_precision'::regtype
+    order by enumsortorder
+  $$,
+  $$ values ('street_address'), ('approximate'), ('unknown') $$,
+  'address_precision carries exact, approximate, and unknown states'
+);
+
+select results_eq(
+  $$
+    select enumlabel::text collate "default"
+    from pg_enum
+    where enumtypid = 'public.regular_hours_state'::regtype
+    order by enumsortorder
+  $$,
+  $$ values ('open'), ('closed'), ('unknown') $$,
+  'regular_hours_state carries typed current-state values'
+);
+
+select results_eq(
+  $$
+    select enumlabel::text collate "default"
+    from pg_enum
+    where enumtypid = 'public.kc3_verification_state'::regtype
+    order by enumsortorder
+  $$,
+  $$ values ('unverified'), ('current'), ('stale') $$,
+  'kc3_verification_state separates unverified, current, and stale claims'
+);
+
 select set_eq(
   $$
     select column_name::text
@@ -116,7 +149,8 @@ select set_eq(
   $$ values
     ('id'), ('name'), ('city'), ('address'), ('place_type'),
     ('google_place_id'), ('status'), ('latitude'), ('longitude'),
-    ('time_zone'), ('moved_to_place_id'), ('created_at'), ('updated_at')
+    ('time_zone'), ('moved_to_place_id'), ('address_precision'),
+    ('created_at'), ('updated_at')
   $$,
   'places retains the approved canonical fields'
 );
@@ -148,8 +182,8 @@ select set_eq(
   $$ values
     ('place_id'), ('seating_notes'), ('outlets'), ('wifi'),
     ('work_suitability'), ('food_beverage'), ('phone_calls_allowed'),
-    ('bathroom_available'), ('last_verified_at'), ('verification_notes'),
-    ('created_at'), ('updated_at')
+    ('bathroom_available'), ('drive_thru_available'), ('drive_thru_only'),
+    ('last_verified_at'), ('verification_notes'), ('created_at'), ('updated_at')
   $$,
   'place_details retains the approved KC3-owned fields'
 );
@@ -177,7 +211,7 @@ select set_eq(
   $$ values
     ('id'), ('place_id'), ('override_type'), ('effective_start_date'),
     ('effective_end_date'), ('override_value'), ('source'), ('note'),
-    ('created_at'), ('updated_at')
+    ('source_observed_at'), ('created_at'), ('updated_at')
   $$,
   'place_overrides stores the effective-dated KC3 override contract'
 );
@@ -256,8 +290,8 @@ select is(
     from pg_constraint
     where conrelid = 'public.place_hours'::regclass and contype = 'c'
   ),
-  2,
-  'place_hours has weekday and open/closed consistency checks'
+  3,
+  'place_hours has weekday, open/closed, and interval-direction checks'
 );
 
 select is(
