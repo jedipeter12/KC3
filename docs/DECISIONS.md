@@ -43,6 +43,72 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-21 — Approve a source-aware place summary and details experience
+
+**Status:** Accepted
+
+**Decision**
+
+Expand the approved product boundary after the initial five-field list slice to
+include a compact place summary, dedicated place details, effective regular
+hours/open state, KC3 suitability facts, and richer local filters. Preserve the
+anonymous, read-only, active-only, three-city boundary. Keep full schedules and
+nuanced amenity states on detail; keep cards to identity, address, usable hours,
+at most three KC3 highlights, verification state, and a drive-thru-only warning.
+
+Use explicit positive, negative, unknown/unverified, unavailable, and stale
+states. Hours become stale after 14 full days from the effective schedule's
+observation; KC3 details become stale after 180 calendar days from KC3
+verification. Provider fetch is never KC3 verification. Model drive-thru
+available and drive-thru only as separate nullable KC3 facts, hide verified
+drive-thru-only places by default, and do not infer seating from a false
+drive-thru-only value.
+
+Approve external Open in Maps from details without adding a KC3 map browsing
+surface. Defer ratings, price, website, phone number, live/special hours,
+provider metadata, and heuristic provider-data cleanup. The complete normative
+contract is [`KC3_29_PLACE_EXPERIENCE.md`](KC3_29_PLACE_EXPERIENCE.md).
+
+**Context**
+
+KC3-28 produced a verified 164-place snapshot and exposed the limits of an
+identity-only list. Direct review found 159 stored regular schedules, only 15
+unknown/unverified KC3 detail shells, no verified KC3 detail row, long and
+unusual presentation values, missing schedules, split and overnight intervals,
+24-hour sentinels, and ambiguous sub-places. Product behavior must remain useful
+without turning those gaps into fabricated facts.
+
+**Alternatives considered**
+
+- Continue presenting only the five identity fields and defer suitability and
+  details indefinitely.
+- Put all fields and full weekly schedules on every list card.
+- Treat missing KC3 values as no/false or fill them from provider categories.
+- Use one generic freshness timestamp for provider and KC3-owned claims.
+- Model drive-thru-only as another label for drive-thru availability.
+- Add a map surface, ratings, or broad provider metadata with the detail screen.
+
+**Reasoning**
+
+The verified dataset is large enough that full-detail cards are difficult to
+scan, while identity-only cards do not answer whether a place fits a user's
+needs. A summary/detail split gives the list a clear job and leaves nuance,
+weekly intervals, and provenance to the detail screen. Explicit unknown,
+negative, and stale language prevents the current absence of KC3 verification
+from becoming fabricated facts. Separate freshness domains preserve the approved
+ownership model. Separate drive-thru facts distinguish a useful amenity at a
+sit-in place from a location that cannot function as a third place.
+
+**Consequences / follow-up**
+
+KC3-30 must add the least-privilege anonymous summary/detail contract, address
+precision, freshness semantics, and separate nullable drive-thru fields with
+authorization tests. KC3-31 must implement the responsive list/detail UI and its
+automated and manual accessibility verification. The current five-field RPC and
+client remain valid until those tickets land. Provider anomalies require
+reviewed source correction rather than UI heuristics. No database or UI code is
+changed by this decision.
+
 ### 2026-09-20 — Reconcile provider identities through explicit atomic attachments
 
 **Status:** Accepted

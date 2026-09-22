@@ -4,14 +4,13 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 
 ## Status
 
-- Stage: Initial client with a refresh-verified provider-backed local MVP dataset
-- Current focus: KC3-29 real-data-driven list UX/data-quality follow-up and the
-  remaining native accessibility checks.
-- Latest milestone: KC3-28 completed a clean bounded live import and
-  immediate zero-insert rerun, 164 canonical/provider-backed places, all 15 seed
-  identities reconciled, ownership and timestamp preservation verified, and the
-  anonymous RPC plus production filters exercised at real-data volume. Hosted
-  application and database CI passed on PR #13.
+- Stage: Approved real-data-driven place-finding contract over a refresh-verified
+  provider-backed local MVP dataset
+- Current focus: KC3-30 public place-model expansion, KC3-31 place-list/detail
+  implementation, and the remaining native accessibility checks.
+- Latest milestone: KC3-29 reviewed the 164-place KC3-28 snapshot and approved
+  the field-to-surface, list/detail navigation, unknown/freshness, hours,
+  drive-thru, responsive, and accessibility contract for the next public slice.
 
 KC3-23 final automated checks and live Expo Web and iOS Simulator functional
 smoke checks pass. Milestone closure remains pending native accessibility
@@ -43,6 +42,7 @@ the public environment configuration required to run the client.
 - [`docs/GOOGLE_INGESTION_CONTRACT.md`](docs/GOOGLE_INGESTION_CONTRACT.md) — approved Google field, ownership, normalization, refresh, and override rules
 - [`docs/KC3_27_DATASET.md`](docs/KC3_27_DATASET.md) — bounded MVP dataset run record, counts, review findings, and coverage limitations
 - [`docs/KC3_28_VERIFICATION.md`](docs/KC3_28_VERIFICATION.md) — repeat import, ownership, timestamp, anonymous integration, and real-data UI verification record
+- [`docs/KC3_29_PLACE_EXPERIENCE.md`](docs/KC3_29_PLACE_EXPERIENCE.md) — approved real-data-driven list, detail, field, state, responsive, and accessibility contract
 - [`AGENTS.md`](AGENTS.md) — standing instructions for AI coding agents
 
 ## Repository Structure

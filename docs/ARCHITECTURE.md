@@ -24,6 +24,13 @@ TypeScript CLI performs bounded Google Places discovery and persists normalized
 records through a server-only transactional function; neither its Google key nor
 its Supabase service-role key is part of the Expo environment or import graph.
 
+KC3-29 now approves the product and interaction contract for a richer anonymous
+summary plus dedicated place details, but no corresponding schema, RPC, client
+type, navigation, or UI has been implemented. KC3-30 must establish that public
+data boundary before KC3-31 changes the client. The normative field, state,
+freshness, platform, and accessibility requirements are in
+[`KC3_29_PLACE_EXPERIENCE.md`](KC3_29_PLACE_EXPERIENCE.md).
+
 ## Technology Stack
 
 - Client: React Native with Expo; Expo Web is the initial web target.
@@ -192,6 +199,12 @@ they are missing. It does not update existing records, populate Google-owned
 fields, or seed volatile weekly hours. See `SEED_DATA.md` for provenance and
 maintenance rules.
 
+KC3-29 requires KC3-30 to add separate nullable concepts for drive-thru
+availability and drive-thru-only status. They are approved product semantics but
+are not columns in the current schema. A true drive-thru-only value must require
+drive-thru availability; a false drive-thru-only value must not be treated as
+proof of seating.
+
 ## APIs / Integrations
 
 Supabase is the only approved integration. Anonymous clients may execute
@@ -219,6 +232,27 @@ before one-place transactions, preserves missing values and KC3-owned data, and
 reports substantive changes. Provider and database failures become sanitized
 per-query or per-record output. Moved listings and unresolved duplicate
 candidates remain explicit operator-review skips rather than automatic merges.
+
+### Approved next public boundary
+
+KC3-30 must preserve RPC-only, active-only, anonymous reads and direct-table/write
+denial while adding two purpose-specific operations: an all-place summary for
+cards and local filtering, and a single-place detail by stable KC3 ID. The
+summary needs only card/filter values; complete weekly intervals and seating
+notes belong to detail. Both return typed values and source-specific timestamps,
+not preformatted English.
+
+The contract must normalize missing `place_details` rows to unverified KC3
+values, expose address precision without client punctuation heuristics, resolve
+effective regular hours using the accepted override/source priority, and retain
+separate hours observation and KC3 verification freshness. The client may form
+the approved external Open in Maps query from public canonical name/address
+values; the stored provider map URI is not added to the public contract.
+Provider IDs, raw metadata, ratings, price, website, internal verification
+notes, coordinates, lifecycle fields, and unrestricted timestamps remain
+outside the public projection. Exact shape and function names are KC3-30
+implementation details, but the semantics in
+`KC3_29_PLACE_EXPERIENCE.md` are not.
 
 ## Authentication and Authorization
 

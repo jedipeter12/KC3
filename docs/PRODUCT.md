@@ -21,7 +21,9 @@ time, work, or meet others.
 
 Find places that match selected needs and preferences. The approved first slice
 supports place-name search plus city and place-type filtering over the public
-place list.
+place list. The approved KC3-29 follow-on adds a scannable summary, dedicated
+place details, regular-hours status, and verified suitability filters while
+preserving explicit unknown and freshness states.
 
 ## MVP Scope
 
@@ -47,6 +49,11 @@ place list.
   empty, and error states.
 - The first client slice targets mobile and Expo Web and does not require a map,
   accounts, writes, hours, or a place-detail screen.
+- An approved, not-yet-implemented place-finding contract for the next public
+  slice. It defines the list/detail split, regular hours/open state, KC3-owned
+  suitability display and filters, drive-thru concepts, freshness language,
+  navigation, responsive behavior, and accessibility expectations. See
+  [`KC3_29_PLACE_EXPERIENCE.md`](KC3_29_PLACE_EXPERIENCE.md).
 
 ### Explicitly Not Included
 
@@ -85,18 +92,36 @@ keyboard operation, and iOS request-state changes have explicit announcements.
 Baseline verification is ongoing; native large-text and spoken screen-reader
 checks remain outstanding in `docs/ACCESSIBILITY_REVIEW.md`.
 
+## Approved KC3-29 Follow-on Experience (Not Yet Implemented)
+
+KC3-29 approves a dedicated place-details screen reached from the list. Cards
+remain compact: identity, address, usable regular-hours state, and a small KC3
+summary. Details contain the complete effective weekly schedule and KC3-owned
+seating, outlets, Wi-Fi, work, food, phone-call, bathroom, drive-thru, and
+verification information. Unknown, unavailable, and stale states use distinct
+language, and provider refresh never becomes a KC3 verification claim.
+
+The richer list retains name, city, and place-type controls and adds verified
+attribute filters. Drive-thru available and drive-thru only are separate
+nullable facts; verified drive-thru-only places are hidden by default but may be
+included. The exact approved matrix, copy, freshness thresholds, navigation, and
+platform/accessibility contract are normative in
+[`KC3_29_PLACE_EXPERIENCE.md`](KC3_29_PLACE_EXPERIENCE.md).
+
+KC3-30 must separately implement and authorize the required anonymous public
+data contract. KC3-31 must implement and verify the UI. Until then, the current
+five-field client remains the product behavior.
+
 ## Later Client Feature Candidates (Not Yet Approved)
 
 The following client-facing ideas were discussed as a plausible MVP shape. They
 are preserved for Product Owner review and must not be treated as implementation
 tickets until approved. The place data model itself is approved separately below.
 
-- Place-detail views.
 - Map presentation.
-- Place categories or tags, hours, coordinates, and freshness timestamps.
-- Attributes such as Wi-Fi, outlets, bathrooms, meeting or video-call
-  suitability, and cost to occupy.
-- A mobile-friendly layout and deployment.
+- Place categories or tags beyond the six approved types, cost to occupy,
+  website, ratings, phone number, and live/special hours.
+- Distance sorting, geolocation, and deployment.
 
 ## Approved MVP Data Model
 
@@ -113,6 +138,9 @@ and separates data by ownership and purpose:
   it is provider freshness, not a KC3 verification claim.
 - `place_details` stores seating notes, outlets, Wi-Fi, work suitability, food and
   beverage level, nullable verified/unknown booleans, and verification metadata.
+  KC3-29 additionally requires separate nullable `drive-thru available` and
+  `drive-thru only` concepts in the follow-on contract; they do not exist in the
+  implemented schema yet and belong to KC3-30.
 - `place_hours` stores zero or more intervals per place and day, including closed
   days, overnight closing, source, and verification metadata.
   Google rows use `source_observed_at` for the response that produced the stored
@@ -137,14 +165,28 @@ are allowed so split operating periods can be represented.
 
 ## User Experience Principles
 
-- No principles have been approved yet.
+- Never turn missing or unverified information into a positive or negative fact.
+- Keep the list scannable and move complete schedules, nuanced detail, and
+  provenance to a dedicated place screen.
+- Make verified negative values as explicit as verified positive values.
+- Treat freshness as part of a claim: hours freshness and KC3 verification are
+  different and must remain visibly separate.
+- Preserve long and unusual real values without truncation or heuristic cleanup;
+  correct source data through a reviewed curation workflow.
+- Use the same information hierarchy and operable semantics on mobile and Expo
+  Web, with touch, keyboard, large-text, and screen-reader behavior designed in.
 
 ## Business / Product Constraints
 
 - Budget: Not documented.
 - Platform: React Native with Expo, initially targeting mobile and Expo Web.
 - Privacy: Not documented.
-- Accessibility: Not documented.
+- Accessibility: KC3-29 requires semantic navigation and detail structure,
+  44-by-44 minimum targets, visible keyboard focus, focus restoration, state
+  announcements, Dynamic Type, and 200-percent Web reflow. Native manual gaps
+  from KC3-21 remain open.
+- Geography: the current MVP remains limited to Lenexa, Overland Park, and
+  Olathe and is explicitly non-exhaustive.
 - Other: Keep the MVP boundary clear and deliver work in small, reviewable
   tickets.
 
@@ -153,13 +195,13 @@ are allowed so split operating periods can be represented.
 - Should KC3 consistently call these locations "third places" or "third spaces"?
   The source context uses "third place," while the original repository summary
   used "third space."
-- Which capabilities, if any, should follow the approved list-first slice?
 - When, if ever, should map presentation enter the MVP?
-- Where will initial place data come from, and who is responsible for keeping it
-  current?
+- Who will perform KC3 suitability verification, and what operating process will
+  keep it current?
 - Do any future candidate MVP features require user accounts?
-- What are the initial geographic boundaries of the Kansas City metro for KC3?
-- What privacy and accessibility requirements must the MVP meet?
+- When should KC3 expand beyond the approved three-city geography?
+- Which hosting/release path and broader privacy requirements apply before
+  deployment?
 
 ## Future Ideas
 
