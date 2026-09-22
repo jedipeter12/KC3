@@ -9,8 +9,6 @@ list-first UX follow-up without expanding the approved product boundary.
 
 ## In Progress
 
-- [ ] KC3-28: Implementation, local verification, and hosted application/database
-  CI are complete; Product Owner review remains pending before closure.
 - [ ] KC3-23: Final automated verification and live Expo Web and iOS Simulator
   functional smoke passes complete; milestone closure remains blocked by the
   KC3-21 native accessibility checks. See `docs/MVP_VERIFICATION.md` for evidence
@@ -40,6 +38,11 @@ list-first UX follow-up without expanding the approved product boundary.
 
 ## Completed
 
+- [x] KC3-28 proves the bounded Google import is repeatable and ownership-safe;
+  verifies provider refresh, missing/closed/malformed/interrupted behavior and
+  timestamp boundaries; exercises the anonymous RPC and production filters at
+  164-record volume; records passing local and hosted application/database
+  checks; and received Product Owner approval on 2026-09-21.
 - [x] KC3-27 constructs and audits the first provider-backed local MVP dataset:
   all 18 city/category queries attempted, 162 canonical places stored, 161
   provider-backed, 14 representative seeds atomically reconciled, caps and gaps

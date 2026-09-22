@@ -2,9 +2,10 @@
 
 ## Status
 
-Locally complete on 2026-09-20 against a clean Supabase reset and live Google
-Places data; hosted application/database CI passed on PR #13, and Product Owner
-review remains pending. The bounded
+Completed and accepted on 2026-09-21. Local verification ran on 2026-09-20
+against a clean Supabase reset and live Google Places data, hosted
+application/database CI passed on PR #13, and Product Owner review approved
+closure. The bounded
 import is repeatable and ownership-safe, the anonymous
 five-field RPC and production filters work at 164-record volume, and one
 unchanged-hours comparison defect found by the live rerun was corrected and

@@ -5,9 +5,9 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 ## Status
 
 - Stage: Initial client with a refresh-verified provider-backed local MVP dataset
-- Current focus: KC3-28 Product Owner review, then real-data-driven list
-  UX/data-quality follow-up and the remaining native accessibility checks.
-- Latest local milestone: KC3-28 completed a clean bounded live import and
+- Current focus: KC3-29 real-data-driven list UX/data-quality follow-up and the
+  remaining native accessibility checks.
+- Latest milestone: KC3-28 completed a clean bounded live import and
   immediate zero-insert rerun, 164 canonical/provider-backed places, all 15 seed
   identities reconciled, ownership and timestamp preservation verified, and the
   anonymous RPC plus production filters exercised at real-data volume. Hosted
