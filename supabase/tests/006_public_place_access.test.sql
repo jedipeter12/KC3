@@ -137,10 +137,12 @@ select ok(
       )
     )
     from (
-      values ('id'), ('name'), ('city'), ('address'), ('place_type'), ('status')
+      values
+        ('id'), ('name'), ('city'), ('address'), ('address_precision'),
+        ('place_type'), ('status'), ('time_zone')
     ) as allowed_columns(column_name)
   ),
-  'the internal reader can select only the columns needed to filter and project places'
+  'the internal reader can select only canonical fields needed by public projections'
 );
 
 select ok(
@@ -148,8 +150,8 @@ select ok(
     select 1
     from (
       values
-        ('google_place_id'), ('latitude'), ('longitude'), ('time_zone'),
-        ('moved_to_place_id'), ('created_at'), ('updated_at')
+        ('google_place_id'), ('latitude'), ('longitude'), ('moved_to_place_id'),
+        ('created_at'), ('updated_at')
     ) as restricted_columns(column_name)
     where has_column_privilege(
       'kc3_public_place_reader',

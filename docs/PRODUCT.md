@@ -49,11 +49,11 @@ preserving explicit unknown and freshness states.
   empty, and error states.
 - The first client slice targets mobile and Expo Web and does not require a map,
   accounts, writes, hours, or a place-detail screen.
-- An approved, not-yet-implemented place-finding contract for the next public
-  slice. It defines the list/detail split, regular hours/open state, KC3-owned
-  suitability display and filters, drive-thru concepts, freshness language,
-  navigation, responsive behavior, and accessibility expectations. See
-  [`KC3_29_PLACE_EXPERIENCE.md`](KC3_29_PLACE_EXPERIENCE.md).
+- An implemented anonymous data contract for the next public slice, with
+  bounded summary/detail operations, structured address precision, effective
+  regular hours, source-specific freshness, KC3-owned suitability fields, and
+  separate nullable drive-thru concepts. See
+  [`KC3_30_PUBLIC_PLACE_CONTRACT.md`](KC3_30_PUBLIC_PLACE_CONTRACT.md).
 
 ### Explicitly Not Included
 
@@ -92,7 +92,7 @@ keyboard operation, and iOS request-state changes have explicit announcements.
 Baseline verification is ongoing; native large-text and spoken screen-reader
 checks remain outstanding in `docs/ACCESSIBILITY_REVIEW.md`.
 
-## Approved KC3-29 Follow-on Experience (Not Yet Implemented)
+## Approved KC3-29 Follow-on Experience (Data Contract Implemented)
 
 KC3-29 approves a dedicated place-details screen reached from the list. Cards
 remain compact: identity, address, usable regular-hours state, and a small KC3
@@ -108,9 +108,10 @@ included. The exact approved matrix, copy, freshness thresholds, navigation, and
 platform/accessibility contract are normative in
 [`KC3_29_PLACE_EXPERIENCE.md`](KC3_29_PLACE_EXPERIENCE.md).
 
-KC3-30 must separately implement and authorize the required anonymous public
-data contract. KC3-31 must implement and verify the UI. Until then, the current
-five-field client remains the product behavior.
+KC3-30 implements and authorizes the required anonymous public data contract
+while preserving the old five-field RPC for compatibility. KC3-31 must adopt the
+new operations and implement and verify the UI. Until then, the current
+five-field screen remains the product behavior.
 
 ## Later Client Feature Candidates (Not Yet Approved)
 
@@ -137,10 +138,8 @@ and separates data by ownership and purpose:
   `google_fetched_at` records the latest successful validated provider response;
   it is provider freshness, not a KC3 verification claim.
 - `place_details` stores seating notes, outlets, Wi-Fi, work suitability, food and
-  beverage level, nullable verified/unknown booleans, and verification metadata.
-  KC3-29 additionally requires separate nullable `drive-thru available` and
-  `drive-thru only` concepts in the follow-on contract; they do not exist in the
-  implemented schema yet and belong to KC3-30.
+  beverage level, nullable verified/unknown booleans, separate nullable
+  drive-thru available and drive-thru-only facts, and verification metadata.
 - `place_hours` stores zero or more intervals per place and day, including closed
   days, overnight closing, source, and verification metadata.
   Google rows use `source_observed_at` for the response that produced the stored

@@ -1,6 +1,7 @@
 # Test Coverage and Reliability Review
 
-**Review date:** 2026-08-23; updated 2026-09-20 for repeat refresh/integration
+**Review date:** 2026-08-23; updated 2026-09-22 for the expanded anonymous
+summary/detail contract, 2026-09-20 for repeat refresh/integration
 verification and the real provider-backed dataset, 2026-09-19 for Google
 hours/source persistence, and previously updated 2026-09-08 for the Google
 ingestion contract and 2026-09-06 for the client and public-read boundary
@@ -10,7 +11,7 @@ ingestion contract and 2026-09-06 for the client and public-read boundary
 ## Scope and Established Behavior
 
 KC3 currently contains an approved Supabase/PostgreSQL data model, local seed,
-anonymous read-only place RPC, an Expo TypeScript client with a typed public data
+anonymous read-only place RPCs, an Expo TypeScript client with a typed public data
 layer and locally filtered place-list screen, and an operator-run Google Places
 ingestion CLI. KC3-24 defines the Google normalization and ownership contract,
 KC3-25 implements its bounded server-only workflow, KC3-26 verifies weekly hours
@@ -28,12 +29,12 @@ constraints, defaults, relationships, timestamp triggers, and RLS posture had no
 executable regression protection.
 
 There is no meaningful line-coverage percentage to report for a SQL migration.
-The workspace suite provides 190 behavior and contract assertions across nine
-pgTAP files. The first four files provide 87 schema assertions, including three
+The workspace suite provides 225 behavior and contract assertions across ten
+pgTAP files. The first four files provide 90 schema assertions, including three
 for privilege revocations. The seed-data test adds 12 assertions, the public
 place access test adds 24 authorization/response-contract assertions, the Google
-ingestion contract adds 25 assertions, the import-boundary suite adds 34, and the
-reconciliation suite adds 8.
+ingestion contract adds 25 assertions, the import-boundary suite adds 34, the
+reconciliation suite adds 8, and the expanded public model suite adds 32.
 
 ## Major Untested Risks Found
 
@@ -105,6 +106,19 @@ response contract, and exact role and column grants. It executes the RPC as
 `anon`, proves every non-active status is excluded, and verifies anonymous and
 internal-reader writes fail. It also proves base tables and unapproved columns
 remain inaccessible and that unapproved Data API roles cannot execute the RPC.
+
+### Expanded public summary and detail
+
+`010_expanded_public_place_model.test.sql` verifies the KC3-30 address,
+drive-thru, effective-hours, freshness, and authorization contract. It covers
+exact summary/detail fields, active-only detail lookup, normalized missing
+details, Google/KC3/override precedence, open and next-transition calculation,
+14-day and 180-day boundaries, 24-hour continuity, hardened function ownership,
+anonymous execution, and denial to unapproved roles. Application tests validate
+the exact TypeScript projection, reject impossible drive-thru combinations and
+malformed nested hours, and strip unexpected provider fields. The live smoke
+suite executes both new RPCs through the anonymous client and continues to prove
+direct table denial.
 
 ### Google ingestion contract
 
@@ -214,11 +228,11 @@ automatic or fuzzy merging.
 3. **Keep the KC3-20 HTTP/client integration smoke test current.** Run
    `npm run test:integration` against either the reset local seed or the reviewed
    provider-backed local dataset; it verifies the typed production client, raw
-   five-field serialization and approved city/type values, data-layer results,
-   production search and city/type filters, and explicit anonymous base-table
-   permission denial. `KC3_EXPECT_PROVIDER_DATASET=1` also requires production-
-   like volume and all six types. No provider mocks or additional dependencies
-   are used.
+   legacy and expanded serialization, approved city/type values, all three
+   data-layer results, production search and city/type filters, unknown detail
+   IDs, and explicit anonymous base-table permission denial.
+   `KC3_EXPECT_PROVIDER_DATASET=1` also requires production-like volume and all
+   six types. No provider mocks or additional dependencies are used.
    KC3-22 includes the clean-reset form of this suite in CI.
 4. **Keep importer regression coverage current.** The existing suite covers
    source ownership, stable-identity idempotency, regular-hours refresh behavior,
@@ -228,16 +242,27 @@ automatic or fuzzy merging.
    unit and interaction tests for approved validation, transformations, and
    multi-branch utilities as they appear. This prevents client behavior from
    drifting from the database and approved rules.
-6. **Expand API/client integration coverage with richer approved fields.** Verify
-   enum, nullable boolean, date, time, JSON, and error serialization as those
-   values enter the public contract. This prevents type-generation and
-   transformation bugs that database-only tests cannot observe.
-7. **Add end-to-end and accessibility coverage after those experiences are
+6. **Add end-to-end and accessibility coverage after those experiences are
    approved.** Focus on critical discovery flows, not implementation-detail
    snapshots. This prevents broken user journeys without prematurely defining the
    MVP.
 
 ## Verification Results
+
+**KC3-30 locally verified: 2026-09-22**
+
+- A clean reset applied the expanded public-place migration and unchanged seed.
+- All 225 pgTAP assertions, 73 application tests, six anonymous HTTP integration
+  tests, database lint, typecheck, ESLint, formatting, `git diff --check`, and
+  Web/iOS/Android Expo exports passed.
+- The checks cover exact summary/detail serialization, direct-table denial,
+  malformed client responses, effective-hours priority and transitions,
+  14-day and 180-day boundaries, address precision, 24-hour schedules, and
+  drive-thru constraints. No Google request or privileged client credential was
+  used.
+- A rolled-back 164-place summary probe with 1,043 schedule rows completed in
+  35.9 ms after moving timezone validation out of the per-place read path; the
+  pre-fix empty-schedule probe took 4.53 seconds.
 
 **KC3-28 locally verified: 2026-09-20**
 

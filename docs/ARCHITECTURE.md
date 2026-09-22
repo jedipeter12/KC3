@@ -24,11 +24,12 @@ TypeScript CLI performs bounded Google Places discovery and persists normalized
 records through a server-only transactional function; neither its Google key nor
 its Supabase service-role key is part of the Expo environment or import graph.
 
-KC3-29 now approves the product and interaction contract for a richer anonymous
-summary plus dedicated place details, but no corresponding schema, RPC, client
-type, navigation, or UI has been implemented. KC3-30 must establish that public
-data boundary before KC3-31 changes the client. The normative field, state,
-freshness, platform, and accessibility requirements are in
+KC3-30 implements the richer anonymous summary/detail data boundary, effective
+regular-hours resolution, typed freshness states, address precision, and
+drive-thru storage while retaining the old five-field RPC. KC3-31 still needs to
+adopt that contract in navigation and UI. The implementation contract is in
+[`KC3_30_PUBLIC_PLACE_CONTRACT.md`](KC3_30_PUBLIC_PLACE_CONTRACT.md); normative
+experience requirements remain in
 [`KC3_29_PLACE_EXPERIENCE.md`](KC3_29_PLACE_EXPERIENCE.md).
 
 ## Technology Stack
@@ -117,10 +118,11 @@ use the ignored `dist/` directory.
   project URL and publishable key from Expo's `EXPO_PUBLIC_` environment
   boundary. Authentication session behavior is disabled because accounts are not
   part of the approved slice. Its TypeScript database contract exposes only the
-  approved `list_public_places()` RPC and does not type base tables as client APIs.
-  The public-place data layer calls that RPC, preserves its ordering, projects
-  exactly the five approved fields, and converts provider or malformed responses
-  to a stable application error without retaining provider details.
+  approved public RPCs and does not type base tables as client APIs. The current
+  screen still calls `list_public_places()`. The data layer also validates the
+  KC3-30 summary/detail operations, narrows every response to its exact public
+  shape, and converts provider or malformed responses to a stable application
+  error without retaining provider details.
 - Supabase backend: Approved platform for backend services, database, and
   authentication. The initial public place schema is defined in a versioned
   migration. The first anonymous read RPC is implemented; authenticated and
@@ -158,8 +160,9 @@ The approved MVP data model consists of five public tables:
 
 - `places`: Canonical physical-place identity and lifecycle. It has a UUID primary
   key, required name/city/address/place type, optional unique Google Place ID,
-  accepted coordinates/timezone, an optional move relationship to another KC3
-  place, and an active-by-default status.
+  explicit address precision, accepted coordinates, a write-validated IANA
+  timezone, an optional move relationship to another KC3 place, and an
+  active-by-default status.
 - `place_google_data`: Optional one-to-one Google-derived data for a place. Its
   shared primary key cascades on place deletion and it holds the allowlisted
   provider values, structured address/type metadata, coordinates, timezone,
@@ -168,7 +171,9 @@ The approved MVP data model consists of five public tables:
   validated provider response time and never represents KC3 verification.
 - `place_details`: Optional one-to-one KC3 detail data for a place. Its shared
   primary key cascades on place deletion and it holds workability classifications,
-  nullable verified/unknown booleans, notes, and verification date.
+  nullable verified/unknown booleans, separate drive-thru availability and
+  drive-thru-only facts, notes, and verification date. A true drive-thru-only
+  value requires drive-thru availability to be true.
 - `place_hours`: Zero-to-many weekly schedule rows for a place. Each row has its
   own UUID, cascades on place deletion, uses Sunday `0` through Saturday `6`, and
   records its Google or KC3 source and source observation time. Multiple
@@ -176,20 +181,24 @@ The approved MVP data model consists of five public tables:
 - `place_overrides`: Zero-to-many KC3-owned, effective-dated factual overrides.
   Inclusive ranges for one place/type cannot overlap; JSON payloads are versioned
   at the application boundary. An internal invoker-rights function resolves an
-  active override using the accepted place IANA timezone.
+  active override using the accepted place IANA timezone and carries its own
+  source observation timestamp.
 
-The public enum types are `place_type`, `place_status`, `outlet_level`,
-`wifi_type`, `work_suitability`, `food_beverage_level`, and `hours_source`. All
+The public enum types include `place_type`, `place_status`, `address_precision`,
+`outlet_level`, `wifi_type`, `work_suitability`, `food_beverage_level`,
+`hours_source`, `regular_hours_state`, and `kc3_verification_state`. All
 five tables have creation/update timestamps; a shared trigger maintains
 `updated_at` automatically. Hours checks require valid weekday numbers, null
-times for closed rows, and both times for open rows. Coordinate pairs and Google
+times for closed rows, both times for open rows, and forward same-day intervals.
+Coordinate pairs and Google
 rating/count/status/price shapes have database constraints.
 
 Row Level Security is enabled on every table. Direct table privileges for `anon`,
 `authenticated`, and `service_role` remain explicitly revoked. The only current
-policy permits the dedicated `kc3_public_place_reader` role to select active rows
-from `places`; it receives column-level access only to ID, name, city, address,
-place type, and status. The role is `NOLOGIN` and cannot bypass RLS. Default
+public-reader policies permit the dedicated `kc3_public_place_reader` role to
+select only data belonging to active places; it receives column-level access
+only to values required to build the approved projections. The role is `NOLOGIN`
+and cannot bypass RLS. Default
 public-schema privileges for `postgres`-owned project migrations remain revoked
 so future project tables, sequences, and functions require intentional grants.
 
@@ -199,11 +208,9 @@ they are missing. It does not update existing records, populate Google-owned
 fields, or seed volatile weekly hours. See `SEED_DATA.md` for provenance and
 maintenance rules.
 
-KC3-29 requires KC3-30 to add separate nullable concepts for drive-thru
-availability and drive-thru-only status. They are approved product semantics but
-are not columns in the current schema. A true drive-thru-only value must require
-drive-thru availability; a false drive-thru-only value must not be treated as
-proof of seating.
+KC3-30's exact implemented storage and response shapes, effective-hours
+precedence, nullability, freshness, and compatibility behavior are documented in
+[`KC3_30_PUBLIC_PLACE_CONTRACT.md`](KC3_30_PUBLIC_PLACE_CONTRACT.md).
 
 ## APIs / Integrations
 
@@ -233,16 +240,16 @@ reports substantive changes. Provider and database failures become sanitized
 per-query or per-record output. Moved listings and unresolved duplicate
 candidates remain explicit operator-review skips rather than automatic merges.
 
-### Approved next public boundary
+### Expanded public boundary
 
-KC3-30 must preserve RPC-only, active-only, anonymous reads and direct-table/write
-denial while adding two purpose-specific operations: an all-place summary for
-cards and local filtering, and a single-place detail by stable KC3 ID. The
+KC3-30 preserves RPC-only, active-only, anonymous reads and direct-table/write
+denial and adds two purpose-specific operations: an all-place summary for cards
+and local filtering, and a single-place detail by stable KC3 ID. The
 summary needs only card/filter values; complete weekly intervals and seating
 notes belong to detail. Both return typed values and source-specific timestamps,
 not preformatted English.
 
-The contract must normalize missing `place_details` rows to unverified KC3
+The contract normalizes missing `place_details` rows to unverified KC3
 values, expose address precision without client punctuation heuristics, resolve
 effective regular hours using the accepted override/source priority, and retain
 separate hours observation and KC3 verification freshness. The client may form
@@ -252,7 +259,8 @@ Provider IDs, raw metadata, ratings, price, website, internal verification
 notes, coordinates, lifecycle fields, and unrestricted timestamps remain
 outside the public projection. Exact shape and function names are KC3-30
 implementation details, but the semantics in
-`KC3_29_PLACE_EXPERIENCE.md` are not.
+`KC3_29_PLACE_EXPERIENCE.md` are not. The legacy five-field RPC remains unchanged
+until KC3-31 migrates the current consumer.
 
 ## Authentication and Authorization
 
