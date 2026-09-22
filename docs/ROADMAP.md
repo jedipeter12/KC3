@@ -4,8 +4,9 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Use the refresh-verified Johnson County dataset to drive bounded data-quality and
-list-first UX follow-up without expanding the approved product boundary.
+Implement the approved KC3-29 anonymous place summary/detail contract over the
+refresh-verified Johnson County dataset without weakening source ownership or
+the anonymous read boundary.
 
 ## In Progress
 
@@ -18,10 +19,17 @@ list-first UX follow-up without expanding the approved product boundary.
 
 ## Next
 
-- [ ] KC3-29: Review suspicious provider presentation, ambiguous sub-place and
-  category records, and 164-row list scalability exposed by KC3-28; create
-  bounded data corrections or UI/UX tickets rather than silently rewriting
-  provider facts.
+- [ ] KC3-30: Define and implement the expanded anonymous public place summary
+  and detail contract required by `docs/KC3_29_PLACE_EXPERIENCE.md`, including
+  structured unknown/freshness states, effective regular hours, address
+  precision, separate drive-thru fields, and least-privilege authorization
+  tests.
+- [ ] KC3-31: Implement the approved mobile-first and Expo Web list/detail
+  experience after KC3-30, including richer filters, focus/history preservation,
+  all loading/empty/error states, and automated plus manual accessibility
+  verification.
+- [ ] Create reviewed data-correction follow-ups for suspicious provider names,
+  addresses, or classifications; do not silently normalize them in the UI.
 - [ ] Keep unrestricted raw Google payload retention disabled; require a new
   privacy/licensing/access decision before adding it later.
 - [ ] Define the Google import workflow and any later curated seed expansion.
@@ -38,6 +46,11 @@ list-first UX follow-up without expanding the approved product boundary.
 
 ## Completed
 
+- [x] KC3-29 reviews the real 164-place snapshot and approves the field-to-
+  surface matrix, compact list cards, place-detail hierarchy, navigation,
+  filters, regular-hours/open-state behavior, unknown/unavailable/stale copy,
+  separate drive-thru concepts, representative-record walkthrough, and mobile,
+  Web, and accessibility contract for KC3-30 and KC3-31.
 - [x] KC3-28 proves the bounded Google import is repeatable and ownership-safe;
   verifies provider refresh, missing/closed/malformed/interrupted behavior and
   timestamp boundaries; exercises the anonymous RPC and production filters at
