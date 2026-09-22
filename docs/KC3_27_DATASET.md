@@ -1,5 +1,9 @@
 # KC3-27 MVP Dataset Run Record
 
+> Historical snapshot: KC3-28 later repeat-verified and refreshed this dataset
+> to 164 canonical/provider-backed places and reconciled Sar-Ko-Par Trails Park.
+> See `KC3_28_VERIFICATION.md` for the current local run record.
+
 ## Status
 
 Completed locally on 2026-09-20. The bounded billable discovery attempted all 18

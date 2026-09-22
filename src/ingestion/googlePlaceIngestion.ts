@@ -466,7 +466,34 @@ function hoursAreEqual(
   incoming: readonly NormalizedHoursRow[],
   existing: readonly NormalizedHoursRow[],
 ): boolean {
-  return JSON.stringify(incoming) === JSON.stringify(existing);
+  if (incoming.length !== existing.length) return false;
+
+  const incomingRows = [...incoming].sort(compareNormalizedHoursRows);
+  const existingRows = [...existing].sort(compareNormalizedHoursRows);
+
+  return incomingRows.every((row, index) => {
+    const stored = existingRows[index];
+    return (
+      row.dayOfWeek === stored.dayOfWeek &&
+      row.openTime === stored.openTime &&
+      row.closeTime === stored.closeTime &&
+      row.isClosed === stored.isClosed &&
+      row.closesNextDay === stored.closesNextDay
+    );
+  });
+}
+
+function compareNormalizedHoursRows(
+  first: NormalizedHoursRow,
+  second: NormalizedHoursRow,
+): number {
+  return (
+    first.dayOfWeek - second.dayOfWeek ||
+    (first.openTime ?? "99:99").localeCompare(second.openTime ?? "99:99") ||
+    (first.closeTime ?? "99:99").localeCompare(second.closeTime ?? "99:99") ||
+    Number(first.isClosed) - Number(second.isClosed) ||
+    Number(first.closesNextDay) - Number(second.closesNextDay)
+  );
 }
 
 export function findDuplicateCandidate(

@@ -1,7 +1,8 @@
 # Defensive Security Review
 
-**Review date:** 2026-08-23; updated 2026-09-19 for the verified Google import
-boundary and previously updated 2026-09-08 for the Google ingestion contract
+**Review date:** 2026-08-23; updated 2026-09-20 for live repeat import and
+anonymous real-dataset verification, 2026-09-19 for the verified Google import
+boundary, and previously 2026-09-08 for the Google ingestion contract
 
 **Scope:** Repository contents and Git history, Supabase migration and local
 configuration, dependency metadata, documented architecture, and the controls
@@ -34,7 +35,7 @@ must not be broadened without a new approval and matching authorization tests.
 Security status by stage:
 
 - **Safe for the current local backend stage:** Yes. The migrations apply from a
-  clean local database, all 188 pgTAP assertions pass against clean and imported
+  clean local database, all 190 pgTAP assertions pass against clean and imported
   local state, and database lint reports
   no schema errors.
 - **Safe for an Expo client to call the approved RPC locally:** Yes. This does not
@@ -74,6 +75,9 @@ variables and a constrained transactional function owned by a `NOLOGIN`,
 may explicitly attach a reviewed provider identity to an existing KC3 UUID
 through the KC3-27 wrapper; the attachment and normalized import share one
 transaction, and role tests deny that wrapper to client roles. The operator
+workflow was repeat-verified by KC3-28 against 164 local provider-backed rows;
+generated Web/iOS/Android artifacts contained no configured Google key,
+server-only variable name, or Google Places endpoint. The operator
 still authenticates the RPC using a Supabase service-role credential, which
 bypasses RLS at the gateway and must never enter Expo, Expo Web, logs, or source
 control. A leaked credential would retain broader platform impact than the
@@ -394,10 +398,11 @@ that change was not applied.
 4. **Tradeoffs:** The manual workflow bounds credentials and cost but requires
    operator discipline and becomes stale between runs. Automation improves
    freshness while adding secrets, monitoring, quotas, and provider dependency.
-5. **Disposition:** KC3-24 through KC3-26 implement and verify the manual
-   allowlist, preservation, and atomic-failure contract. Restrict the Google key
-   to Places API (New) where practical; define budgets, production secret
-   handling, operational retry, and attribution before deployment or automation.
+5. **Disposition:** KC3-24 through KC3-28 implement and live-repeat-verify the
+   manual allowlist, preservation, and atomic-failure contract. Restrict the
+   Google key to Places API (New) where practical; define budgets, production
+   secret handling, operational retry, and attribution before deployment or
+   automation.
 
 ## Issues Fixed During This Task
 

@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = public, extensions;
 
-select plan(32);
+select plan(34);
 
 select ok(
   has_function_privilege('service_role', 'public.kc3_google_import_state()', 'execute'),
@@ -217,6 +217,17 @@ select is(
 );
 
 select is(
+  (
+    select count(*)::integer
+    from public.place_google_data as google
+    join public.places as places on places.id = google.place_id
+    where places.google_place_id = 'google-kc3-25'
+  ),
+  1,
+  'repeat import does not create a duplicate provider row'
+);
+
+select is(
   (select google_name from public.place_google_data where place_id = (
     select id from public.places where google_place_id = 'google-kc3-25'
   )),
@@ -412,6 +423,17 @@ select is(
   ),
   (select ids from pg_temp.changed_google_hours_before),
   'a failed write rolls back before it can partially replace Google hours'
+);
+
+select is(
+  (
+    select to_jsonb(details)
+    from public.place_details as details
+    join public.places as places on places.id = details.place_id
+    where places.google_place_id = 'google-kc3-25'
+  ),
+  (select snapshot from pg_temp.detail_before),
+  'changed, missing, and failed provider refreshes preserve every KC3 detail and verification value'
 );
 
 select * from finish();

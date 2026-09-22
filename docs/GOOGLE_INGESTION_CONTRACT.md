@@ -1,10 +1,12 @@
 # Google Places Ingestion Contract
 
-**Status:** Accepted for KC3-24 and persistence-verified by KC3-26
+**Status:** Accepted for KC3-24, persistence-verified by KC3-26, and live
+repeat-verified by KC3-28
 **Applies to:** the manual KC3-25 importer and later refresh workflows
 **Implementation:** KC3-25 implements the bounded single-place create/refresh
 path; KC3-26 verifies its hours, freshness, ownership, and rollback behavior.
-Explicit duplicate attachment and moved-listing resolution remain deferred.
+Explicit duplicate attachment is implemented; moved-listing resolution remains
+deferred.
 
 This is the durable policy and transformation contract for Google Places data.
 Repository schema and tests enforce stable storage invariants; the trusted
@@ -302,6 +304,5 @@ and must not advance freshness separately.
   create resolution; neither performs fuzzy or automatic merging. The
   two-listing moved-place resolution transaction remains deferred.
 - Override creation/display UI or a public effective-value API.
-- Scheduled refresh, retry policy, monitoring, map/navigation UI, and the real
-  Johnson County dataset.
+- Scheduled refresh, retry policy, monitoring, and map/navigation UI.
 - Raw-response retention and phone ingestion.

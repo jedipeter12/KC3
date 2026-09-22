@@ -134,13 +134,22 @@ Run it from the repository root with permission to access Docker and localhost.
 
 The suite supports both the clean 15-place seed and a reviewed provider-backed
 local dataset. It checks every returned row's exact raw five-field shape and
-approved city/type bounds, compares the production data-layer result, and
+approved city/type bounds, compares the production data-layer result, exercises
+the production name/city/place-type filters against the live response, and
 requires HTTP 401 / PostgreSQL `42501` for direct `places` reads. Missing
 migrations, an empty dataset, or API failures fail the suite; they are not
 silently skipped. Run `npm test` and `npm run lint:db` against a clean reset and
 again after importing. Database fixtures and seed assertions are scoped so the
 same suite supports provider-enriched local state. `test:app` remains independent
 of Docker and excludes the `*.smoke.ts` integration files.
+
+Set `KC3_EXPECT_PROVIDER_DATASET=1` for the post-import run. This additionally
+requires more than 100 public rows and all six approved place types, preventing a
+clean seed from being mistaken for the real-dataset smoke:
+
+```sh
+KC3_EXPECT_PROVIDER_DATASET=1 npm run test:integration
+```
 
 See [`ACCESSIBILITY_REVIEW.md`](ACCESSIBILITY_REVIEW.md) for the KC3-21 manual
 viewport/keyboard results, accessibility fixes, and outstanding native,
@@ -263,14 +272,48 @@ npm run ingest:google -- --city Lenexa --category coffee_shop,cafe,boba_tea,libr
 npm run ingest:google -- --city Lenexa --category coffee_shop,cafe,boba_tea,library,coworking --max-pages 1 --max-places 200 --attach 'ChIJW4FqNKmUwIcRDtDZHMN3rV8=6b633300-0000-4000-8000-000000000002' --write
 ```
 
-Pass every applicable reviewed mapping from `KC3_27_DATASET.md` to its command.
-Never reuse a mapping without reviewing that live result. The current run evidence
-and known coverage limitations belong in that document, not only in terminal
-history.
+Pass every applicable reviewed mapping from `KC3_27_DATASET.md` and the current
+`KC3_28_VERIFICATION.md` record to its command. Never reuse a mapping without
+reviewing that live result. Current run evidence and known coverage limitations
+belong in the corresponding run record, not only in terminal history.
 
 Normal tests and CI never invoke Google. An operator may use the small dry run
 above and its matching `--write` command as an explicitly billable live smoke
 check after reviewing the target and bounds; this is not a CI or release gate.
+
+### Verify an immediate refresh
+
+KC3-28 adds the repeatability check after dataset construction:
+
+1. Pre-populate a clearly labeled, disposable KC3 detail fixture on a reviewed
+   seed place and save its exact values and `last_verified_at`.
+2. Run the dry-run-first bounded write commands and record discovered, inserted,
+   updated, skipped, and failed counts.
+3. Run `supabase/audits/kc3_28_refresh.sql` from a trusted PostgreSQL session and
+   save its aggregate row. All issue queries must be empty.
+4. Immediately repeat the identical bounded write commands. Search ranking may
+   change the discovered set, but already seen Google IDs must update stable
+   KC3 identities and must not create duplicate canonical, provider, or hour
+   rows.
+5. Run the audit again. Canonical/provider/hour counts must remain stable absent
+   genuinely new ranked identities. `google_fetched_at` advances for successful
+   responses; unchanged or omitted schedules retain their earlier
+   `source_observed_at`; KC3 detail verification values remain exact.
+6. Run `npm test`, `npm run lint:db`, and
+   `KC3_EXPECT_PROVIDER_DATASET=1 npm run test:integration`, then complete Web and
+   practical native smoke checks. Remove only the controlled fixture after its
+   preservation is recorded.
+
+For the local project, the read-only audit can be piped into the database
+container without copying credentials:
+
+```sh
+docker exec -i supabase_db_KC3 psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
+  < supabase/audits/kc3_28_refresh.sql
+```
+
+The completed evidence, discovered provider variability, and known limitations
+are recorded in [`KC3_28_VERIFICATION.md`](KC3_28_VERIFICATION.md).
 
 ## Linting / Formatting
 
@@ -357,6 +400,15 @@ events can each run CI for an open `codex/**` branch.
   temporarily add a failing TypeScript assertion to an application test, commit
   and push, and confirm `Application checks` and the workflow fail. Remove the
   temporary test, push, and require a fresh passing run. Keep run links as evidence.
+
+KC3-28 local verification (2026-09-20): a clean bounded live import inserted 149,
+updated 15, skipped 99, and failed zero records. The immediate repeat inserted
+zero and exposed/fixed object-key-order sensitivity in unchanged-hours equality.
+The final 164-place/164-provider/1,118-hour snapshot passed 190 pgTAP assertions,
+database lint, four real-dataset anonymous integration tests, 66 application
+tests, typecheck, lint, formatting, `git diff --check`, all platform exports, and
+Expo Web search/filter smoke. The iOS simulator bundled and launched, but Device
+Hub UI automation timed out, so native interaction was not claimed as passed.
 
 KC3-26 local verification (2026-09-19): the existing schema and importer passed
 all 180 pgTAP assertions, database lint, three live anonymous RPC tests, 57

@@ -4,8 +4,8 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Verify repeatable refresh and integration behavior against the reviewed Johnson
-County provider-backed dataset.
+Use the refresh-verified Johnson County dataset to drive bounded data-quality and
+list-first UX follow-up without expanding the approved product boundary.
 
 ## In Progress
 
@@ -18,8 +18,10 @@ County provider-backed dataset.
 
 ## Next
 
-- [ ] KC3-28: Verify real-data refresh and integration behavior against the
-  reviewed bounded dataset.
+- [ ] KC3-29: Review suspicious provider presentation, ambiguous sub-place and
+  category records, and 164-row list scalability exposed by KC3-28; create
+  bounded data corrections or UI/UX tickets rather than silently rewriting
+  provider facts.
 - [ ] Keep unrestricted raw Google payload retention disabled; require a new
   privacy/licensing/access decision before adding it later.
 - [ ] Define the Google import workflow and any later curated seed expansion.
@@ -36,6 +38,11 @@ County provider-backed dataset.
 
 ## Completed
 
+- [x] KC3-28 proves the bounded Google import is repeatable and ownership-safe;
+  verifies provider refresh, missing/closed/malformed/interrupted behavior and
+  timestamp boundaries; exercises the anonymous RPC and production filters at
+  164-record volume; records passing local and hosted application/database
+  checks; and received Product Owner approval on 2026-09-21.
 - [x] KC3-27 constructs and audits the first provider-backed local MVP dataset:
   all 18 city/category queries attempted, 162 canonical places stored, 161
   provider-backed, 14 representative seeds atomically reconciled, caps and gaps

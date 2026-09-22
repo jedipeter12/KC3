@@ -4,13 +4,14 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 
 ## Status
 
-- Stage: Initial client with a reviewed provider-backed local MVP dataset
-- Current focus: Real-data refresh/integration verification and the remaining
-  native accessibility checks for the list-first slice.
-- Last major milestone: Closed KC3-27 with a bounded 162-place Lenexa, Overland
-  Park, and Olathe dataset, 14 atomic seed reconciliations, documented coverage
-  limits, a clean post-import audit, and live Expo Web and iOS Simulator smoke
-  passes.
+- Stage: Initial client with a refresh-verified provider-backed local MVP dataset
+- Current focus: KC3-29 real-data-driven list UX/data-quality follow-up and the
+  remaining native accessibility checks.
+- Latest milestone: KC3-28 completed a clean bounded live import and
+  immediate zero-insert rerun, 164 canonical/provider-backed places, all 15 seed
+  identities reconciled, ownership and timestamp preservation verified, and the
+  anonymous RPC plus production filters exercised at real-data volume. Hosted
+  application and database CI passed on PR #13.
 
 KC3-23 final automated checks and live Expo Web and iOS Simulator functional
 smoke checks pass. Milestone closure remains pending native accessibility
@@ -41,6 +42,7 @@ the public environment configuration required to run the client.
 - [`docs/SEED_DATA.md`](docs/SEED_DATA.md) — local seed behavior, data provenance, and maintenance rules
 - [`docs/GOOGLE_INGESTION_CONTRACT.md`](docs/GOOGLE_INGESTION_CONTRACT.md) — approved Google field, ownership, normalization, refresh, and override rules
 - [`docs/KC3_27_DATASET.md`](docs/KC3_27_DATASET.md) — bounded MVP dataset run record, counts, review findings, and coverage limitations
+- [`docs/KC3_28_VERIFICATION.md`](docs/KC3_28_VERIFICATION.md) — repeat import, ownership, timestamp, anonymous integration, and real-data UI verification record
 - [`AGENTS.md`](AGENTS.md) — standing instructions for AI coding agents
 
 ## Repository Structure
