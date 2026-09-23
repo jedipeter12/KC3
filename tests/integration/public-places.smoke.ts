@@ -13,6 +13,7 @@ let listPublicPlaceSummaries: typeof import("../../src/data/publicPlaces").listP
 let getPublicPlaceDetail: typeof import("../../src/data/publicPlaces").getPublicPlaceDetail;
 let filterPlaces: typeof import("../../src/features/places/placeFilters").filterPlaces;
 let getPlaceFilterOptions: typeof import("../../src/features/places/placeFilters").getPlaceFilterOptions;
+let DEFAULT_PLACE_FILTERS: typeof import("../../src/features/places/placeFilters").DEFAULT_PLACE_FILTERS;
 
 const requireProviderDataset = process.env.KC3_EXPECT_PROVIDER_DATASET === "1";
 
@@ -49,9 +50,10 @@ beforeAll(() => {
     jest.requireActual<typeof import("../../src/data/publicPlaces")>(
       "../../src/data/publicPlaces",
     ));
-  ({ filterPlaces, getPlaceFilterOptions } = jest.requireActual<
-    typeof import("../../src/features/places/placeFilters")
-  >("../../src/features/places/placeFilters"));
+  ({ filterPlaces, getPlaceFilterOptions, DEFAULT_PLACE_FILTERS } =
+    jest.requireActual<typeof import("../../src/features/places/placeFilters")>(
+      "../../src/features/places/placeFilters",
+    ));
 });
 
 it("returns active MVP-city places with exactly the five serialized fields", async () => {
@@ -100,10 +102,11 @@ it("loads the same live RPC result through the production data layer", async () 
 });
 
 it("applies production search and city/type filters to the live RPC dataset", async () => {
-  const places = await listPublicPlaces();
+  const places = await listPublicPlaceSummaries();
 
   expect(
     filterPlaces(places, {
+      ...DEFAULT_PLACE_FILTERS,
       city: null,
       nameQuery: "  bLaCk DoG  ",
       placeType: null,
@@ -111,6 +114,7 @@ it("applies production search and city/type filters to the live RPC dataset", as
   ).toContain("Black Dog Coffeehouse");
 
   const olatheParks = filterPlaces(places, {
+    ...DEFAULT_PLACE_FILTERS,
     city: "Olathe",
     nameQuery: "",
     placeType: "park",
@@ -220,6 +224,7 @@ it("returns one exact active-place detail and hides unknown IDs", async () => {
     "name",
     "outlets",
     "phone_calls_allowed",
+    "place_local_day_of_week",
     "place_type",
     "regular_hours",
     "regular_hours_available",

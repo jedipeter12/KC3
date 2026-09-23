@@ -254,7 +254,8 @@ select set_eq(
     ('id'), ('name'), ('city'), ('address'), ('address_precision'),
     ('place_type'), ('regular_hours_available'), ('regular_hours_state'),
     ('regular_hours_next_transition_at'), ('regular_hours_observed_at'),
-    ('regular_hours'), ('seating_notes'), ('outlets'), ('wifi'),
+    ('place_local_day_of_week'), ('regular_hours'), ('seating_notes'),
+    ('outlets'), ('wifi'),
     ('work_suitability'), ('food_beverage'), ('phone_calls_allowed'),
     ('bathroom_available'), ('drive_thru_available'), ('drive_thru_only'),
     ('kc3_last_verified_at'), ('kc3_verification_state')

@@ -1,9 +1,18 @@
-import type { PlaceType, PublicPlace } from "../../types/database";
+import type { PlaceType, PublicPlaceSummary } from "../../types/database";
 
 export type PlaceFilters = Readonly<{
+  bathroomAvailable: boolean;
   city: string | null;
+  driveThruAvailable: boolean;
+  foodAvailable: boolean;
+  goodForWork: boolean;
+  hideDriveThruOnly: boolean;
   nameQuery: string;
+  openNow: boolean;
+  outletsAvailable: boolean;
+  phoneCallsAllowed: boolean;
   placeType: PlaceType | null;
+  wifiAvailable: boolean;
 }>;
 
 export type PlaceFilterOptions = Readonly<{
@@ -11,18 +20,47 @@ export type PlaceFilterOptions = Readonly<{
   placeTypes: PlaceType[];
 }>;
 
+export const DEFAULT_PLACE_FILTERS: PlaceFilters = {
+  bathroomAvailable: false,
+  city: null,
+  driveThruAvailable: false,
+  foodAvailable: false,
+  goodForWork: false,
+  hideDriveThruOnly: true,
+  nameQuery: "",
+  openNow: false,
+  outletsAvailable: false,
+  phoneCallsAllowed: false,
+  placeType: null,
+  wifiAvailable: false,
+};
+
 export function normalizePlaceNameQuery(query: string): string {
   return query.trim().toLowerCase();
 }
 
-/**
- * Applies every active constraint using AND behavior while preserving the
- * loaded place order.
- */
+export function hasNonDefaultPlaceFilters(filters: PlaceFilters): boolean {
+  return (
+    normalizePlaceNameQuery(filters.nameQuery).length > 0 ||
+    filters.city !== null ||
+    filters.placeType !== null ||
+    filters.openNow ||
+    filters.goodForWork ||
+    filters.wifiAvailable ||
+    filters.outletsAvailable ||
+    filters.foodAvailable ||
+    filters.phoneCallsAllowed ||
+    filters.bathroomAvailable ||
+    filters.driveThruAvailable ||
+    !filters.hideDriveThruOnly
+  );
+}
+
+/** Applies every active constraint while preserving the server-provided order. */
 export function filterPlaces(
-  places: readonly PublicPlace[],
+  places: readonly PublicPlaceSummary[],
   filters: PlaceFilters,
-): PublicPlace[] {
+): PublicPlaceSummary[] {
   const normalizedNameQuery = normalizePlaceNameQuery(filters.nameQuery);
 
   return places.filter(
@@ -30,13 +68,29 @@ export function filterPlaces(
       (normalizedNameQuery.length === 0 ||
         place.name.toLowerCase().includes(normalizedNameQuery)) &&
       (filters.city === null || place.city === filters.city) &&
-      (filters.placeType === null || place.place_type === filters.placeType),
+      (filters.placeType === null || place.place_type === filters.placeType) &&
+      (!filters.openNow ||
+        (place.regular_hours_available &&
+          place.regular_hours_state === "open")) &&
+      (!filters.goodForWork || place.work_suitability === "good") &&
+      (!filters.wifiAvailable ||
+        (place.wifi !== "none" && place.wifi !== "unknown")) &&
+      (!filters.outletsAvailable ||
+        place.outlets === "few" ||
+        place.outlets === "many") &&
+      (!filters.foodAvailable ||
+        place.food_beverage === "light" ||
+        place.food_beverage === "full") &&
+      (!filters.phoneCallsAllowed || place.phone_calls_allowed === true) &&
+      (!filters.bathroomAvailable || place.bathroom_available === true) &&
+      (!filters.driveThruAvailable || place.drive_thru_available === true) &&
+      (!filters.hideDriveThruOnly || place.drive_thru_only !== true),
   );
 }
 
 /** Returns unique choices in the order they first appear in loaded records. */
 export function getPlaceFilterOptions(
-  places: readonly PublicPlace[],
+  places: readonly PublicPlaceSummary[],
 ): PlaceFilterOptions {
   const cities = new Set<string>();
   const placeTypes = new Set<PlaceType>();

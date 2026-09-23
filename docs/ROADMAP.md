@@ -4,16 +4,19 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Implement the approved KC3-29 anonymous place summary/detail contract over the
-refresh-verified Johnson County dataset without weakening source ownership or
-the anonymous read boundary.
+Complete native accessibility verification for the implemented KC3-31 anonymous
+place summary/detail experience without weakening source ownership or the
+anonymous read boundary.
 
 ## In Progress
 
-- [ ] KC3-30: Expanding the anonymous public summary/detail contract with
-  structured address precision, effective regular hours and source-specific
-  freshness, KC3-owned suitability fields, and separate nullable drive-thru
-  values while retaining least-privilege RPC-only access.
+- [ ] KC3-31: Summary cards, richer local filters, responsive filter rail/sheet,
+  detail hierarchy, list/history/focus preservation, error/empty/partial states,
+  automated checks, manual narrow/wide Expo Web verification, and partial iOS
+  large-text/Maps verification are complete. The iOS pass found and fixed native
+  text-box clipping plus the Maps handoff. Accessible Device Hub interaction,
+  user-attended VoiceOver, and practical Android checks remain before closure. See
+  `docs/KC3_31_IMPLEMENTATION.md`.
 - [ ] KC3-23: Final automated verification and live Expo Web and iOS Simulator
   functional smoke passes complete; milestone closure remains blocked by the
   KC3-21 native accessibility checks. See `docs/MVP_VERIFICATION.md` for evidence
@@ -23,10 +26,6 @@ the anonymous read boundary.
 
 ## Next
 
-- [ ] KC3-31: Implement the approved mobile-first and Expo Web list/detail
-  experience after KC3-30, including richer filters, focus/history preservation,
-  all loading/empty/error states, and automated plus manual accessibility
-  verification.
 - [ ] Create reviewed data-correction follow-ups for suspicious provider names,
   addresses, or classifications; do not silently normalize them in the UI.
 - [ ] Keep unrestricted raw Google payload retention disabled; require a new
@@ -45,6 +44,10 @@ the anonymous read boundary.
 
 ## Completed
 
+- [x] KC3-30 expands the anonymous public summary/detail contract with structured
+  address precision, effective regular hours and source-specific freshness,
+  KC3-owned suitability fields, and separate nullable drive-thru values while
+  retaining least-privilege RPC-only access.
 - [x] KC3-29 reviews the real 164-place snapshot and approves the field-to-
   surface matrix, compact list cards, place-detail hierarchy, navigation,
   filters, regular-hours/open-state behavior, unknown/unavailable/stale copy,

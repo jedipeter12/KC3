@@ -5,9 +5,10 @@
 KC3 has an Expo SDK 57 TypeScript client targeting React Native and Expo Web, but
 no deployed architecture yet. Application code lives in `src/`, a root entry
 point registers the app, and application tests live separately in `tests/`. The
-first screen consumes the typed public-place data operation and presents an
-ordered, responsive list with local name, city, and place-type filtering plus
-explicit loading, database-empty, no-match, sanitized error, and retry states.
+first screen consumes the typed public summary operation and presents an
+ordered, responsive list with local name, city, type, hours, suitability, and
+drive-thru filtering plus a stable-ID detail screen and explicit loading,
+database-empty, no-match, missing-detail, sanitized error, and retry states.
 Supabase provides the backend platform and PostgreSQL-based database; the initial
 MVP schema is defined as a migration but has not been applied to production. A transactional,
 idempotent local seed bootstraps 15 representative places without importing
@@ -26,8 +27,8 @@ its Supabase service-role key is part of the Expo environment or import graph.
 
 KC3-30 implements the richer anonymous summary/detail data boundary, effective
 regular-hours resolution, typed freshness states, address precision, and
-drive-thru storage while retaining the old five-field RPC. KC3-31 still needs to
-adopt that contract in navigation and UI. The implementation contract is in
+drive-thru storage while retaining the old five-field RPC. KC3-31 adopts that
+contract in responsive navigation and UI. The implementation contract is in
 [`KC3_30_PUBLIC_PLACE_CONTRACT.md`](KC3_30_PUBLIC_PLACE_CONTRACT.md); normative
 experience requirements remain in
 [`KC3_29_PLACE_EXPERIENCE.md`](KC3_29_PLACE_EXPERIENCE.md).
@@ -107,20 +108,21 @@ use the ignored `dist/` directory.
 - Expo client: Expo SDK 57 with React Native 0.86, React 19, and Expo Web. The
   scaffold uses a root `index.ts`, `src/App.tsx`, and feature-neutral
   configuration under `src/config/`. `src/features/places/PlaceListScreen.tsx`
-  owns the first screen's request lifecycle and renders the read-only public
-  projection with human-readable place types. It ignores stale request results,
-  uses safe-area-aware layout, bounds the content width for Web, and keeps the
-  controls and result list vertically scrollable. A pure feature utility trims
-  and normalizes name queries, derives unique city and place-type choices from
-  loaded records, and applies all active constraints with AND behavior while
-  preserving server order. Filter interactions never call the data layer.
+  owns the summary request, responsive discovery/filter state, stable-ID
+  navigation, Web history, scroll/focus restoration, and the detail request
+  boundary. `PlaceDetailScreen.tsx` renders cached identity while detail-only
+  data loads, then the approved identity, actions, suitability, regular-hours,
+  and provenance hierarchy. Pure feature utilities implement the exact local
+  AND-filter and presentation semantics while preserving server order. Filter
+  interactions never call the data layer.
 - Supabase client: A typed `@supabase/supabase-js` singleton reads the public
   project URL and publishable key from Expo's `EXPO_PUBLIC_` environment
   boundary. Authentication session behavior is disabled because accounts are not
   part of the approved slice. Its TypeScript database contract exposes only the
   approved public RPCs and does not type base tables as client APIs. The current
-  screen still calls `list_public_places()`. The data layer also validates the
-  KC3-30 summary/detail operations, narrows every response to its exact public
+  screen calls `list_public_place_summaries()` and detail navigation calls
+  `get_public_place_detail(uuid)`. The data layer validates both operations,
+  narrows every response to its exact public
   shape, and converts provider or malformed responses to a stable application
   error without retaining provider details.
 - Supabase backend: Approved platform for backend services, database, and
@@ -254,13 +256,17 @@ values, expose address precision without client punctuation heuristics, resolve
 effective regular hours using the accepted override/source priority, and retain
 separate hours observation and KC3 verification freshness. The client may form
 the approved external Open in Maps query from public canonical name/address
-values; the stored provider map URI is not added to the public contract.
+values; iOS uses Apple Maps so the native system app is available without an
+optional install, while Web and Android use the Google Maps search URL. The
+stored provider map URI is not added to the public contract.
 Provider IDs, raw metadata, ratings, price, website, internal verification
 notes, coordinates, lifecycle fields, and unrestricted timestamps remain
 outside the public projection. Exact shape and function names are KC3-30
 implementation details, but the semantics in
-`KC3_29_PLACE_EXPERIENCE.md` are not. The legacy five-field RPC remains unchanged
-until KC3-31 migrates the current consumer.
+`KC3_29_PLACE_EXPERIENCE.md` are not. KC3-31 adds only a derived
+`place_local_day_of_week` detail value so the client can put the place-local
+current day first without exposing or guessing the timezone. The legacy
+five-field RPC remains unchanged for compatibility.
 
 ## Authentication and Authorization
 

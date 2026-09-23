@@ -43,6 +43,41 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-22 — Return a derived place-local weekday without exposing timezone
+
+**Status:** Accepted
+
+**Decision**
+
+Add nullable `place_local_day_of_week` to the anonymous place-detail operation.
+Compute it server-side from the accepted place timezone and current instant; do
+not expose the timezone itself or ask the client to infer a day from its clock.
+
+**Context**
+
+KC3-29 requires today's regular-hours intervals before the full weekly schedule.
+KC3-30 correctly keeps the place timezone private but returned only weekday
+rows, so a client outside the place timezone could not identify the place-local
+current day accurately.
+
+**Alternatives considered**
+
+- Use the device's local weekday.
+- Expose the IANA place timezone.
+- Omit the Today presentation.
+
+**Reasoning**
+
+A derived integer is the smallest deterministic input for the approved UI. It
+preserves the timezone privacy boundary and avoids a client guess that becomes
+wrong around midnight or when a user is outside Kansas City.
+
+**Consequences / follow-up**
+
+The detail projection has one additive nullable field and its exact-shape tests
+must include it. Places without a timezone return null and omit the Today block;
+their complete schedule, when available, remains present.
+
 ### 2026-09-22 — Add compatible purpose-specific anonymous place projections
 
 **Status:** Accepted

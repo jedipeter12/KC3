@@ -43,6 +43,7 @@ export type PublicPlaceSummary = {
 };
 
 export type PublicPlaceDetail = PublicPlaceSummary & {
+  place_local_day_of_week: number | null;
   regular_hours: PublicRegularHoursRow[];
   seating_notes: string | null;
 };

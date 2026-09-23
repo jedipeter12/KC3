@@ -99,3 +99,45 @@ reader, observed result, and any defect for each check below.
    markup or mocked announcement calls with a spoken verification pass.
 
 Keep KC3-21 in progress until the remaining checks have recorded evidence.
+
+## KC3-31 Expo Web Follow-up — 2026-09-22
+
+The expanded summary/detail experience passed live anonymous-backend checks at a
+wide Web viewport and at 390 by 844 CSS pixels. Verified behavior includes the
+persistent filter rail, narrow full-height filter dialog, keyboard-operable
+controls, isolated modal accessibility tree, Escape close, return focus to the
+Filters trigger, visible focus treatment, result-count updates, detail-heading
+focus, browser Back/Forward, and originating-card focus restoration. Long values
+wrap and no horizontal clipping was visible in the narrow screenshot.
+
+Automated coverage now protects approved richer-filter semantics, default
+drive-thru-only exclusion, draft/apply behavior, cards, list/detail state
+preservation, cached identity during detail failure, retry, and iOS announcement
+calls. These checks still do not close either ticket's native spoken-screen-reader
+or large-text requirements. The remaining KC3-31 procedure is recorded in
+`KC3_31_IMPLEMENTATION.md`.
+
+## KC3-31 iOS Follow-up — 2026-09-22
+
+Expo Go 57.0.9 launched KC3 against the clean local seed on an iPhone 17 / iOS
+26.5 simulator. Default and largest-standard text-size screenshots showed a
+readable, wrapping list without horizontal overflow. At the maximum
+accessibility category, native glyphs were clipped by text boxes that did not
+track the rendered font scale. The shared native text primitives now scale both
+font size and line height through layout at the full system multiplier; the
+calculation is covered at 3.1×. Web text remains browser-controlled.
+
+The practical Maps check also found that a Google Web search URL opened Safari
+and an install interstitial when Google Maps was absent. The iOS action now uses
+Apple Maps and was observed opening the native Maps app. App tests increased to
+77 across ten suites, and typecheck, lint, formatting, diff-check, and all three
+production exports passed after the fixes.
+
+The Maps app then displayed first-launch permission prompts. After the macOS
+session was unlocked, the native automation bridge still timed out attaching to
+Device Hub and Xcode, and macOS denied command-line assistive access. The prompt
+could not be dismissed through `simctl`, so the full post-fix maximum-size
+screenshot and interactive search/filter/detail/back/retry checks remain
+unclaimed. VoiceOver was deliberately deferred until the user can be present to
+hear simulator speech routed through the Mac speakers. Restore an accessible
+simulator UI session and complete the manual procedure above.

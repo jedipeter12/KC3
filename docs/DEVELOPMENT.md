@@ -81,21 +81,23 @@ application identity and Supabase configuration, the exact public database type,
 and the public-place data layer's ordered success, empty, malformed-response,
 and sanitized provider-error behavior.
 
-The current screen calls only `list_public_places()`. KC3-30 also provides typed
-`listPublicPlaceSummaries()` and `getPublicPlaceDetail()` data operations for
-KC3-31. Successful empty list responses return `[]`, and an unavailable detail
+The current screen calls `listPublicPlaceSummaries()` and detail navigation calls
+`getPublicPlaceDetail()`. The legacy `listPublicPlaces()` operation remains typed
+and covered for compatibility. Successful empty list responses return `[]`, and
+an unavailable detail
 ID returns null. Null, malformed, impossible drive-thru combinations, invalid
 nested schedules, provider errors, and rejected requests throw the stable
 `PUBLIC_PLACES_UNAVAILABLE` application error without including underlying
 details.
 
-React Native Testing Library component tests exercise the place-list screen's
-loading, ordered results, four visible fields, derived filter choices, combined
-search/filter interactions, database-empty and no-match states, local clearing,
-sanitized error, and retry behavior. Pure unit tests protect name-query
-normalization, AND semantics, derived choices, and order preservation. Screen
+React Native Testing Library component tests exercise summary cards, the default
+drive-thru-only exclusion, draft/apply filters, approved positive-filter
+semantics, list/detail navigation and state preservation, cached identity during
+detail failures, retry, announcements, and distinct empty/no-match/error states.
+Pure unit tests protect name-query normalization, AND semantics, exact unknown
+and positive matching, derived choices, and order preservation. Screen
 dependencies are injected only at the component boundary for focused testing;
-production uses the approved public-place data operation.
+production uses the approved public-place data operations.
 
 `tests/google-contract.test.ts` protects the shared importer contract without
 calling Google: the exact field mask, deterministic cosmetic comparison,

@@ -54,6 +54,10 @@ preserving explicit unknown and freshness states.
   regular hours, source-specific freshness, KC3-owned suitability fields, and
   separate nullable drive-thru concepts. See
   [`KC3_30_PUBLIC_PLACE_CONTRACT.md`](KC3_30_PUBLIC_PLACE_CONTRACT.md).
+- An implemented mobile-first and responsive Expo Web summary/detail experience
+  with regular-hours states, verified-attribute filters, default drive-thru-only
+  exclusion, complete detail sections, external map launch, and list context
+  preservation.
 
 ### Explicitly Not Included
 
@@ -92,7 +96,7 @@ keyboard operation, and iOS request-state changes have explicit announcements.
 Baseline verification is ongoing; native large-text and spoken screen-reader
 checks remain outstanding in `docs/ACCESSIBILITY_REVIEW.md`.
 
-## Approved KC3-29 Follow-on Experience (Data Contract Implemented)
+## Implemented KC3-29 Follow-on Experience
 
 KC3-29 approves a dedicated place-details screen reached from the list. Cards
 remain compact: identity, address, usable regular-hours state, and a small KC3
@@ -109,9 +113,13 @@ platform/accessibility contract are normative in
 [`KC3_29_PLACE_EXPERIENCE.md`](KC3_29_PLACE_EXPERIENCE.md).
 
 KC3-30 implements and authorizes the required anonymous public data contract
-while preserving the old five-field RPC for compatibility. KC3-31 must adopt the
-new operations and implement and verify the UI. Until then, the current
-five-field screen remains the product behavior.
+while preserving the old five-field RPC for compatibility. KC3-31 now adopts the
+summary and detail operations. Mobile-width Web uses an Apply-based filter
+surface; Web at 960 CSS pixels and wider uses a persistent filter rail. Cards
+navigate by stable KC3 ID, Web uses browser history, and returning restores the
+applied query/filter state and originating-card focus. Native large-text and
+spoken screen-reader verification remains open; see
+[`KC3_31_IMPLEMENTATION.md`](KC3_31_IMPLEMENTATION.md).
 
 ## Later Client Feature Candidates (Not Yet Approved)
 
