@@ -4,29 +4,25 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Implement the approved KC3-29 anonymous place summary/detail contract over the
-refresh-verified Johnson County dataset without weakening source ownership or
-the anonymous read boundary.
+Review and merge the completed KC3-31 anonymous place summary/detail experience,
+then complete user-attended native screen-reader verification in KC3-34 without
+weakening source ownership or the anonymous read boundary.
 
 ## In Progress
 
-- [ ] KC3-30: Expanding the anonymous public summary/detail contract with
-  structured address precision, effective regular hours and source-specific
-  freshness, KC3-owned suitability fields, and separate nullable drive-thru
-  values while retaining least-privilege RPC-only access.
+- [ ] KC3-34: Complete user-attended VoiceOver and TalkBack verification for the
+  KC3 place discovery/detail experience, implement and recheck any resulting
+  fixes, and record spoken evidence for the KC3-21/KC3-23 closeout gate.
 - [ ] KC3-23: Final automated verification and live Expo Web and iOS Simulator
   functional smoke passes complete; milestone closure remains blocked by the
   KC3-21 native accessibility checks. See `docs/MVP_VERIFICATION.md` for evidence
   and closeout requirements.
-- [ ] KC3-21: Web keyboard/responsive checks and accessibility fixes verified;
-  native interactions, large text, and spoken screen-reader checks remain open.
+- [ ] KC3-21: Web keyboard/responsive checks, native interaction and large-text
+  checks, and accessibility fixes verified; spoken screen-reader checks remain
+  open under KC3-34.
 
 ## Next
 
-- [ ] KC3-31: Implement the approved mobile-first and Expo Web list/detail
-  experience after KC3-30, including richer filters, focus/history preservation,
-  all loading/empty/error states, and automated plus manual accessibility
-  verification.
 - [ ] Create reviewed data-correction follow-ups for suspicious provider names,
   addresses, or classifications; do not silently normalize them in the UI.
 - [ ] Keep unrestricted raw Google payload retention disabled; require a new
@@ -45,6 +41,16 @@ the anonymous read boundary.
 
 ## Completed
 
+- [x] KC3-31 implements responsive summary/detail discovery, richer filters,
+  state-preserving navigation, accessible states, and practical Web/iOS/Android
+  behavior; native passes found and fixed iOS text scaling, Maps routing,
+  filter-modal safe-area/large-text reflow, Android list restoration, and Android
+  external-link invocation. User-attended VoiceOver/TalkBack work moved to
+  KC3-34 without being removed from the release gate.
+- [x] KC3-30 expands the anonymous public summary/detail contract with structured
+  address precision, effective regular hours and source-specific freshness,
+  KC3-owned suitability fields, and separate nullable drive-thru values while
+  retaining least-privilege RPC-only access.
 - [x] KC3-29 reviews the real 164-place snapshot and approves the field-to-
   surface matrix, compact list cards, place-detail hierarchy, navigation,
   filters, regular-hours/open-state behavior, unknown/unavailable/stale copy,
@@ -139,9 +145,6 @@ Use this section for ideas intentionally postponed or rejected so they are not r
 
 ## Known Bugs / Issues
 
-- Manual iOS Simulator functional smoke passes, but native accessibility
-  verification remains incomplete: UI automation cannot tap the app's content
-  (initially `AXError.cannotComplete`; the follow-up returned
-  `noWindowsAvailable`, including after reconnecting). Android tooling is
-  unavailable. See `docs/ACCESSIBILITY_REVIEW.md` for evidence and the manual
-  completion procedure.
+- KC3-34 tracks the outstanding user-attended VoiceOver and TalkBack passes. The
+  practical iOS and Android interaction and large-text checks are complete; see
+  `docs/ACCESSIBILITY_REVIEW.md` for evidence and the remaining spoken checks.

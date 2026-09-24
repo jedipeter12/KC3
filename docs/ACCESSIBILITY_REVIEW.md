@@ -44,19 +44,16 @@ and [WAI button semantics](https://www.w3.org/WAI/ARIA/apg/patterns/button/).
 
 ## Remaining Manual Checks
 
-- iOS: KC3 launched in Expo Go SDK 57 on iPhone 17 / iOS 26.5 using the fixture.
-  The initial list and safe-area header rendered. Simulator taps failed with
-  `AXError.cannotComplete`; Expo's introduction overlay prevented dependable
-  interaction testing. A one-step preferred-text-size increase was restored.
-  This is a launch check only; final fixes were exported but not rechecked natively.
-- Verify native search, filters, scrolling with the keyboard open, and retry.
-- Verify the full screen at large and accessibility Dynamic Type settings;
-  heading wrapping is implemented but a complete large-text pass is pending.
-- Listen to VoiceOver/TalkBack and Web screen-reader announcements, including
-  loading, errors, retry, and selected filters. Automated announcement-call tests
-  do not establish that spoken timing is correct.
-- Android: no SDK/emulator or adb was available, so only bundle export passed.
-- Live backend validation remains separate; Docker Desktop was stopped.
+- Listen to VoiceOver and TalkBack reading order, selected states,
+  announcements, detail-heading focus, modal containment, and return focus.
+  Automated accessibility-tree and announcement-call checks do not establish
+  that spoken timing or gesture navigation is correct. This work, including any
+  remediation it uncovers, is tracked separately as KC3-34.
+- Complete the remaining Web screen-reader announcement pass for KC3-21.
+
+Practical iOS and Android search/filter/keyboard/detail/back/Maps/error-retry
+checks and their large-text passes were completed on 2026-09-23. The historical
+attempts and final evidence are recorded below.
 
 Run the client with the documented public configuration and repeat these checks
 on an interactive simulator/device before marking KC3-21 complete.
@@ -99,3 +96,101 @@ reader, observed result, and any defect for each check below.
    markup or mocked announcement calls with a spoken verification pass.
 
 Keep KC3-21 in progress until the remaining checks have recorded evidence.
+
+## KC3-31 Expo Web Follow-up — 2026-09-22
+
+The expanded summary/detail experience passed live anonymous-backend checks at a
+wide Web viewport and at 390 by 844 CSS pixels. Verified behavior includes the
+persistent filter rail, narrow full-height filter dialog, keyboard-operable
+controls, isolated modal accessibility tree, Escape close, return focus to the
+Filters trigger, visible focus treatment, result-count updates, detail-heading
+focus, browser Back/Forward, and originating-card focus restoration. Long values
+wrap and no horizontal clipping was visible in the narrow screenshot.
+
+Automated coverage now protects approved richer-filter semantics, default
+drive-thru-only exclusion, draft/apply behavior, cards, list/detail state
+preservation, cached identity during detail failure, retry, and iOS announcement
+calls. These checks still do not close either ticket's native spoken-screen-reader
+or large-text requirements. The remaining KC3-31 procedure is recorded in
+`KC3_31_IMPLEMENTATION.md`.
+
+## KC3-31 iOS Follow-up — 2026-09-22
+
+Expo Go 57.0.9 launched KC3 against the clean local seed on an iPhone 17 / iOS
+26.5 simulator. Default and largest-standard text-size screenshots showed a
+readable, wrapping list without horizontal overflow. At the maximum
+accessibility category, native glyphs were clipped by text boxes that did not
+track the rendered font scale. The shared native text primitives now scale both
+font size and line height through layout at the full system multiplier; the
+calculation is covered at 3.1×. Web text remains browser-controlled.
+
+The practical Maps check also found that a Google Web search URL opened Safari
+and an install interstitial when Google Maps was absent. The iOS action now uses
+Apple Maps and was observed opening the native Maps app. App tests increased to
+77 across ten suites, and typecheck, lint, formatting, diff-check, and all three
+production exports passed after the fixes.
+
+The Maps app then displayed first-launch permission prompts. After the macOS
+session was unlocked, the native automation bridge still timed out attaching to
+Device Hub and Xcode, and macOS denied command-line assistive access. The prompt
+could not be dismissed through `simctl`, so the full post-fix maximum-size
+screenshot and interactive search/filter/detail/back/retry checks remain
+unclaimed. VoiceOver was deliberately deferred until the user can be present to
+hear simulator speech routed through the Mac speakers. Restore an accessible
+simulator UI session and complete the manual procedure above.
+
+## KC3-31 Android Follow-up — 2026-09-23
+
+A Pixel 9 Android 16 / API 36 Google APIs AVD ran Expo Go against the clean
+15-place local seed through adb reverse tunnels. The default-size practical pass
+verified trimmed mixed-case search, Olathe/Library selected states and two-result
+output, the Coffee shop no-match state, clearing, keyboard-open filter entry,
+scrolling to the final card, complete detail content, system Back, Maps handoff,
+and sanitized failure/retry recovery.
+
+The pass found and fixed two native defects. Returning from detail could restore
+too early while FlatList had only measured an initial batch, clamping a saved
+near-bottom offset. Restoration now waits for content sizing and initially
+renders through the origin plus a bounded following buffer. Open in Maps also
+crashed when `Linking.openURL` was used as an unbound default callback; a wrapper
+preserves its React Native method context, and the component regression check
+now exercises the action. Google Maps opened the requested Sar-Ko-Par Trails
+Park result after the fix.
+
+At Android font scales 1.3 and 2.0, app text wrapped without observed clipping or
+horizontal overflow. Every filter was reachable in the scrolling modal, the
+fixed Clear/Apply footer remained usable, detail content reached its final
+disclosure, and the 2.0-scale error and Try again state remained readable and
+operable. Restoring the local API tunnel and retrying returned all 15 places.
+The emulator was restored to font scale 1.0. Expo Go's floating developer-tool
+label clipped at large sizes; that overlay is not KC3 UI.
+
+Spoken TalkBack behavior, announcements, accessibility focus movement, and
+filter-modal containment have not yet been claimed. The user-attended VoiceOver
+pass also remains open.
+
+## KC3-31 Completed iOS Practical Pass — 2026-09-23
+
+Meta idb attached to the iPhone 17 / iOS 26.5 simulator after direct Device Hub
+attachment continued to time out. Against the clean 15-place seed, trimmed
+mixed-case search returned six libraries; Olathe and Library exposed native
+selected traits and the expected two results; Coffee shop plus the library query
+produced the no-match heading; and Clear filters restored all places. The filter
+surface opened with the software keyboard active and isolated the background
+accessibility subtree.
+
+The final list card opened the complete detail hierarchy. The visible native
+Back action restored that near-bottom origin. Apple Maps resolved Sweet Tee's
+Coffee Shop, and returning to Expo Go preserved the detail. Stopping the local
+API gateway produced the sanitized unavailable heading and reachable Try again
+control; retry succeeded once the gateway was healthy.
+
+At the maximum accessibility Dynamic Type category, list and detail content
+remained vertically scrollable and wrapped without horizontal clipping. The
+pass found that the filter title and Close action overlapped and the native
+modal lacked a safe-area inset. The header now wraps and the native modal applies
+the app-provided safe-area insets. Post-fix accessibility frames and screenshots
+showed separate, reachable title/Close rows below the status area, scrollable
+filter choices, and reachable Clear/Apply actions. The simulator was restored to
+the standard Large category. Spoken VoiceOver behavior is intentionally not
+claimed until the user is present to hear the simulator audio.

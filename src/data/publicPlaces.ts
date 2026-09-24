@@ -66,6 +66,8 @@ const KC3_VERIFICATION_STATES: readonly Kc3VerificationState[] = [
 export const PUBLIC_PLACES_ERROR_CODE = "PUBLIC_PLACES_UNAVAILABLE";
 export const PUBLIC_PLACES_ERROR_MESSAGE =
   "We couldn't load places right now. Please try again.";
+export const PUBLIC_PLACE_DETAILS_ERROR_MESSAGE =
+  "We couldn't load place details right now. Please try again.";
 
 export class PublicPlacesError extends Error {
   readonly code = PUBLIC_PLACES_ERROR_CODE;
@@ -210,13 +212,20 @@ function toPublicPlaceDetail(value: unknown): PublicPlaceDetail {
   const place = value as Record<string, unknown>;
   if (
     !Array.isArray(place.regular_hours) ||
-    !isNullableString(place.seating_notes)
+    !isNullableString(place.seating_notes) ||
+    !(
+      place.place_local_day_of_week === null ||
+      (Number.isInteger(place.place_local_day_of_week) &&
+        (place.place_local_day_of_week as number) >= 0 &&
+        (place.place_local_day_of_week as number) <= 6)
+    )
   ) {
     throw new PublicPlacesError();
   }
 
   return {
     ...summary,
+    place_local_day_of_week: place.place_local_day_of_week as number | null,
     regular_hours: place.regular_hours.map(toPublicRegularHoursRow),
     seating_notes: place.seating_notes,
   };

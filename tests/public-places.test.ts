@@ -153,6 +153,7 @@ describe("public place data layer", () => {
       data: [
         {
           ...summaryFixture,
+          place_local_day_of_week: 0,
           seating_notes: "Tables near the windows",
           regular_hours: [
             {
@@ -178,6 +179,7 @@ describe("public place data layer", () => {
 
     await expect(getPublicPlaceDetail(summaryFixture.id)).resolves.toEqual({
       ...summaryFixture,
+      place_local_day_of_week: 0,
       seating_notes: "Tables near the windows",
       regular_hours: [
         {
@@ -235,6 +237,7 @@ describe("public place data layer", () => {
       [
         {
           ...summaryFixture,
+          place_local_day_of_week: 0,
           seating_notes: null,
           regular_hours: [
             {

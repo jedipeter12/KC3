@@ -67,6 +67,7 @@ describe("public place database type", () => {
     };
     const detail: PublicPlaceDetail = {
       ...summary,
+      place_local_day_of_week: null,
       regular_hours: [],
       seating_notes: null,
     };

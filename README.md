@@ -4,13 +4,14 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 
 ## Status
 
-- Stage: Approved real-data-driven place-finding contract over a refresh-verified
-  provider-backed local MVP dataset
-- Current focus: KC3-30 public place-model expansion, KC3-31 place-list/detail
-  implementation, and the remaining native accessibility checks.
-- Latest milestone: KC3-29 reviewed the 164-place KC3-28 snapshot and approved
-  the field-to-surface, list/detail navigation, unknown/freshness, hours,
-  drive-thru, responsive, and accessibility contract for the next public slice.
+- Stage: Implemented real-data-driven place list/detail slice over the approved
+  anonymous public contract and refresh-verified local MVP dataset
+- Current focus: Review and merge KC3-31, then complete the user-attended
+  VoiceOver and TalkBack verification tracked separately in KC3-34.
+- Latest milestone: KC3-31 implements the summary/detail operations with
+  responsive discovery, richer filters, history/focus restoration, full detail
+  states, and passing automated, database, integration, export, Web, iOS, and
+  Android checks.
 
 KC3-23 final automated checks and live Expo Web and iOS Simulator functional
 smoke checks pass. Milestone closure remains pending native accessibility
@@ -44,6 +45,7 @@ the public environment configuration required to run the client.
 - [`docs/KC3_28_VERIFICATION.md`](docs/KC3_28_VERIFICATION.md) — repeat import, ownership, timestamp, anonymous integration, and real-data UI verification record
 - [`docs/KC3_29_PLACE_EXPERIENCE.md`](docs/KC3_29_PLACE_EXPERIENCE.md) — approved real-data-driven list, detail, field, state, responsive, and accessibility contract
 - [`docs/KC3_30_PUBLIC_PLACE_CONTRACT.md`](docs/KC3_30_PUBLIC_PLACE_CONTRACT.md) — implemented expanded anonymous summary/detail data, freshness, compatibility, and authorization contract
+- [`docs/KC3_31_IMPLEMENTATION.md`](docs/KC3_31_IMPLEMENTATION.md) — implemented list/detail UI, verification evidence, and remaining native checks
 - [`AGENTS.md`](AGENTS.md) — standing instructions for AI coding agents
 
 ## Repository Structure

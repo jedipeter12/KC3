@@ -1,88 +1,100 @@
 import {
+  DEFAULT_PLACE_FILTERS,
   filterPlaces,
   getPlaceFilterOptions,
   normalizePlaceNameQuery,
 } from "../src/features/places/placeFilters";
-import type { PublicPlace } from "../src/types/database";
+import type { PublicPlaceSummary } from "../src/types/database";
+import { makePlaceSummary } from "./place-fixtures";
 
-const PLACES: PublicPlace[] = [
-  {
+const PLACES: PublicPlaceSummary[] = [
+  makePlaceSummary({
+    bathroom_available: true,
+    city: "Olathe",
+    drive_thru_available: true,
+    food_beverage: "light",
     id: "00000000-0000-0000-0000-000000000003",
     name: "Central Coffee",
-    city: "Olathe",
-    address: "3 Main St",
-    place_type: "coffee_shop",
-  },
-  {
+    outlets: "few",
+    phone_calls_allowed: true,
+    regular_hours_available: true,
+    regular_hours_state: "open",
+    wifi: "public",
+    work_suitability: "good",
+  }),
+  makePlaceSummary({
+    city: "Lenexa",
     id: "00000000-0000-0000-0000-000000000001",
     name: "Central Library",
-    city: "Lenexa",
-    address: "1 Main St",
     place_type: "library",
-  },
-  {
+    work_suitability: "okay",
+  }),
+  makePlaceSummary({
+    city: "Olathe",
+    drive_thru_available: true,
+    drive_thru_only: true,
     id: "00000000-0000-0000-0000-000000000002",
     name: "South Library",
-    city: "Olathe",
-    address: "2 Main St",
     place_type: "library",
-  },
+  }),
 ];
 
 describe("place filters", () => {
-  it("normalizes case and surrounding whitespace in a name query", () => {
+  it("normalizes name search and combines city/type constraints", () => {
     expect(normalizePlaceNameQuery("  CeNTrAl  ")).toBe("central");
     expect(
       filterPlaces(PLACES, {
-        city: null,
+        ...DEFAULT_PLACE_FILTERS,
+        city: "Lenexa",
         nameQuery: "  CENTRAL  ",
-        placeType: null,
-      }).map((place) => place.name),
-    ).toEqual(["Central Coffee", "Central Library"]);
+        placeType: "library",
+      }),
+    ).toEqual([PLACES[1]]);
   });
 
-  it("treats a whitespace-only name query as inactive", () => {
+  it("uses exact approved positive-filter semantics", () => {
     expect(
       filterPlaces(PLACES, {
-        city: null,
-        nameQuery: "   ",
-        placeType: null,
+        ...DEFAULT_PLACE_FILTERS,
+        bathroomAvailable: true,
+        driveThruAvailable: true,
+        foodAvailable: true,
+        goodForWork: true,
+        openNow: true,
+        outletsAvailable: true,
+        phoneCallsAllowed: true,
+        wifiAvailable: true,
+      }),
+    ).toEqual([PLACES[0]]);
+  });
+
+  it("hides only verified drive-thru-only places by default", () => {
+    expect(filterPlaces(PLACES, DEFAULT_PLACE_FILTERS)).toEqual([
+      PLACES[0],
+      PLACES[1],
+    ]);
+    expect(
+      filterPlaces(PLACES, {
+        ...DEFAULT_PLACE_FILTERS,
+        hideDriveThruOnly: false,
       }),
     ).toEqual(PLACES);
   });
 
-  it("combines name, city, and place type constraints with AND behavior", () => {
+  it("does not let unknown or known-negative values satisfy positives", () => {
     expect(
       filterPlaces(PLACES, {
-        city: "Lenexa",
-        nameQuery: "central",
-        placeType: "library",
+        ...DEFAULT_PLACE_FILTERS,
+        goodForWork: true,
+        hideDriveThruOnly: false,
       }),
-    ).toEqual([PLACES[1]]);
-
-    expect(
-      filterPlaces(PLACES, {
-        city: "Olathe",
-        nameQuery: "central",
-        placeType: "library",
-      }),
-    ).toEqual([]);
+    ).toEqual([PLACES[0]]);
   });
 
-  it("derives unique choices from loaded records in their first-seen order", () => {
+  it("derives options and preserves loaded order", () => {
     expect(getPlaceFilterOptions(PLACES)).toEqual({
       cities: ["Olathe", "Lenexa"],
       placeTypes: ["coffee_shop", "library"],
     });
-  });
-
-  it("preserves loaded order in filtered results", () => {
-    expect(
-      filterPlaces(PLACES, {
-        city: "Olathe",
-        nameQuery: "",
-        placeType: null,
-      }).map((place) => place.id),
-    ).toEqual([PLACES[0].id, PLACES[2].id]);
   });
 });

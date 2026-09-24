@@ -104,6 +104,10 @@ summary fields plus seating notes and the complete normalized effective weekly
 schedule. Schedule objects contain only `day_of_week`, `open_time`,
 `close_time`, `is_closed`, and `closes_next_day`.
 
+KC3-31 adds `place_local_day_of_week` to detail as a nullable derived integer
+from `0` (Sunday) through `6` (Saturday). This is the minimum input needed to put
+the place-local current day first; the accepted IANA timezone remains private.
+
 Neither response contains Google identity, provider types or URIs, coordinates,
 timezone, ratings, price, website, lifecycle status, internal verification
 notes, source labels, credentials, or unrestricted timestamps.
