@@ -6,12 +6,12 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 
 - Stage: Implemented real-data-driven place list/detail slice over the approved
   anonymous public contract and refresh-verified local MVP dataset
-- Current focus: Review and merge KC3-31, then complete the user-attended
-  VoiceOver and TalkBack verification tracked separately in KC3-34.
-- Latest milestone: KC3-31 implements the summary/detail operations with
-  responsive discovery, richer filters, history/focus restoration, full detail
-  states, and passing automated, database, integration, export, Web, iOS, and
-  Android checks.
+- Current focus: Complete the user-attended VoiceOver and TalkBack verification
+  tracked in KC3-34 for the KC3-21/KC3-23 release gate.
+- Latest milestone: KC3-33 exercises all 160 active records from a fresh bounded
+  real-dataset run through summary, detail, and discovery paths; resolves
+  evidence-backed presentation, navigation, filtering, and Maps resilience
+  issues; and records broader data findings as non-blocking follow-up work.
 
 KC3-23 final automated checks and live Expo Web and iOS Simulator functional
 smoke checks pass. Milestone closure remains pending native accessibility
@@ -46,6 +46,7 @@ the public environment configuration required to run the client.
 - [`docs/KC3_29_PLACE_EXPERIENCE.md`](docs/KC3_29_PLACE_EXPERIENCE.md) — approved real-data-driven list, detail, field, state, responsive, and accessibility contract
 - [`docs/KC3_30_PUBLIC_PLACE_CONTRACT.md`](docs/KC3_30_PUBLIC_PLACE_CONTRACT.md) — implemented expanded anonymous summary/detail data, freshness, compatibility, and authorization contract
 - [`docs/KC3_31_IMPLEMENTATION.md`](docs/KC3_31_IMPLEMENTATION.md) — implemented list/detail UI, verification evidence, and remaining native checks
+- [`docs/KC3_33_AUDIT.md`](docs/KC3_33_AUDIT.md) — full real-dataset audit, resolved issues, record coverage, and bounded follow-ups
 - [`AGENTS.md`](AGENTS.md) — standing instructions for AI coding agents
 
 ## Repository Structure

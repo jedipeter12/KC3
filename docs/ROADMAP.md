@@ -4,9 +4,9 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Review and merge the completed KC3-31 anonymous place summary/detail experience,
-then complete user-attended native screen-reader verification in KC3-34 without
-weakening source ownership or the anonymous read boundary.
+Complete user-attended native screen-reader verification in KC3-34 without
+weakening source ownership or the anonymous read boundary. KC3-34 continues to
+govern the remaining KC3-21/KC3-23 release gate.
 
 ## In Progress
 
@@ -23,8 +23,13 @@ weakening source ownership or the anonymous read boundary.
 
 ## Next
 
-- [ ] Create reviewed data-correction follow-ups for suspicious provider names,
-  addresses, or classifications; do not silently normalize them in the UI.
+- [ ] Review provider-backed corrections for `Kickapoo Park RIGHT`, Raven Ridge
+  Park's leading punctuation, Heritage Forest Park's malformed-looking address,
+  Boba Tea's area-only address, and the `Hermetheus Downtown Olathe Library`
+  cafe classification; do not silently normalize them in the UI.
+- [ ] Decide whether KC3 needs an explicit parent, tenant, or related-location
+  model for legitimate host/tenant and adjacent-place relationships. Do not use
+  client name/proximity heuristics to merge records.
 - [ ] Keep unrestricted raw Google payload retention disabled; require a new
   privacy/licensing/access decision before adding it later.
 - [ ] Define the Google import workflow and any later curated seed expansion.
@@ -41,12 +46,22 @@ weakening source ownership or the anonymous read boundary.
 
 ## Completed
 
+- [x] KC3-33 exercises every record from a fresh bounded 160-place provider run
+  through summary, detail, and applicable discovery paths; fixes stable filter
+  ordering, narrow-dialog entry focus, Web Back restoration, duplicate-location
+  accessible names, map query duplication, and external-action recovery; proves
+  missing/approximate/unverified states remain intentional; and records broader
+  source and related-location findings as non-release-blocking follow-ups. No
+  release-critical regression was found; KC3-34 remains the spoken accessibility
+  gate.
 - [x] KC3-31 implements responsive summary/detail discovery, richer filters,
   state-preserving navigation, accessible states, and practical Web/iOS/Android
   behavior; native passes found and fixed iOS text scaling, Maps routing,
   filter-modal safe-area/large-text reflow, Android list restoration, and Android
   external-link invocation. User-attended VoiceOver/TalkBack work moved to
-  KC3-34 without being removed from the release gate.
+  KC3-34 without being removed from the release gate. This delivery also absorbs
+  KC3-32's approved discovery and filtering scope; Open late and Recently
+  verified remain unapproved follow-on ideas rather than incomplete KC3-32 work.
 - [x] KC3-30 expands the anonymous public summary/detail contract with structured
   address precision, effective regular hours and source-specific freshness,
   KC3-owned suitability fields, and separate nullable drive-thru values while

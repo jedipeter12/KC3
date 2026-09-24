@@ -229,6 +229,7 @@ function parseDetailPath(): string | null {
 }
 
 type PlaceCardProps = Readonly<{
+  announceAddress: boolean;
   focused: boolean;
   onBlur: () => void;
   onFocus: () => void;
@@ -237,7 +238,23 @@ type PlaceCardProps = Readonly<{
   setRef: (node: ComponentRef<typeof Pressable> | null) => void;
 }>;
 
+export function focusFilterModalEntry(
+  button: ComponentRef<typeof Pressable> | null,
+  platform: string = Platform.OS,
+  getNodeHandle: typeof findNodeHandle = findNodeHandle,
+  setAccessibilityFocus: typeof AccessibilityInfo.setAccessibilityFocus = AccessibilityInfo.setAccessibilityFocus,
+) {
+  if (!button) return;
+  if (platform === "web") {
+    (button as unknown as { focus?: () => void }).focus?.();
+    return;
+  }
+  const handle = getNodeHandle(button);
+  if (handle) setAccessibilityFocus(handle);
+}
+
 function PlaceCard({
+  announceAddress,
   focused,
   onBlur,
   onFocus,
@@ -250,6 +267,7 @@ function PlaceCard({
     place.name,
     PLACE_TYPE_LABELS[place.place_type],
     place.city,
+    announceAddress ? place.address : null,
     hoursStatus,
     place.drive_thru_only === true ? "Drive-thru only" : null,
   ]
@@ -330,6 +348,7 @@ export function PlaceListScreen({
   const [originCardId, setOriginCardId] = useState<string | null>(null);
   const listRef = useRef<FlatList<PublicPlaceSummary>>(null);
   const filtersButtonRef = useRef<ComponentRef<typeof Pressable>>(null);
+  const modalCloseButtonRef = useRef<ComponentRef<typeof Pressable>>(null);
   const resultsHeadingRef = useRef<ComponentRef<typeof Text>>(null);
   const cardRefs = useRef<
     Record<string, ComponentRef<typeof Pressable> | null>
@@ -352,6 +371,18 @@ export function PlaceListScreen({
   const originCardIndex = originCardId
     ? visiblePlaces.findIndex((place) => place.id === originCardId)
     : -1;
+  const duplicateIdentityKeys = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const place of loadedPlaces) {
+      const key = `${place.city}\u0000${place.name.toLocaleLowerCase()}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return new Set(
+      [...counts.entries()]
+        .filter(([, count]) => count > 1)
+        .map(([key]) => key),
+    );
+  }, [loadedPlaces]);
 
   const requestPlaces = useCallback(async () => {
     const requestId = ++requestIdRef.current;
@@ -416,7 +447,11 @@ export function PlaceListScreen({
       window.history.replaceState({}, "", "/");
       window.history.pushState({}, "", detailPath);
     }
-    const onPopState = () => setSelectedPlaceId(parseDetailPath());
+    const onPopState = () => {
+      const nextPlaceId = parseDetailPath();
+      if (!nextPlaceId) restorePendingRef.current = true;
+      setSelectedPlaceId(nextPlaceId);
+    };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
@@ -499,6 +534,15 @@ export function PlaceListScreen({
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [closeFilters, filterModalOpen]);
+
+  useEffect(() => {
+    if (!filterModalOpen) return;
+    const timeout = setTimeout(
+      () => focusFilterModalEntry(modalCloseButtonRef.current),
+      0,
+    );
+    return () => clearTimeout(timeout);
+  }, [filterModalOpen]);
 
   const restoreListPositionAndFocus = useCallback(() => {
     restorePendingRef.current = true;
@@ -650,6 +694,7 @@ export function PlaceListScreen({
         <Pressable
           accessibilityRole="button"
           onPress={closeFilters}
+          ref={modalCloseButtonRef}
           style={styles.modalAction}
         >
           <Text style={styles.clearButtonText}>Close</Text>
@@ -814,6 +859,9 @@ export function PlaceListScreen({
               ref={listRef}
               renderItem={({ item }) => (
                 <PlaceCard
+                  announceAddress={duplicateIdentityKeys.has(
+                    `${item.city}\u0000${item.name.toLocaleLowerCase()}`,
+                  )}
                   focused={focusedCardId === item.id}
                   onBlur={() => setFocusedCardId(null)}
                   onFocus={() => setFocusedCardId(item.id)}

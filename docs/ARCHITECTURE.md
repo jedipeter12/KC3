@@ -12,10 +12,10 @@ database-empty, no-match, missing-detail, sanitized error, and retry states.
 Supabase provides the backend platform and PostgreSQL-based database; the initial
 MVP schema is defined as a migration but has not been applied to production. A transactional,
 idempotent local seed bootstraps 15 representative places without importing
-Google data or guessing KC3 details. The KC3-28 verified refresh snapshot expands
-the current local database to 164 canonical/provider-backed places with all 15
-representative seeds reconciled, while preserving that resettable seed boundary
-and unknown KC3 suitability values. A
+Google data or guessing KC3 details. KC3-28 verified a 164-place refresh and the
+fresh KC3-33 audit exercised a current 160-place provider result, both with all
+15 representative seeds reconciled while preserving that resettable seed
+boundary and unknown KC3 suitability values. A
 read-only Supabase RPC exposes the five
 approved identity fields for active places to unauthenticated clients without
 granting them base-table access. Supabase Auth is the selected authentication
@@ -115,6 +115,12 @@ use the ignored `dist/` directory.
   and provenance hierarchy. Pure feature utilities implement the exact local
   AND-filter and presentation semantics while preserving server order. Filter
   interactions never call the data layer.
+  Available city and place-type choices follow the approved MVP order rather
+  than provider result order. Web `popstate` marks list restoration pending so
+  browser Back restores the saved scroll position and originating-card focus;
+  the narrow filter surface focuses Close on entry and returns focus to Filters
+  on exit. Accessible card names add the address only when a loaded same-city
+  record has the same case-folded name.
 - Supabase client: A typed `@supabase/supabase-js` singleton reads the public
   project URL and publishable key from Expo's `EXPO_PUBLIC_` environment
   boundary. Authentication session behavior is disabled because accounts are not
@@ -258,7 +264,9 @@ separate hours observation and KC3 verification freshness. The client may form
 the approved external Open in Maps query from public canonical name/address
 values; iOS uses Apple Maps so the native system app is available without an
 optional install, while Web and Android use the Google Maps search URL. The
-stored provider map URI is not added to the public contract.
+query uses the canonical name and already-complete canonical address. A rejected
+external handoff is handled as a retryable inline alert; the stored provider map
+URI is not added to the public contract.
 Provider IDs, raw metadata, ratings, price, website, internal verification
 notes, coordinates, lifecycle fields, and unrestricted timestamps remain
 outside the public projection. Exact shape and function names are KC3-30
@@ -334,8 +342,12 @@ state.
   normalization, AND behavior, choice derivation, and order preservation.
   Coverage expectations are not yet selected.
 - Integration tests: A separate Jest Node smoke suite uses the production typed
-  client and data layer against the local Supabase Data API, checking seeded RPC
-  results, exact serialized fields, and direct anonymous table-access denial.
+  client and data layer against the local Supabase Data API, checking exact
+  serialized fields and direct anonymous table-access denial. It fetches every
+  active summary and matching detail and exercises every record through exact
+  name and applicable city/type discovery, hours presentation, and map-query
+  construction. Provider-dataset mode also requires more than 100 records and
+  all six approved place types.
 - Importer tests: Offline Jest fixtures protect transformation, field masks,
   continuation and cap reporting, duplicate/change/reconciliation planning,
   configuration failures, and sanitized provider/database errors. pgTAP runs
@@ -358,7 +370,11 @@ remain open decisions.
 
 ## Known Technical Debt
 
-- Device accessibility and full UI end-to-end verification remain outstanding.
+- User-attended VoiceOver and TalkBack verification and full UI end-to-end
+  automation remain outstanding.
+- Source corrections and any parent/tenant/related-location model require
+  reviewed follow-up work; the current client intentionally does not infer or
+  merge those relationships.
 
 ## Architecture Questions
 

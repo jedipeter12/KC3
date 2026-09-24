@@ -164,9 +164,7 @@ export function buildMapsUrl(
   place: PublicPlaceSummary,
   provider: "apple" | "google" = "google",
 ): string {
-  const query = encodeURIComponent(
-    `${place.name}, ${place.address}, ${place.city}`,
-  );
+  const query = encodeURIComponent(`${place.name}, ${place.address}`);
   if (provider === "apple") return `https://maps.apple.com/?q=${query}`;
   return `https://www.google.com/maps/search/?api=1&query=${query}`;
 }

@@ -104,6 +104,7 @@ export function PlaceDetailScreen({
   placeId,
 }: PlaceDetailScreenProps) {
   const [state, setState] = useState<DetailState>({ status: "loading" });
+  const [mapsError, setMapsError] = useState(false);
   const headingRef = useRef<ComponentRef<typeof Text>>(null);
   const requestIdRef = useRef(0);
 
@@ -177,6 +178,17 @@ export function PlaceDetailScreen({
     void requestDetail();
   };
 
+  const openMaps = async (place: PublicPlaceSummary) => {
+    setMapsError(false);
+    try {
+      await openExternalUrl(
+        buildMapsUrl(place, Platform.OS === "ios" ? "apple" : "google"),
+      );
+    } catch {
+      setMapsError(true);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.shell}>
@@ -219,14 +231,7 @@ export function PlaceDetailScreen({
               ) : null}
               <Pressable
                 accessibilityRole="link"
-                onPress={() =>
-                  void openExternalUrl(
-                    buildMapsUrl(
-                      visiblePlace,
-                      Platform.OS === "ios" ? "apple" : "google",
-                    ),
-                  )
-                }
+                onPress={() => void openMaps(visiblePlace)}
                 style={({ pressed }) => [
                   styles.mapsButton,
                   pressed && styles.pressed,
@@ -234,6 +239,15 @@ export function PlaceDetailScreen({
               >
                 <Text style={styles.mapsButtonText}>Open in Maps</Text>
               </Pressable>
+              {mapsError ? (
+                <Text
+                  accessibilityLiveRegion="assertive"
+                  {...(Platform.OS === "web" ? { role: "alert" as const } : {})}
+                  style={styles.warning}
+                >
+                  {"Maps couldn't be opened. Try again."}
+                </Text>
+              ) : null}
             </View>
           ) : null}
 

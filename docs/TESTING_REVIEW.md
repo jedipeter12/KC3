@@ -1,7 +1,8 @@
 # Test Coverage and Reliability Review
 
-**Review date:** 2026-08-23; updated 2026-09-22 for the expanded anonymous
-summary/detail contract, 2026-09-20 for repeat refresh/integration
+**Review date:** 2026-08-23; updated 2026-09-24 for the full real-dataset
+experience audit, 2026-09-22 for the expanded anonymous summary/detail contract,
+2026-09-20 for repeat refresh/integration
 verification and the real provider-backed dataset, 2026-09-19 for Google
 hours/source persistence, and previously updated 2026-09-08 for the Google
 ingestion contract and 2026-09-06 for the client and public-read boundary
@@ -29,12 +30,13 @@ constraints, defaults, relationships, timestamp triggers, and RLS posture had no
 executable regression protection.
 
 There is no meaningful line-coverage percentage to report for a SQL migration.
-The workspace suite provides 225 behavior and contract assertions across ten
+The workspace suite provides 228 behavior and contract assertions across eleven
 pgTAP files. The first four files provide 90 schema assertions, including three
 for privilege revocations. The seed-data test adds 12 assertions, the public
 place access test adds 24 authorization/response-contract assertions, the Google
 ingestion contract adds 25 assertions, the import-boundary suite adds 34, the
-reconciliation suite adds 8, and the expanded public model suite adds 32.
+reconciliation suite adds 8, the expanded public model suite adds 32, and the
+place-local weekday suite adds 3.
 
 ## Major Untested Risks Found
 
@@ -174,7 +176,9 @@ snapshots. These are component and unit checks, not live backend or device tests
 
 ## Deliberately Not Tested
 
-- Later detail/map presentation: no such feature implementation exists yet.
+- Maps browsing remains unapproved; the implemented detail action is only an
+  external map handoff and is covered for provider choice, query construction,
+  rejection, and retry.
 - Future authenticated and administrative CRUD flows: these role behaviors are
   not approved. KC3-20 covers the current anonymous RPC over HTTP; full Expo UI
   end-to-end coverage remains open.
@@ -186,10 +190,10 @@ snapshots. These are component and unit checks, not live backend or device tests
 - Automated accessibility, performance/load, and end-to-end behavior: component
   tests cover the first screen's primary semantics and a manual Web viewport
   check has been completed, but broader tooling remains undecided.
-- Automated mobile device interaction: manual iOS Simulator functional smoke
-  passes against the real local dataset, but UI automation is blocked; Android
-  tooling was unavailable during KC3-21. Bundle exports do not establish device
-  behavior. See `ACCESSIBILITY_REVIEW.md`.
+- Automated mobile device interaction: practical iOS and Android passes cover
+  interaction and large text, but user-attended spoken VoiceOver and TalkBack
+  verification remains open. Bundle exports do not establish device behavior.
+  See `ACCESSIBILITY_REVIEW.md`.
 
 ## Product Owner Decisions Required
 
@@ -229,7 +233,8 @@ automatic or fuzzy merging.
    `npm run test:integration` against either the reset local seed or the reviewed
    provider-backed local dataset; it verifies the typed production client, raw
    legacy and expanded serialization, approved city/type values, all three
-   data-layer results, production search and city/type filters, unknown detail
+   data-layer results, every active record's detail, production search and
+   city/type discovery paths, hours and map presentation helpers, unknown detail
    IDs, and explicit anonymous base-table permission denial.
    `KC3_EXPECT_PROVIDER_DATASET=1` also requires production-like volume and all
    six types. No provider mocks or additional dependencies are used.
@@ -248,6 +253,27 @@ automatic or fuzzy merging.
    MVP.
 
 ## Verification Results
+
+**KC3-33 locally verified: 2026-09-24**
+
+- A fresh bounded import produced 160 active canonical/provider-backed records,
+  1,090 hours rows across 155 places, 25 approximate addresses, and all six
+  approved place types. All 15 representative seeds remained reconciled.
+- The live anonymous integration suite fetched every summary and all 160 details
+  and exercised each record through exact-name and applicable city/type
+  discovery, hours status and formatting, and map-query construction. Direct
+  anonymous table access remained denied.
+- Regression coverage protects stable filter order, duplicate-location
+  accessible names, Web history/focus restoration, filter-dialog entry focus,
+  external Maps failure/retry, canonical map queries, and database-test fixture
+  isolation. All 82 application tests, 228 pgTAP assertions, and six live
+  integration tests pass.
+- Typecheck, ESLint, formatting, database lint, `git diff --check`, and
+  Web/iOS/Android Expo exports pass locally. Wide, 390 by 844, and 200%-reflow
+  Web checks plus a proportional iPhone 17/iOS 26.5 Simulator check are recorded
+  in `KC3_33_AUDIT.md` and `ACCESSIBILITY_REVIEW.md`.
+- No release-critical regression remains. Hosted CI awaits a pushed branch;
+  KC3-34 still owns the user-attended spoken screen-reader gate.
 
 **KC3-30 locally verified: 2026-09-22**
 
