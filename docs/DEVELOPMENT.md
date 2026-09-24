@@ -198,10 +198,11 @@ Run it from the repository root with permission to access Docker and localhost.
 The suite supports both the clean 15-place seed and a reviewed provider-backed
 local dataset. It checks every legacy row's exact raw five-field shape and
 approved city/type bounds, verifies the exact expanded summary/detail shapes,
-compares all three production data-layer operations, confirms unknown detail IDs
-remain hidden, exercises production name/city/place-type filters against the
-live response, and requires HTTP 401 / PostgreSQL `42501` for direct `places`
-reads. Missing
+compares all three production data-layer operations, fetches every active
+record's detail, confirms unknown detail IDs remain hidden, exercises every
+record through normalized exact-name and applicable city/place-type discovery,
+and validates hours presentation and map-query construction. It also requires
+HTTP 401 / PostgreSQL `42501` for direct `places` reads. Missing
 migrations, an empty dataset, or API failures fail the suite; they are not
 silently skipped. Run `npm test` and `npm run lint:db` against a clean reset and
 again after importing. Database fixtures and seed assertions are scoped so the

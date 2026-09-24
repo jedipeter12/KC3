@@ -20,6 +20,16 @@ export type PlaceFilterOptions = Readonly<{
   placeTypes: PlaceType[];
 }>;
 
+const MVP_CITY_ORDER = ["Lenexa", "Overland Park", "Olathe"] as const;
+const MVP_PLACE_TYPE_ORDER: readonly PlaceType[] = [
+  "coffee_shop",
+  "cafe",
+  "boba_tea",
+  "library",
+  "coworking",
+  "park",
+];
+
 export const DEFAULT_PLACE_FILTERS: PlaceFilters = {
   bathroomAvailable: false,
   city: null,
@@ -88,7 +98,7 @@ export function filterPlaces(
   );
 }
 
-/** Returns unique choices in the order they first appear in loaded records. */
+/** Returns loaded choices in the stable approved MVP order. */
 export function getPlaceFilterOptions(
   places: readonly PublicPlaceSummary[],
 ): PlaceFilterOptions {
@@ -101,7 +111,9 @@ export function getPlaceFilterOptions(
   }
 
   return {
-    cities: [...cities],
-    placeTypes: [...placeTypes],
+    cities: MVP_CITY_ORDER.filter((city) => cities.has(city)),
+    placeTypes: MVP_PLACE_TYPE_ORDER.filter((placeType) =>
+      placeTypes.has(placeType),
+    ),
   };
 }

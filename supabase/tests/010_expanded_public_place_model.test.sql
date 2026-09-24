@@ -48,6 +48,16 @@ insert into public.places (
     'cafe',
     'active',
     'America/Chicago'
+  ),
+  (
+    'a0000000-0000-0000-0000-000000000005',
+    'Unknown Contract Cafe',
+    'Lenexa',
+    '5 Contract Way',
+    'street_address',
+    'cafe',
+    'active',
+    'America/Chicago'
   );
 
 insert into public.place_details (place_id, last_verified_at)
@@ -277,7 +287,7 @@ select ok(
       and regular_hours_state = 'unknown'
       and regular_hours_observed_at is null
     from public.list_public_place_summaries()
-    where id = '6b633300-0000-4000-8000-000000000001'
+    where id = 'a0000000-0000-0000-0000-000000000005'
   ),
   'missing details and hours normalize to explicit unknown values'
 );

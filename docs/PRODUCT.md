@@ -39,7 +39,9 @@ preserving explicit unknown and freshness states.
 - A reviewed, bounded local MVP dataset built and repeat-verified through the
   Google ingestion path: 164 canonical/provider-backed places across the same
   three cities, all 15 representative seeds reconciled, with search caps and
-  provider variability documented rather than represented as exhaustive.
+  provider variability documented rather than represented as exhaustive. A
+  fresh KC3-33 audit returned 160 active records, reinforcing that each bounded
+  run is a current provider result rather than a fixed product inventory.
 - Anonymous, read-only discovery of active places through an approved public
   projection containing only place ID, name, city, address, and place type.
 - The approved public discovery boundary does not require accounts and does not
@@ -93,8 +95,8 @@ on Web and keeps the controls and results scrollable on small mobile viewports.
 
 Filter selection is exposed to assistive technology, controls support Web
 keyboard operation, and iOS request-state changes have explicit announcements.
-Baseline verification is ongoing; native large-text and spoken screen-reader
-checks remain outstanding in `docs/ACCESSIBILITY_REVIEW.md`.
+Practical native large-text verification is complete; user-attended spoken
+screen-reader checks remain outstanding in `docs/ACCESSIBILITY_REVIEW.md`.
 
 ## Implemented KC3-29 Follow-on Experience
 
@@ -117,9 +119,20 @@ while preserving the old five-field RPC for compatibility. KC3-31 now adopts the
 summary and detail operations. Mobile-width Web uses an Apply-based filter
 surface; Web at 960 CSS pixels and wider uses a persistent filter rail. Cards
 navigate by stable KC3 ID, Web uses browser history, and returning restores the
-applied query/filter state and originating-card focus. Native large-text and
-spoken screen-reader verification remains open; see
+applied query/filter state and originating-card focus. Practical native
+large-text checks are complete; spoken screen-reader verification remains open;
+see
 [`KC3_31_IMPLEMENTATION.md`](KC3_31_IMPLEMENTATION.md).
+
+KC3-33 validates this experience against every record in a fresh 160-place
+bounded run. Loaded filter choices now use the stable approved city/type order,
+same-name locations in the same city include their address in the accessible
+card name, external Maps failures produce an honest retryable state, and Web
+history restoration returns to the originating card. Missing hours, approximate
+addresses, and unverified KC3 details remain useful explicit states rather than
+being hidden or inferred. Broader source corrections and parent/tenant modeling
+remain follow-up work; the client does not merge legitimate records or rewrite
+provider-backed identity. See [`KC3_33_AUDIT.md`](KC3_33_AUDIT.md).
 
 ## Later Client Feature Candidates (Not Yet Approved)
 

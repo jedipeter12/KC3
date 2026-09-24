@@ -8,6 +8,7 @@ import {
 import { AccessibilityInfo, FlatList, Linking, Platform } from "react-native";
 
 import { PlaceListScreen } from "../src/features/places/PlaceListScreen";
+import { PlaceDetailScreen } from "../src/features/places/PlaceDetailScreen";
 import type { PublicPlaceSummary } from "../src/types/database";
 import { makePlaceDetail, makePlaceSummary } from "./place-fixtures";
 
@@ -67,6 +68,27 @@ describe("place-list screen", () => {
       within(rows[1]).getByText("KC3 details not yet verified"),
     ).toBeOnTheScreen();
     expect(screen.queryByText("Drive-through Place")).not.toBeOnTheScreen();
+  });
+
+  it("adds addresses to same-name, same-city card labels", async () => {
+    const duplicate = makePlaceSummary({
+      address: "99 Other St",
+      id: "00000000-0000-0000-0000-000000000099",
+    });
+    await render(
+      <PlaceListScreen loadPlaces={async () => [PLACES[1], duplicate]} />,
+    );
+
+    expect(
+      await screen.findByRole("link", {
+        name: /First Place, Coffee shop, Lenexa, 1 Main St/,
+      }),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByRole("link", {
+        name: /First Place, Coffee shop, Lenexa, 99 Other St/,
+      }),
+    ).toBeOnTheScreen();
   });
 
   it("keeps search immediate while mobile filter changes wait for Apply", async () => {
@@ -181,6 +203,79 @@ describe("place-list screen", () => {
     expect(loadPlaceDetail).toHaveBeenCalledWith(PLACES[0].id);
   });
 
+  it("restores list position when browser Back returns from details", async () => {
+    jest.replaceProperty(Platform, "OS", "web");
+    let pathname = "/";
+    let popStateListener: (() => void) | undefined;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: {
+        get pathname() {
+          return pathname;
+        },
+        search: "",
+      },
+    });
+    Object.defineProperty(window, "history", {
+      configurable: true,
+      value: {
+        back: jest.fn(),
+        pushState: jest.fn((_state, _unused, path: string) => {
+          pathname = path;
+        }),
+        replaceState: jest.fn((_state, _unused, path: string) => {
+          pathname = path;
+        }),
+      },
+    });
+    Object.defineProperty(window, "addEventListener", {
+      configurable: true,
+      value: jest.fn((event: string, listener: () => void) => {
+        if (event === "popstate") popStateListener = listener;
+      }),
+    });
+    Object.defineProperty(window, "removeEventListener", {
+      configurable: true,
+      value: jest.fn(),
+    });
+    const scrollToOffset = jest.spyOn(FlatList.prototype, "scrollToOffset");
+    await render(
+      <PlaceListScreen
+        loadPlaceDetail={async (placeId) =>
+          makePlaceDetail({ ...PLACES[0], id: placeId })
+        }
+        loadPlaces={async () => PLACES}
+      />,
+    );
+    await screen.findByText("Second Place");
+    await fireEvent(screen.getByTestId("place-list"), "scroll", {
+      nativeEvent: {
+        contentOffset: { x: 0, y: 480 },
+        contentSize: { height: 1600, width: 400 },
+        layoutMeasurement: { height: 800, width: 400 },
+      },
+    });
+    await fireEvent.press(
+      within(screen.getByTestId(`place-row-${PLACES[0].id}`)).getByRole("link"),
+    );
+    expect(await screen.findByText("Good to know")).toBeOnTheScreen();
+
+    pathname = "/";
+    await act(async () => popStateListener?.());
+    await screen.findByText("Second Place");
+    await fireEvent(
+      screen.getByTestId("place-list"),
+      "contentSizeChange",
+      400,
+      1600,
+    );
+
+    expect(scrollToOffset).toHaveBeenCalledWith({
+      animated: false,
+      offset: 480,
+    });
+  });
+
   it("keeps cached identity visible during a detail failure and retries", async () => {
     const loadPlaceDetail = jest
       .fn()
@@ -203,6 +298,33 @@ describe("place-list screen", () => {
     expect(screen.getByText("Second Place")).toBeOnTheScreen();
     await fireEvent.press(screen.getByRole("button", { name: "Try again" }));
     expect(await screen.findByText("Good to know")).toBeOnTheScreen();
+  });
+
+  it("shows a recoverable error when an external Maps handoff fails", async () => {
+    const openExternalUrl = jest
+      .fn()
+      .mockRejectedValueOnce(new Error("unavailable"))
+      .mockResolvedValueOnce(undefined);
+    await render(
+      <PlaceDetailScreen
+        loadPlaceDetail={async () => makePlaceDetail(PLACES[0])}
+        onBack={() => {}}
+        openExternalUrl={openExternalUrl}
+        placeId={PLACES[0].id}
+      />,
+    );
+    await screen.findByText("Good to know");
+
+    await fireEvent.press(screen.getByRole("link", { name: "Open in Maps" }));
+    expect(
+      await screen.findByText("Maps couldn't be opened. Try again."),
+    ).toBeOnTheScreen();
+
+    await fireEvent.press(screen.getByRole("link", { name: "Open in Maps" }));
+    expect(
+      screen.queryByText("Maps couldn't be opened. Try again."),
+    ).not.toBeOnTheScreen();
+    expect(openExternalUrl).toHaveBeenCalledTimes(2);
   });
 
   it("announces list request states on iOS", async () => {

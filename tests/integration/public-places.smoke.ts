@@ -14,6 +14,9 @@ let getPublicPlaceDetail: typeof import("../../src/data/publicPlaces").getPublic
 let filterPlaces: typeof import("../../src/features/places/placeFilters").filterPlaces;
 let getPlaceFilterOptions: typeof import("../../src/features/places/placeFilters").getPlaceFilterOptions;
 let DEFAULT_PLACE_FILTERS: typeof import("../../src/features/places/placeFilters").DEFAULT_PLACE_FILTERS;
+let getHoursStatus: typeof import("../../src/features/places/placePresentation").getHoursStatus;
+let formatHoursRows: typeof import("../../src/features/places/placePresentation").formatHoursRows;
+let buildMapsUrl: typeof import("../../src/features/places/placePresentation").buildMapsUrl;
 
 const requireProviderDataset = process.env.KC3_EXPECT_PROVIDER_DATASET === "1";
 
@@ -54,6 +57,9 @@ beforeAll(() => {
     jest.requireActual<typeof import("../../src/features/places/placeFilters")>(
       "../../src/features/places/placeFilters",
     ));
+  ({ getHoursStatus, formatHoursRows, buildMapsUrl } = jest.requireActual<
+    typeof import("../../src/features/places/placePresentation")
+  >("../../src/features/places/placePresentation"));
 });
 
 it("returns active MVP-city places with exactly the five serialized fields", async () => {
@@ -200,13 +206,58 @@ it("returns the exact expanded anonymous summary contract", async () => {
   await expect(listPublicPlaceSummaries()).resolves.toEqual(data);
 });
 
-it("returns one exact active-place detail and hides unknown IDs", async () => {
+it("exercises every active summary through discovery and place details", async () => {
   const summaries = await listPublicPlaceSummaries();
-  const selected = summaries[0];
-  expect(selected).toBeDefined();
+  expect(summaries.length).toBeGreaterThan(0);
+
+  const details = await Promise.all(
+    summaries.map((summary) => getPublicPlaceDetail(summary.id)),
+  );
+  expect(details).toHaveLength(summaries.length);
+
+  for (const [index, summary] of summaries.entries()) {
+    const detail = details[index];
+    expect(detail).not.toBeNull();
+    expect(detail).toMatchObject(summary);
+    expect(getHoursStatus(summary).length).toBeGreaterThan(0);
+    expect(buildMapsUrl(summary)).not.toContain("null");
+
+    expect(
+      filterPlaces(summaries, {
+        ...DEFAULT_PLACE_FILTERS,
+        hideDriveThruOnly: false,
+        nameQuery: `  ${summary.name.toLocaleUpperCase()}  `,
+      }),
+    ).toContainEqual(summary);
+    expect(
+      filterPlaces(summaries, {
+        ...DEFAULT_PLACE_FILTERS,
+        city: summary.city,
+        hideDriveThruOnly: false,
+        placeType: summary.place_type,
+      }),
+    ).toContainEqual(summary);
+
+    if (detail!.regular_hours_available) {
+      expect(
+        new Set(detail!.regular_hours.map((row) => row.day_of_week)),
+      ).toEqual(new Set([0, 1, 2, 3, 4, 5, 6]));
+      for (let day = 0; day < 7; day += 1) {
+        expect(
+          formatHoursRows(
+            detail!.regular_hours.filter((row) => row.day_of_week === day),
+          ).length,
+        ).toBeGreaterThan(0);
+      }
+    } else {
+      expect(detail!.regular_hours).toEqual([]);
+    }
+  }
+
+  const selected = summaries[0]!;
 
   const { data, error } = await supabase.rpc("get_public_place_detail", {
-    target_place_id: selected!.id,
+    target_place_id: selected.id,
   });
   expect(error).toBeNull();
   expect(data).toHaveLength(1);
@@ -235,7 +286,7 @@ it("returns one exact active-place detail and hides unknown IDs", async () => {
     "wifi",
     "work_suitability",
   ]);
-  await expect(getPublicPlaceDetail(selected!.id)).resolves.toEqual(data![0]);
+  await expect(getPublicPlaceDetail(selected.id)).resolves.toEqual(data![0]);
   await expect(
     getPublicPlaceDetail("ffffffff-ffff-ffff-ffff-ffffffffffff"),
   ).resolves.toBeNull();

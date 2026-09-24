@@ -93,8 +93,21 @@ describe("place filters", () => {
 
   it("derives options and preserves loaded order", () => {
     expect(getPlaceFilterOptions(PLACES)).toEqual({
-      cities: ["Olathe", "Lenexa"],
+      cities: ["Lenexa", "Olathe"],
       placeTypes: ["coffee_shop", "library"],
+    });
+  });
+
+  it("uses stable approved option order regardless of provider name order", () => {
+    expect(
+      getPlaceFilterOptions([
+        makePlaceSummary({ city: "Olathe", place_type: "park" }),
+        makePlaceSummary({ city: "Overland Park", place_type: "coworking" }),
+        makePlaceSummary({ city: "Lenexa", place_type: "cafe" }),
+      ]),
+    ).toEqual({
+      cities: ["Lenexa", "Overland Park", "Olathe"],
+      placeTypes: ["cafe", "coworking", "park"],
     });
   });
 });

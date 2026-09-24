@@ -96,7 +96,7 @@ describe("place presentation", () => {
       }),
     );
     expect(url).toBe(
-      "https://www.google.com/maps/search/?api=1&query=KC3%20Place%2C%201%20Main%20St%20%26%20Oak%20Ave%2C%20Olathe",
+      "https://www.google.com/maps/search/?api=1&query=KC3%20Place%2C%201%20Main%20St%20%26%20Oak%20Ave",
     );
     expect(url).not.toContain("google_place_id");
   });
@@ -112,7 +112,7 @@ describe("place presentation", () => {
     );
 
     expect(url).toBe(
-      "https://maps.apple.com/?q=Apogee%20Coffee%20%26%20Draft%2C%20670%20N%20Central%20St%2C%20Olathe%2C%20KS%2066061%2C%20Olathe",
+      "https://maps.apple.com/?q=Apogee%20Coffee%20%26%20Draft%2C%20670%20N%20Central%20St%2C%20Olathe%2C%20KS%2066061",
     );
   });
 });

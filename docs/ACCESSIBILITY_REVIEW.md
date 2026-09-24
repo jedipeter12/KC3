@@ -194,3 +194,30 @@ showed separate, reachable title/Close rows below the status area, scrollable
 filter choices, and reachable Clear/Apply actions. The simulator was restored to
 the standard Large category. Spoken VoiceOver behavior is intentionally not
 claimed until the user is present to hear the simulator audio.
+
+## KC3-33 Real-Dataset Follow-up — 2026-09-24
+
+The 160-record real-dataset pass rechecked the completed slice at a wide Expo Web
+viewport, 390 by 844 CSS pixels, and an approximately 200% reflow width. The
+longest 53-character name, an 84-character address, unavailable hours,
+approximate location, unverified KC3 details, same-name locations, no-match
+recovery, and the detail hierarchy wrapped without observed horizontal clipping.
+
+The audit found that narrow-Web filter entry left focus outside the dialog and
+that browser Back could restore list state without restoring focus to the origin
+card. The dialog now focuses Close when opened, Escape returns focus to Filters,
+and a history pop marks list restoration pending. Same-name records in the same
+city now include their distinct address in each accessible card name. Automated
+tests protect these semantics and the assertive retryable Maps failure state.
+
+An iPhone 17 / iOS 26.5 Simulator running Expo Go 57.0.9 was checked at the
+standard Large content-size category. The accessibility tree exposed the
+160-place list, card links, stable filter order, selected traits, and separate
+Close, Clear all, and Apply actions. Observed actionable filter controls had
+frames at least 44 points high. Expo Go's floating development control overlapped
+part of the modal visually; it is not production KC3 UI.
+
+This pass is proportional evidence, not a spoken assistive-technology audit.
+VoiceOver and TalkBack reading order, announcements, modal containment, and focus
+movement still require the user-attended KC3-34 pass. KC3-33 does not close or
+weaken that KC3-21/KC3-23 release gate.
