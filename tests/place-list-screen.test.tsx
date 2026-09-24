@@ -5,7 +5,7 @@ import {
   screen,
   within,
 } from "@testing-library/react-native";
-import { AccessibilityInfo, Platform } from "react-native";
+import { AccessibilityInfo, FlatList, Linking, Platform } from "react-native";
 
 import { PlaceListScreen } from "../src/features/places/PlaceListScreen";
 import type { PublicPlaceSummary } from "../src/types/database";
@@ -118,6 +118,10 @@ describe("place-list screen", () => {
   });
 
   it("opens details and returns with applied list state intact", async () => {
+    const openUrl = jest
+      .spyOn(Linking, "openURL")
+      .mockResolvedValue(undefined as never);
+    const scrollToOffset = jest.spyOn(FlatList.prototype, "scrollToOffset");
     const loadPlaceDetail = jest.fn(async (placeId: string) =>
       makePlaceDetail({
         ...PLACES[0],
@@ -142,13 +146,34 @@ describe("place-list screen", () => {
     );
     const search = await screen.findByLabelText("Search places by name");
     await fireEvent.changeText(search, "second");
+    await fireEvent(screen.getByTestId("place-list"), "scroll", {
+      nativeEvent: {
+        contentOffset: { x: 0, y: 640 },
+        contentSize: { height: 1600, width: 400 },
+        layoutMeasurement: { height: 800, width: 400 },
+      },
+    });
     await fireEvent.press(
       within(screen.getByTestId(`place-row-${PLACES[0].id}`)).getByRole("link"),
     );
     expect(await screen.findByText("Good to know")).toBeOnTheScreen();
     expect(screen.getByText("Tables near the windows")).toBeOnTheScreen();
     expect(screen.getByText("Regular hours")).toBeOnTheScreen();
+    await fireEvent.press(screen.getByRole("link", { name: "Open in Maps" }));
+    expect(openUrl).toHaveBeenCalledWith(
+      expect.stringContaining("maps.apple.com/?q=Second%20Place"),
+    );
     await fireEvent.press(screen.getByRole("button", { name: "‹ Places" }));
+    await fireEvent(
+      screen.getByTestId("place-list"),
+      "contentSizeChange",
+      400,
+      1600,
+    );
+    expect(scrollToOffset).toHaveBeenCalledWith({
+      animated: false,
+      offset: 640,
+    });
     expect(await screen.findByLabelText("Search places by name")).toHaveProp(
       "value",
       "second",

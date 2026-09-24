@@ -6,11 +6,12 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 
 - Stage: Implemented real-data-driven place list/detail slice over the approved
   anonymous public contract and refresh-verified local MVP dataset
-- Current focus: KC3-31 native large-text and spoken screen-reader verification,
-  plus the remaining KC3-21 native accessibility checks.
-- Latest milestone: KC3-31 adopts the summary/detail operations with responsive
-  discovery, richer filters, history/focus restoration, full detail states, and
-  passing automated, database, integration, export, and Expo Web checks.
+- Current focus: Review and merge KC3-31, then complete the user-attended
+  VoiceOver and TalkBack verification tracked separately in KC3-34.
+- Latest milestone: KC3-31 implements the summary/detail operations with
+  responsive discovery, richer filters, history/focus restoration, full detail
+  states, and passing automated, database, integration, export, Web, iOS, and
+  Android checks.
 
 KC3-23 final automated checks and live Expo Web and iOS Simulator functional
 smoke checks pass. Milestone closure remains pending native accessibility

@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { ComponentRef } from "react";
 import {
   AccessibilityInfo,
@@ -14,7 +21,10 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaInsetsContext,
+  SafeAreaView,
+} from "react-native-safe-area-context";
 
 import {
   ScaledText as Text,
@@ -304,6 +314,7 @@ export function PlaceListScreen({
   loadPlaceDetail = getPublicPlaceDetail,
   loadPlaces = listPublicPlaceSummaries,
 }: PlaceListScreenProps) {
+  const safeAreaInsets = useContext(SafeAreaInsetsContext);
   const { width } = useWindowDimensions();
   const wide = Platform.OS === "web" && width >= 960;
   const [state, setState] = useState<PlaceListState>({ status: "loading" });
@@ -324,6 +335,8 @@ export function PlaceListScreen({
     Record<string, ComponentRef<typeof Pressable> | null>
   >({});
   const scrollOffsetRef = useRef(0);
+  const originScrollOffsetRef = useRef(0);
+  const restorePendingRef = useRef(false);
   const requestIdRef = useRef(0);
 
   const loadedPlaces = state.status === "loaded" ? state.places : EMPTY_PLACES;
@@ -336,6 +349,9 @@ export function PlaceListScreen({
     [filters, loadedPlaces],
   );
   const hasActiveFilters = hasNonDefaultPlaceFilters(filters);
+  const originCardIndex = originCardId
+    ? visiblePlaces.findIndex((place) => place.id === originCardId)
+    : -1;
 
   const requestPlaces = useCallback(async () => {
     const requestId = ++requestIdRef.current;
@@ -485,11 +501,17 @@ export function PlaceListScreen({
   }, [closeFilters, filterModalOpen]);
 
   const restoreListPositionAndFocus = useCallback(() => {
+    restorePendingRef.current = true;
+  }, []);
+
+  const completeListRestoration = useCallback(() => {
+    if (!restorePendingRef.current) return;
+    restorePendingRef.current = false;
+    listRef.current?.scrollToOffset({
+      animated: false,
+      offset: originScrollOffsetRef.current,
+    });
     setTimeout(() => {
-      listRef.current?.scrollToOffset({
-        animated: false,
-        offset: scrollOffsetRef.current,
-      });
       if (!originCardId) return;
       const card = cardRefs.current[originCardId];
       if (!card) return;
@@ -499,7 +521,7 @@ export function PlaceListScreen({
         const handle = findNodeHandle(card);
         if (handle) AccessibilityInfo.setAccessibilityFocus(handle);
       }
-    }, 0);
+    }, 50);
   }, [originCardId]);
 
   const closeDetail = useCallback(() => {
@@ -523,6 +545,7 @@ export function PlaceListScreen({
   }, [restoreListPositionAndFocus, selectedPlaceId]);
 
   const openDetail = (placeId: string) => {
+    originScrollOffsetRef.current = scrollOffsetRef.current;
     setOriginCardId(placeId);
     setSelectedPlaceId(placeId);
     if (Platform.OS === "web" && typeof window !== "undefined") {
@@ -756,6 +779,11 @@ export function PlaceListScreen({
               accessibilityRole="list"
               contentContainerStyle={styles.listContent}
               data={visiblePlaces}
+              initialNumToRender={
+                originCardIndex >= 0
+                  ? Math.min(visiblePlaces.length, originCardIndex + 5)
+                  : 10
+              }
               keyExtractor={(place) => place.id}
               keyboardShouldPersistTaps="handled"
               ListEmptyComponent={
@@ -779,6 +807,7 @@ export function PlaceListScreen({
                 </View>
               }
               ListHeaderComponent={discoveryHeader}
+              onContentSizeChange={completeListRestoration}
               onScroll={(event) => {
                 scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
               }}
@@ -798,6 +827,7 @@ export function PlaceListScreen({
               scrollEventThrottle={16}
               showsVerticalScrollIndicator={false}
               style={styles.list}
+              testID="place-list"
             />
           </View>
         ) : null}
@@ -814,7 +844,17 @@ export function PlaceListScreen({
         presentationStyle="fullScreen"
         visible={Platform.OS !== "web" && filterModalOpen}
       >
-        <SafeAreaView style={styles.modalScreen}>{filterSurface}</SafeAreaView>
+        <View
+          style={[
+            styles.modalScreen,
+            {
+              paddingBottom: safeAreaInsets?.bottom ?? 0,
+              paddingTop: safeAreaInsets?.top ?? 0,
+            },
+          ]}
+        >
+          {filterSurface}
+        </View>
       </Modal>
     </SafeAreaView>
   );
@@ -1035,13 +1075,21 @@ const styles = StyleSheet.create({
   modalHeader: {
     minHeight: 64,
     flexDirection: "row",
+    flexWrap: "wrap",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: 8,
     borderBottomColor: "#d9d2c3",
     borderBottomWidth: 1,
     paddingHorizontal: 20,
+    paddingVertical: 10,
   },
-  modalTitle: { color: "#173f35", fontSize: 24, fontWeight: "700" },
+  modalTitle: {
+    flexShrink: 1,
+    color: "#173f35",
+    fontSize: 24,
+    fontWeight: "700",
+  },
   modalAction: {
     minHeight: 44,
     justifyContent: "center",

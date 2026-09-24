@@ -32,6 +32,60 @@ when preferred:
 
 The iOS and Android commands require a compatible simulator or connected device.
 
+### Local iOS simulator accessibility automation
+
+The KC3-31 practical iOS pass used Meta idb when direct Device Hub attachment
+was unavailable. Install the companion and CLI through the maintained Homebrew
+tap, boot an iOS simulator, and confirm its identifier:
+
+```sh
+brew install facebook/fb/idb
+idb list-targets
+```
+
+Pass the booted simulator's UDID to `idb ui describe-all`, `idb ui tap`,
+`idb ui set-value`, `idb ui scroll`, and `idb ui swipe`. Use
+`xcrun simctl ui booted content_size` to inspect or change Dynamic Type and
+restore the user's original setting after the check. idb accessibility-tree
+inspection and direct actions are useful for practical checks, but they do not
+replace a user-attended VoiceOver pass with actual spoken output and VoiceOver
+gestures.
+
+### Local Android emulator setup
+
+The KC3-31 native pass used the following Apple-silicon Homebrew toolchain:
+
+```sh
+brew install openjdk@21
+brew install --cask android-commandlinetools
+```
+
+Configure the installed JDK and SDK for the shell running Android tools:
+
+```sh
+export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
+export ANDROID_HOME="/opt/homebrew/share/android-commandlinetools"
+export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
+```
+
+Install Platform Tools, the emulator, API 36, and the Google APIs ARM64 image
+with `sdkmanager`, accept the standard Android SDK component licenses, and create
+an AVD with `avdmanager`. The verified AVD used a Pixel 9 profile and
+`system-images;android-36;google_apis;arm64-v8a`.
+
+When Expo and local Supabase run on the Mac, reverse the selected Expo port and
+the local Supabase API port into the booted emulator. Reapply these tunnels after
+an emulator restart when needed:
+
+```sh
+adb reverse tcp:8085 tcp:8085
+adb reverse tcp:54321 tcp:54321
+```
+
+Replace `8085` with the actual Expo port. The Supabase tunnel is required for the
+app's `127.0.0.1:54321` public API URL; without it, the app intentionally reaches
+the sanitized retry state.
+
 ## Building
 
 Run `npm run export` to create production bundles for Web, iOS, and Android in the

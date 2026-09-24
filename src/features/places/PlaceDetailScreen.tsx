@@ -42,6 +42,10 @@ type DetailState =
   | { status: "missing" }
   | { status: "error" };
 
+function openWithLinking(url: string): Promise<unknown> {
+  return Linking.openURL(url);
+}
+
 export type PlaceDetailScreenProps = Readonly<{
   cachedSummary?: PublicPlaceSummary;
   loadPlaceDetail?: (placeId: string) => Promise<PublicPlaceDetail | null>;
@@ -96,7 +100,7 @@ export function PlaceDetailScreen({
   cachedSummary,
   loadPlaceDetail = getPublicPlaceDetail,
   onBack,
-  openExternalUrl = Linking.openURL,
+  openExternalUrl = openWithLinking,
   placeId,
 }: PlaceDetailScreenProps) {
   const [state, setState] = useState<DetailState>({ status: "loading" });
