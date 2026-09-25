@@ -60,6 +60,9 @@ preserving explicit unknown and freshness states.
   with regular-hours states, verified-attribute filters, default drive-thru-only
   exclusion, complete detail sections, external map launch, and list context
   preservation.
+- An internal attended operator CLI for selecting an existing active,
+  provider-backed place and maintaining only KC3-owned suitability and
+  verification details with explicit unknown states and confirmation.
 
 ### Explicitly Not Included
 
@@ -216,8 +219,9 @@ are allowed so split operating periods can be represented.
   The source context uses "third place," while the original repository summary
   used "third space."
 - When, if ever, should map presentation enter the MVP?
-- Who will perform KC3 suitability verification, and what operating process will
-  keep it current?
+- Which authorized operators will own the documented suitability-verification
+  cadence? The attended maintenance workflow now exists, but staffing and
+  cadence remain product/operations decisions.
 - Do any future candidate MVP features require user accounts?
 - When should KC3 expand beyond the approved three-city geography?
 - Which hosting/release path and broader privacy requirements apply before

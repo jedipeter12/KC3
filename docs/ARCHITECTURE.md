@@ -135,6 +135,16 @@ use the ignored `dist/` directory.
   authentication. The initial public place schema is defined in a versioned
   migration. The first anonymous read RPC is implemented; authenticated and
   remaining administrative boundaries are not designed yet.
+- KC3 detail operator CLI: An attended `npm run edit:place-details` command
+  searches active provider-backed places by canonical name/city, presents
+  bounded canonical and Google identity context for selection, validates the
+  existing detail enum/nullable contract, and shows a complete before/after
+  summary before exact confirmation. A server-only search and atomic upsert are
+  owned by a dedicated `NOLOGIN`, non-bypass-RLS role with column-scoped
+  `place_details` mutation privileges and no provider, identity, lifecycle,
+  hours, or override mutation privilege. Complete-snapshot validation and an
+  expected `updated_at` version prevent unsupported fields, partial writes, and
+  stale attended overwrites.
 - Google ingestion CLI: A manual `npm run ingest:google` entry point requires
   allowlisted MVP cities and KC3 place categories, caps pages and unique places,
   defaults to dry-run, and requires `--write` to persist. Text Search requests

@@ -43,6 +43,49 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-24 — Use a constrained attended boundary for KC3 detail curation
+
+**Status:** Accepted
+
+**Decision**
+
+Provide an internal TypeScript CLI that selects an existing active,
+provider-backed place and submits one complete validated KC3 detail snapshot to
+an atomic server-only function. Own the functions with a dedicated `NOLOGIN`,
+non-bypass-RLS role that has column-scoped write privileges only on
+`place_details`. Require an expected detail `updated_at` value, a readable
+before/after summary, and exact operator confirmation before persistence.
+
+**Context**
+
+KC3 needs repeatable human curation of suitability and verification facts while
+preserving the established Google/KC3 ownership boundary and explicit unknown
+states. The existing Google importer is deliberately unable to write these
+fields, and a public or authenticated administration surface is out of scope.
+
+**Alternatives considered**
+
+- Grant the existing Google importer owner access to `place_details`.
+- Let operators issue direct table updates or edit seed/migration SQL.
+- Add an authenticated admin screen.
+- Accept partial, loosely shaped patches without a concurrency version.
+
+**Reasoning**
+
+A separate narrow owner makes the opposite source-ownership permissions visible
+and enforceable in PostgreSQL. Complete snapshots are easy to validate against
+the existing enum/nullable contract, while optimistic concurrency ensures the
+reviewed before/after plan is still current. An attended CLI supplies the needed
+workflow without creating an unapproved application surface.
+
+**Consequences / follow-up**
+
+Operators need a service-role credential in their local process, must select the
+record and confirm the diff, and must rerun after a concurrent edit. Validation
+or persistence failure is atomic. Any future public/admin editing, different
+fields, or broader ownership requires a separate product and authorization
+decision.
+
 ### 2026-09-22 — Return a derived place-local weekday without exposing timezone
 
 **Status:** Accepted
