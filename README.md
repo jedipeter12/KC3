@@ -8,10 +8,9 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
   anonymous public contract and refresh-verified local MVP dataset
 - Current focus: Complete the user-attended VoiceOver and TalkBack verification
   tracked in KC3-34 for the KC3-21/KC3-23 release gate.
-- Latest milestone: KC3-33 exercises all 160 active records from a fresh bounded
-  real-dataset run through summary, detail, and discovery paths; resolves
-  evidence-backed presentation, navigation, filtering, and Maps resilience
-  issues; and records broader data findings as non-blocking follow-up work.
+- Latest tooling milestone: the attended KC3 place-detail CLI safely searches
+  provider-backed records and maintains only KC3-owned suitability and
+  verification data behind explicit validation, review, and confirmation.
 
 KC3-23 final automated checks and live Expo Web and iOS Simulator functional
 smoke checks pass. Milestone closure remains pending native accessibility
@@ -41,6 +40,7 @@ the public environment configuration required to run the client.
 - [`docs/TESTING_REVIEW.md`](docs/TESTING_REVIEW.md) — database coverage review, remaining gaps, and decisions required
 - [`docs/SEED_DATA.md`](docs/SEED_DATA.md) — local seed behavior, data provenance, and maintenance rules
 - [`docs/GOOGLE_INGESTION_CONTRACT.md`](docs/GOOGLE_INGESTION_CONTRACT.md) — approved Google field, ownership, normalization, refresh, and override rules
+- [`docs/PLACE_DETAILS_OPERATOR.md`](docs/PLACE_DETAILS_OPERATOR.md) — internal KC3-owned detail curation CLI and recovery workflow
 - [`docs/KC3_27_DATASET.md`](docs/KC3_27_DATASET.md) — bounded MVP dataset run record, counts, review findings, and coverage limitations
 - [`docs/KC3_28_VERIFICATION.md`](docs/KC3_28_VERIFICATION.md) — repeat import, ownership, timestamp, anonymous integration, and real-data UI verification record
 - [`docs/KC3_29_PLACE_EXPERIENCE.md`](docs/KC3_29_PLACE_EXPERIENCE.md) — approved real-data-driven list, detail, field, state, responsive, and accessibility contract

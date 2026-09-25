@@ -381,6 +381,32 @@ docker exec -i supabase_db_KC3 psql -U postgres -d postgres -v ON_ERROR_STOP=1 \
 The completed evidence, discovered provider variability, and known limitations
 are recorded in [`KC3_28_VERIFICATION.md`](KC3_28_VERIFICATION.md).
 
+## Manual KC3 Place-Details Curation
+
+The attended `npm run edit:place-details` command searches existing active,
+provider-backed places by name and city, displays canonical and bounded Google
+identity context for explicit selection, and creates or updates only the
+KC3-owned `place_details` record. It uses the same `KC3_SUPABASE_URL` and
+`KC3_SUPABASE_SERVICE_ROLE_KEY` server-only variables as the importer but does
+not require or call Google Places.
+
+Example:
+
+```sh
+npm run edit:place-details -- --name "Black Dog" --city Lenexa
+```
+
+The command preserves unknown states, retries invalid input, updates verification
+freshness only after an explicit actual-verification answer, shows every pending
+before/after change, and requires exact `yes` confirmation before persistence.
+Its constrained database owner can mutate only approved `place_details` columns;
+canonical/provider identity, lifecycle, hours, source metadata, and overrides
+are outside its privileges and payload.
+
+See [`PLACE_DETAILS_OPERATOR.md`](PLACE_DETAILS_OPERATOR.md) for prerequisites,
+all allowed values, selection and verification semantics, confirmation behavior,
+representative city commands, and failure recovery.
+
 ## Linting / Formatting
 
 - `npm run typecheck` runs strict TypeScript checking without emitting files.

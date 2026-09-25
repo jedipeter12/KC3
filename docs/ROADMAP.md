@@ -46,6 +46,11 @@ govern the remaining KC3-21/KC3-23 release gate.
 
 ## Completed
 
+- [x] KC3-35 operator curation workflow searches and distinguishes active
+  provider-backed places, creates or updates the existing KC3 detail contract
+  with explicit unknown and verification semantics, requires a reviewed
+  before/after confirmation, rejects stale edits, and enforces a constrained
+  database ownership boundary that cannot mutate provider-owned fields.
 - [x] KC3-33 exercises every record from a fresh bounded 160-place provider run
   through summary, detail, and applicable discovery paths; fixes stable filter
   ordering, narrow-dialog entry focus, Web Back restoration, duplicate-location

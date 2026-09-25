@@ -14,6 +14,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "ingest:google": "node --env-file-if-exists=.env.local --import tsx scripts/import-google-places.ts",
+    "edit:place-details": "node --env-file-if-exists=.env.local --import tsx scripts/edit-place-details.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.{ts,tsx}\" \"scripts/**/*.ts\" \"tests/**/*.{ts,tsx}\" index.ts eslint.config.js app.json tsconfig.json package.json",

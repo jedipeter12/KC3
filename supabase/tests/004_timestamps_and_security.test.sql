@@ -108,9 +108,14 @@ select set_eq(
       ('google_importer_accesses_hours'),
       ('public_place_reader_selects_active_details'),
       ('public_place_reader_selects_active_hours'),
-      ('public_place_reader_selects_active_overrides')
+      ('public_place_reader_selects_active_overrides'),
+      ('place_detail_operator_reads_active_provider_places'),
+      ('place_detail_operator_reads_provider_identity'),
+      ('place_detail_operator_reads_details'),
+      ('place_detail_operator_inserts_details'),
+      ('place_detail_operator_updates_details')
   $$,
-  'only the approved public-reader and server-import policies open table rows'
+  'only the approved public-reader and server-operator policies open table rows'
 );
 
 select is(
