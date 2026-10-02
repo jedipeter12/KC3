@@ -226,7 +226,14 @@ select lives_ok(
       )
     $sql$,
     jsonb_build_object(
-      'expectedUpdatedAt', (select updated_at::text from public.places where id = '29000000-0000-4000-8000-000000000001'),
+      'expectedUpdatedAt', (
+        select to_char(
+          updated_at at time zone 'UTC',
+          'YYYY-MM-DD"T"HH24:MI:SS.US"Z"'
+        )
+        from public.places
+        where id = '29000000-0000-4000-8000-000000000001'
+      ),
       'canonical', jsonb_build_object(
         'name', 'Correction Park',
         'address', '9501 Greenway Lane, Lenexa, KS 66215',

@@ -439,6 +439,11 @@ formatting, `git diff --check`, and Web/iOS/Android Expo exports passed. The
 verification used only fixtures and local Supabase; it made no Google request
 and applied no real correction.
 
+The first reviewed local correction run and its targeted provider preparation,
+three applied source-backed changes, API timestamp compatibility fix, and
+deferred cases are recorded in
+[`KC3_36_CORRECTIONS.md`](KC3_36_CORRECTIONS.md).
+
 ## Linting / Formatting
 
 - `npm run typecheck` runs strict TypeScript checking without emitting files.

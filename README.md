@@ -50,6 +50,7 @@ the public environment configuration required to run the client.
 - [`docs/KC3_31_IMPLEMENTATION.md`](docs/KC3_31_IMPLEMENTATION.md) — implemented list/detail UI, verification evidence, and remaining native checks
 - [`docs/KC3_33_AUDIT.md`](docs/KC3_33_AUDIT.md) — full real-dataset audit, resolved issues, record coverage, and bounded follow-ups
 - [`docs/CANONICAL_CORRECTION_OPERATOR.md`](docs/CANONICAL_CORRECTION_OPERATOR.md) — attended canonical correction, evidence, audit, and recovery contract
+- [`docs/KC3_36_CORRECTIONS.md`](docs/KC3_36_CORRECTIONS.md) — applied local canonical corrections, source evidence, verification, and deferred cases
 - [`AGENTS.md`](AGENTS.md) — standing instructions for AI coding agents
 
 ## Repository Structure
