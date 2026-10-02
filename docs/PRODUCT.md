@@ -27,6 +27,13 @@ preserving explicit unknown and freshness states.
 
 ## MVP Scope
 
+**Production release prerequisite:** KC3-36's provider-content audit is complete,
+but current Google-backed retention, provenance, attribution, and use permissions
+are not cleared for launch. KC3-37 must resolve these before KC3-39 deployment
+and final App Store content-rights/privacy disclosures. No alternate provider or
+changed discovery scope is approved by the audit. See
+[`KC3_36_PROVIDER_CONTENT_AUDIT.md`](KC3_36_PROVIDER_CONTENT_AUDIT.md).
+
 ### Included
 
 - A Supabase data foundation for individual places, Google-sourced metadata,

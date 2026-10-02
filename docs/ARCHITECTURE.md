@@ -2,6 +2,17 @@
 
 ## Current Architecture Summary
 
+**Production content-rights gate (2026-10-02):** The implemented Google-backed
+store below is a development implementation, not a cleared production data
+architecture. The board's KC3-36 audit identifies unsupported indefinite
+provider retention, canonical/history copies, missing attribution/source
+transport, provider-derived Apple Maps queries, and unresolved directory/speech
+and account/region permissions. See
+[`KC3_36_PROVIDER_CONTENT_AUDIT.md`](KC3_36_PROVIDER_CONTENT_AUDIT.md).
+KC3-37 must select and implement an evidenced sourcing/retention/display strategy
+before KC3-39 deploys the production backend. The audit makes no framework or
+database replacement and does not itself implement remediation.
+
 KC3 has an Expo SDK 57 TypeScript client targeting React Native and Expo Web, but
 no deployed architecture yet. Application code lives in `src/`, a root entry
 point registers the app, and application tests live separately in `tests/`. The
@@ -45,7 +56,8 @@ experience requirements remain in
 - Object storage: Supabase Storage, if needed.
 - Hosting: Not selected.
 - Analytics: Not selected.
-- Third-party services: None selected beyond Supabase.
+- Third-party services: Google Places (New) in the manual development importer;
+  production use remains subject to the KC3-36 audit and KC3-37 remediation.
 
 ### Language
 TypeScript

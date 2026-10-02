@@ -6,7 +6,9 @@ This file tracks project state. It should describe what is finished, what is bei
 
 Complete user-attended native screen-reader verification in KC3-34 without
 weakening source ownership or the anonymous read boundary. KC3-34 continues to
-govern the remaining KC3-21/KC3-23 release gate.
+govern the remaining KC3-21/KC3-23 release gate. Before production deployment,
+KC3-37 must resolve the completed KC3-36 provider-content rights audit; the
+current Google-backed storage/display architecture is not cleared for launch.
 
 ## In Progress
 
@@ -22,6 +24,13 @@ govern the remaining KC3-21/KC3-23 release gate.
   open under KC3-34.
 
 ## Next
+
+- [ ] KC3-37: Choose and implement the evidenced provider-content sourcing,
+  provenance, retention, attribution, and navigation strategy described in
+  `docs/KC3_36_PROVIDER_CONTENT_AUDIT.md`. Resolve account/region, directory,
+  and native speech permissions; preserve KC3 enrichment during remediation.
+  This blocks KC3-39 production backend deployment and final content-rights
+  and privacy declarations.
 
 - [ ] Resolve the Boba Tea area-only identity/address only if authoritative
   evidence establishes the exact physical place. Do not infer a mall tenant or
@@ -45,7 +54,14 @@ govern the remaining KC3-21/KC3-23 release gate.
 
 ## Completed
 
-- [x] KC3-36 adds a constrained attended canonical-correction workflow for name,
+- [x] KC3-36 (Notion board): Audit Google Maps/Places launch data rights and
+  attribution. The 2026-10-02 audit inventories every provider field and copy,
+  checks current Google/Apple sources, identifies release blockers, and gives
+  field-level dispositions plus a concrete KC3-37 remediation handoff. Audit
+  completion does not clear production use; see
+  `docs/KC3_36_PROVIDER_CONTENT_AUDIT.md`.
+- [x] Canonical-correction work (historically labeled KC3-36 in the repository,
+  separate from the board's rights audit) adds an attended workflow for name,
   address, address precision, and place type; requires authoritative HTTPS
   evidence, observation date, notes, reviewed diff, exact confirmation, and
   optimistic concurrency; atomically appends immutable before/after evidence;

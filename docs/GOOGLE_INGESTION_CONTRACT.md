@@ -8,7 +8,16 @@ path; KC3-26 verifies its hours, freshness, ownership, and rollback behavior.
 Explicit duplicate attachment is implemented; moved-listing resolution remains
 deferred.
 
-This is the durable policy and transformation contract for Google Places data.
+**Production rights qualification (2026-10-02):** This contract describes the
+implemented technical transformation and ownership rules, not a grant of
+provider-content rights. The board's KC3-36 audit finds the indefinite persistence
+path uncleared for launch. See
+[`KC3_36_PROVIDER_CONTENT_AUDIT.md`](KC3_36_PROVIDER_CONTENT_AUDIT.md); KC3-37
+must resolve sourcing, retention, attribution, and use permissions before
+production. Historical acceptance for KC3-24/26/28 remains implementation
+verification, not licensing approval.
+
+This is the durable technical transformation contract for Google Places data.
 Repository schema and tests enforce stable storage invariants; the trusted
 importer enforces workflow rules that span a complete response.
 
@@ -46,8 +55,8 @@ nullable provider identity and never a primary key.
 | Google response field | Provider storage | Canonical/effective use | Write owner |
 | --- | --- | --- | --- |
 | `id` | `places.google_place_id` | Matches repeat refreshes; never replaces `places.id` | Google identity, attached only by trusted import/operator resolution |
-| `displayName.text` | `place_google_data.google_name` | Initializes `places.name`; cosmetic changes may refresh it and substantive changes are reported | Google provider copy; accepted canonical name is factual KC3 data |
-| `formattedAddress` | `place_google_data.google_address` | Initializes `places.address`; cosmetic changes may refresh it and substantive changes are reported | Google provider copy; accepted canonical address is factual KC3 data |
+| `displayName.text` | `place_google_data.google_name` | Initializes `places.name`; cosmetic changes may refresh it and substantive changes are reported | Google provider copy; canonical storage does not establish independent provenance |
+| `formattedAddress` | `place_google_data.google_address` | Initializes `places.address`; cosmetic changes may refresh it and substantive changes are reported | Google provider copy; canonical storage does not establish independent provenance |
 | `addressComponents` | `place_google_data.google_address_components` | Extracts a city candidate by component type, never array position | Google |
 | `location.latitude` / `.longitude` | `place_google_data.google_latitude` / `google_longitude` | Initializes accepted `places.latitude` / `longitude`; meaningful movement is reviewed | Google provider copy; accepted coordinates are factual KC3 data |
 | `businessStatus` | `place_google_data.google_business_status` | May drive `places.status` under the lifecycle rules below | Google, except KC3-only `hidden` state |

@@ -19,6 +19,13 @@ repository.
 
 ## Executive Security Assessment
 
+**2026-10-02 provider-rights update:** The board's KC3-36 audit is complete,
+but the current provider-backed production path remains blocked by retention,
+provenance, attribution, navigation, and unverified use/account permissions.
+See [`KC3_36_PROVIDER_CONTENT_AUDIT.md`](KC3_36_PROVIDER_CONTENT_AUDIT.md) for
+field dispositions and the KC3-37 remediation gate. The technical local-access
+assessment below does not establish Google content licensing clearance.
+
 KC3 has a good early-stage security foundation but is not ready to deploy to real
 users. The Data API exposes three approved operations: the compatible five-field
 active-place RPC plus bounded active-place summary and by-ID detail RPCs. All
