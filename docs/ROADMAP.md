@@ -23,10 +23,12 @@ govern the remaining KC3-21/KC3-23 release gate.
 
 ## Next
 
-- [ ] Review provider-backed corrections for `Kickapoo Park RIGHT`, Raven Ridge
-  Park's leading punctuation, Heritage Forest Park's malformed-looking address,
-  Boba Tea's area-only address, and the `Hermetheus Downtown Olathe Library`
-  cafe classification; do not silently normalize them in the UI.
+- [ ] Apply authoritative provider-backed corrections for `Kickapoo Park RIGHT`,
+  Raven Ridge Park's malformed address, Heritage Forest Park's malformed-looking
+  address, and any confirmed Boba Tea identity/address issue through the
+  canonical-correction operator. Keep the Hermetheus cafe classification and
+  handle its library host through the future relationship model; do not silently
+  normalize any case in the UI.
 - [ ] Decide whether KC3 needs an explicit parent, tenant, or related-location
   model for legitimate host/tenant and adjacent-place relationships. Do not use
   client name/proximity heuristics to merge records.
@@ -46,6 +48,12 @@ govern the remaining KC3-21/KC3-23 release gate.
 
 ## Completed
 
+- [x] KC3-36 adds a constrained attended canonical-correction workflow for name,
+  address, address precision, and place type; requires authoritative HTTPS
+  evidence, observation date, notes, reviewed diff, exact confirmation, and
+  optimistic concurrency; atomically appends immutable before/after evidence;
+  and cannot mutate city, provider data, lifecycle, details, hours, overrides,
+  or relationships.
 - [x] KC3-35 operator curation workflow searches and distinguishes active
   provider-backed places, creates or updates the existing KC3 detail contract
   with explicit unknown and verification semantics, requires a reviewed

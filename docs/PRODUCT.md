@@ -63,6 +63,12 @@ preserving explicit unknown and freshness states.
 - An internal attended operator CLI for selecting an existing active,
   provider-backed place and maintaining only KC3-owned suitability and
   verification details with explicit unknown states and confirmation.
+- A separate internal attended operator CLI for correcting an existing active,
+  provider-backed place's canonical name, address, address precision, or place
+  type only when an authoritative HTTPS source, observation date, explanatory
+  note, before/after review, and exact confirmation are supplied. Each committed
+  correction retains immutable evidence; the workflow cannot change city,
+  provider data, lifecycle, hours, details, or relationships.
 
 ### Explicitly Not Included
 
@@ -171,6 +177,9 @@ and separates data by ownership and purpose:
   refresh never changes `place_details.last_verified_at`.
 - `place_overrides` stores non-destructive, effective-dated KC3 factual overrides
   while retaining provider values underneath.
+- `place_canonical_corrections` stores immutable evidence for attended changes
+  to canonical name, address, address precision, or place type, including exact
+  before/after snapshots, authoritative source URL, observation date, and notes.
 
 Canonical places may retain accepted latitude/longitude and an IANA timezone for
 future map, distance, clustering, navigation, and local-date override behavior.

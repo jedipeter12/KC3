@@ -10,7 +10,9 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
   tracked in KC3-34 for the KC3-21/KC3-23 release gate.
 - Latest tooling milestone: the attended KC3 place-detail CLI safely searches
   provider-backed records and maintains only KC3-owned suitability and
-  verification data behind explicit validation, review, and confirmation.
+  verification data behind explicit validation, review, and confirmation. A
+  separate attended canonical-correction CLI records authoritative evidence and
+  immutable before/after values for bounded factual corrections.
 
 KC3-23 final automated checks and live Expo Web and iOS Simulator functional
 smoke checks pass. Milestone closure remains pending native accessibility
@@ -47,6 +49,7 @@ the public environment configuration required to run the client.
 - [`docs/KC3_30_PUBLIC_PLACE_CONTRACT.md`](docs/KC3_30_PUBLIC_PLACE_CONTRACT.md) — implemented expanded anonymous summary/detail data, freshness, compatibility, and authorization contract
 - [`docs/KC3_31_IMPLEMENTATION.md`](docs/KC3_31_IMPLEMENTATION.md) — implemented list/detail UI, verification evidence, and remaining native checks
 - [`docs/KC3_33_AUDIT.md`](docs/KC3_33_AUDIT.md) — full real-dataset audit, resolved issues, record coverage, and bounded follow-ups
+- [`docs/CANONICAL_CORRECTION_OPERATOR.md`](docs/CANONICAL_CORRECTION_OPERATOR.md) — attended canonical correction, evidence, audit, and recovery contract
 - [`AGENTS.md`](AGENTS.md) — standing instructions for AI coding agents
 
 ## Repository Structure

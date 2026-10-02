@@ -1,7 +1,8 @@
 # Defensive Security Review
 
-**Review date:** 2026-08-23; updated 2026-09-22 for the expanded anonymous
-summary/detail boundary, 2026-09-20 for live repeat import and
+**Review date:** 2026-08-23; updated 2026-09-29 for the canonical-correction
+operator, 2026-09-22 for the expanded anonymous summary/detail boundary,
+2026-09-20 for live repeat import and
 anonymous real-dataset verification, 2026-09-19 for the verified Google import
 boundary, and previously 2026-09-08 for the Google ingestion contract
 
@@ -21,7 +22,7 @@ repository.
 KC3 has a good early-stage security foundation but is not ready to deploy to real
 users. The Data API exposes three approved operations: the compatible five-field
 active-place RPC plus bounded active-place summary and by-ID detail RPCs. All
-five base tables remain inaccessible to Data API roles. The RPCs run as a
+six base tables remain inaccessible to Data API roles. The public RPCs run as a
 dedicated `NOLOGIN`, `NOBYPASSRLS` role with column-level source privileges and
 active-place RLS policies.
 
@@ -37,7 +38,7 @@ must not be broadened without a new approval and matching authorization tests.
 Security status by stage:
 
 - **Safe for the current local backend stage:** Yes. The migrations apply from a
-  clean local database, all 225 pgTAP assertions pass against clean local state,
+  clean local database, all 296 pgTAP assertions pass against clean local state,
   and database lint reports no schema errors.
 - **Safe for an Expo client to call the approved RPC locally:** Yes. This does not
   approve additional reads, any writes, or production deployment.
@@ -93,6 +94,15 @@ function owner's database privileges.
   broader administrative operation.
 - **Disposition:** **MITIGATED FOR THE APPROVED MANUAL IMPORT.** Production secret
   storage, rotation, audit logging, and operator access remain release work.
+
+KC3-35 and KC3-36 add separate attended detail and canonical-correction
+functions behind the same server-only gateway credential. Each function has its
+own `NOLOGIN`, `NOBYPASSRLS` owner. The canonical owner can update only name,
+address, address precision, and place type and can only insert immutable sourced
+audit rows; it cannot alter city, provider data, lifecycle, details, hours, or
+overrides. Database tests verify the column boundary, client denial, optimistic
+concurrency, atomic evidence write, and rollback paths. This narrows database
+effects but does not reduce the impact of leaking the service-role credential.
 
 ### H-03 — Unrestricted raw Google retention is excluded from the MVP
 
@@ -181,7 +191,7 @@ is unapproved. KC3-22 runs database tests, lint, and local HTTP checks in CI.
 
 ### M-04 — Internal and API objects share the exposed `public` schema
 
-The five tables and internal helpers are created in a schema listed in the Data API
+The six tables and internal helpers are created in a schema listed in the Data API
 configuration. Explicit revokes now prevent current access, including direct
 execution of the trigger function. As the system grows, keeping raw/internal
 objects alongside intentional API objects raises the chance of accidental grants

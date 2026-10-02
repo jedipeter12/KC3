@@ -1,7 +1,7 @@
 # Test Coverage and Reliability Review
 
-**Review date:** 2026-08-23; updated 2026-09-24 for the full real-dataset
-experience audit, 2026-09-22 for the expanded anonymous summary/detail contract,
+**Review date:** 2026-08-23; updated 2026-09-29 for the canonical-correction
+operator, 2026-09-24 for the full real-dataset experience audit, 2026-09-22 for the expanded anonymous summary/detail contract,
 2026-09-20 for repeat refresh/integration
 verification and the real provider-backed dataset, 2026-09-19 for Google
 hours/source persistence, and previously updated 2026-09-08 for the Google
@@ -30,13 +30,12 @@ constraints, defaults, relationships, timestamp triggers, and RLS posture had no
 executable regression protection.
 
 There is no meaningful line-coverage percentage to report for a SQL migration.
-The workspace suite provides 228 behavior and contract assertions across eleven
-pgTAP files. The first four files provide 90 schema assertions, including three
-for privilege revocations. The seed-data test adds 12 assertions, the public
-place access test adds 24 authorization/response-contract assertions, the Google
-ingestion contract adds 25 assertions, the import-boundary suite adds 34, the
-reconciliation suite adds 8, the expanded public model suite adds 32, and the
-place-local weekday suite adds 3.
+The workspace suite provides 296 behavior and contract assertions across
+thirteen pgTAP files. This includes schema, data, hours, timestamp, RLS, public
+read, Google ingestion/reconciliation, expanded public-model, place-local-day,
+detail-operator, and canonical-correction contracts. The canonical-correction
+suite contributes 35 focused assertions, while the schema suite adds three for
+its audit table and constraints.
 
 ## Major Untested Risks Found
 
@@ -55,7 +54,7 @@ place-local weekday suite adds 3.
 
 ### Schema contract
 
-`001_schema_contract.test.sql` verifies the five approved tables, approved enum
+`001_schema_contract.test.sql` verifies the six approved tables, approved enum
 values, established columns, primary keys, cascading foreign keys, Google Place
 ID uniqueness, hours checks, and lookup indexes. It protects against accidental
 field or classification removal, ownership changes, loss of constraints, and
@@ -81,7 +80,7 @@ overnight-hours support.
 ### Timestamps and security posture
 
 `004_timestamps_and_security.test.sql` verifies all five automatic `updated_at`
-triggers, RLS enablement on all approved tables, the bounded policy count, and
+triggers, RLS enablement on all six approved tables, the bounded policy count, and
 trigger enablement. It protects freshness metadata and prevents unreviewed policy
 growth.
 
@@ -151,6 +150,24 @@ detail snapshot after changed, missing, and failed refreshes. Its live rerun als
 found that JSON serialization was sensitive to PostgreSQL JSONB object-key order;
 a regression fixture now proves structurally equal schedules are not replaced.
 
+### Attended operator boundaries
+
+`012_place_details_operator_cli.test.sql` verifies the dedicated detail owner,
+exact search projection, active/provider-backed selection, supported complete
+detail writes, optimistic concurrency, preservation of protected data, client
+denial, and atomic failure behavior. TypeScript runner tests cover duplicate
+selection, invalid values, unknown preservation, verification semantics,
+confirmation, unchanged values, and empty results.
+
+`013_canonical_correction_operator.test.sql` verifies the separate hardened
+canonical owner, four-column write allowlist, immutable evidence table,
+active/provider-backed selection, exact provider context, atomic canonical and
+audit writes, optimistic concurrency, no-op and malformed-payload rejection,
+protected-data preservation, and client denial. TypeScript runner tests cover
+duplicate selection, bounded enum/date/HTTPS/note validation, complete payload
+and version forwarding, confirmation, cancellation, unchanged values, and empty
+results. Tests use fixtures only and make no Google request.
+
 ### Typed public-place client and place-list screen
 
 Application tests verify the exact five-field TypeScript RPC contract, public
@@ -185,8 +202,8 @@ snapshots. These are component and unit checks, not live backend or device tests
 - Live Google network calls and credentials: provider and importer behavior is
   covered with fixtures, mocked HTTP, and the real local database boundary;
   normal tests and CI intentionally make no billable provider request.
-- Blank canonical text remains undecided outside the trusted importer, which
-  rejects it for new provider-backed places.
+- Blank canonical text remains undecided as a table-wide constraint. The trusted
+  importer and canonical-correction boundary both reject it.
 - Automated accessibility, performance/load, and end-to-end behavior: component
   tests cover the first screen's primary semantics and a manual Web viewport
   check has been completed, but broader tooling remains undecided.
@@ -205,11 +222,11 @@ blank values must be rejected before adding a constraint and tests.
 
 **PRODUCT OWNER DECISION REQUIRED — Administrative and future authenticated roles**
 
-Anonymous active-place reads are approved and covered. `authenticated` and
-`service_role` retain no access to that RPC or the base tables, and import/
-administrative workflows remain undecided. Define any additional role behavior
-before grants and role-level tests lock it in. See `SECURITY_REVIEW.md` for the
-broader risk analysis.
+Anonymous active-place reads are approved and covered. `authenticated` has no
+operator access; `service_role` can execute only the explicitly approved
+server-side operator RPCs and neither role has direct base-table access. Define
+any additional role behavior before grants and role-level tests lock it in. See
+`SECURITY_REVIEW.md` for the broader risk analysis.
 
 Canonical duplicate handling, Google rating bounds, provider regular-hours
 normalization, and freshness semantics are accepted in
@@ -253,6 +270,17 @@ automatic or fuzzy merging.
    MVP.
 
 ## Verification Results
+
+**KC3-36 locally verified: 2026-09-29**
+
+- A clean local reset applied the canonical-correction migration and unchanged
+  seed. All 296 pgTAP assertions, 92 application tests, and six anonymous HTTP
+  integration tests pass.
+- Typecheck, ESLint, Prettier verification, database lint, `git diff --check`,
+  and Web/iOS/Android Expo exports pass.
+- The checks use fixtures and the local Supabase stack. No Google request was
+  made, no real correction was applied, and no privileged credential entered
+  the application bundle.
 
 **KC3-33 locally verified: 2026-09-24**
 

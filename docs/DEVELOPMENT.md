@@ -407,6 +407,38 @@ See [`PLACE_DETAILS_OPERATOR.md`](PLACE_DETAILS_OPERATOR.md) for prerequisites,
 all allowed values, selection and verification semantics, confirmation behavior,
 representative city commands, and failure recovery.
 
+## Manual Canonical Place Correction
+
+Use the attended `npm run edit:place-canonical` command only after an
+authoritative source establishes that an active provider-backed record's
+canonical name, address, address precision, or place type is wrong. It uses the
+same server-only `KC3_SUPABASE_URL` and `KC3_SUPABASE_SERVICE_ROLE_KEY` variables
+as the other operator workflows and does not call Google.
+
+```sh
+npm run edit:place-canonical -- --name "Kickapoo" --city Lenexa
+```
+
+The command displays canonical and bounded provider identity/type context for
+explicit selection. It accepts a complete four-field canonical snapshot, then
+requires an authoritative HTTPS source URL, source observation date, explanatory
+notes, a displayed diff, and exact `yes` confirmation. A place `updated_at`
+version rejects stale reviews. Persistence atomically updates the canonical row
+and appends immutable before/after evidence; any failure rolls back both.
+
+This workflow cannot change city, coordinates, timezone, Google Place ID,
+lifecycle or movement state, provider data, KC3 suitability details, hours,
+overrides, or place relationships. See
+[`CANONICAL_CORRECTION_OPERATOR.md`](CANONICAL_CORRECTION_OPERATOR.md) for the
+complete boundary, evidence standard, import interaction, and recovery steps.
+
+KC3-36 local verification (2026-09-29): a clean local reset applied the new
+migration and unchanged seed. All 296 pgTAP assertions, 92 application tests,
+six anonymous HTTP integration tests, database lint, typecheck, ESLint,
+formatting, `git diff --check`, and Web/iOS/Android Expo exports passed. The
+verification used only fixtures and local Supabase; it made no Google request
+and applied no real correction.
+
 ## Linting / Formatting
 
 - `npm run typecheck` runs strict TypeScript checking without emitting files.

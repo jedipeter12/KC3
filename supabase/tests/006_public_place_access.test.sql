@@ -112,7 +112,8 @@ select ok(
         ('public.place_google_data'),
         ('public.place_details'),
         ('public.place_hours'),
-        ('public.place_overrides')
+        ('public.place_overrides'),
+        ('public.place_canonical_corrections')
     ) as tables(table_name)
     cross join (
       values ('select'), ('insert'), ('update'), ('delete')

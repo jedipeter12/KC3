@@ -86,7 +86,10 @@ select set_eq(
       and pg_class.relkind = 'r'
       and pg_class.relrowsecurity
   $$,
-  $$ values ('places'), ('place_google_data'), ('place_details'), ('place_hours'), ('place_overrides') $$,
+  $$ values
+    ('places'), ('place_google_data'), ('place_details'), ('place_hours'),
+    ('place_overrides'), ('place_canonical_corrections')
+  $$,
   'row level security is enabled on every approved public table'
 );
 
@@ -97,7 +100,7 @@ select set_eq(
     where schemaname = 'public'
       and tablename in (
         'places', 'place_google_data', 'place_details', 'place_hours',
-        'place_overrides'
+        'place_overrides', 'place_canonical_corrections'
       )
   $$,
   $$
@@ -113,7 +116,11 @@ select set_eq(
       ('place_detail_operator_reads_provider_identity'),
       ('place_detail_operator_reads_details'),
       ('place_detail_operator_inserts_details'),
-      ('place_detail_operator_updates_details')
+      ('place_detail_operator_updates_details'),
+      ('canonical_correction_operator_reads_active_provider_places'),
+      ('canonical_correction_operator_updates_active_provider_places'),
+      ('canonical_correction_operator_reads_provider_context'),
+      ('canonical_correction_operator_inserts_audit_rows')
   $$,
   'only the approved public-reader and server-operator policies open table rows'
 );
@@ -146,7 +153,8 @@ select ok(
         ('public.place_google_data'),
         ('public.place_details'),
         ('public.place_hours'),
-        ('public.place_overrides')
+        ('public.place_overrides'),
+        ('public.place_canonical_corrections')
     ) as tables(table_name)
     cross join (
       values ('select'), ('insert'), ('update'), ('delete')

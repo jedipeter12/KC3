@@ -43,6 +43,52 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-09-29 — Require sourced immutable evidence for canonical corrections
+
+**Status:** Accepted
+
+**Decision**
+
+Provide a separate attended TypeScript CLI for correcting only canonical place
+name, address, address precision, and place type on an existing active,
+provider-backed identity. Require a complete snapshot, expected place
+`updated_at`, authoritative HTTPS source, source observation date, explanatory
+notes, displayed before/after review, and exact confirmation. Commit the place
+update and an immutable evidence row atomically through a dedicated `NOLOGIN`,
+non-bypass-RLS owner with column-scoped privileges.
+
+**Context**
+
+The real-dataset review found provider-backed canonical anomalies that should be
+fixed at the data layer rather than hidden by UI heuristics. The Google importer
+intentionally preserves substantive canonical differences for operator review,
+while the place-detail operator cannot modify identity fields. Direct SQL would
+make review, repeatability, concurrency, and provenance depend on individual
+operator discipline.
+
+**Alternatives considered**
+
+- Silently clean provider strings in the client.
+- Let the Google importer accept substantive canonical changes automatically.
+- Expand the place-detail operator or Google importer owner.
+- Apply direct table updates without retained evidence.
+
+**Reasoning**
+
+A distinct narrow owner preserves the existing source boundaries and makes the
+allowed correction surface enforceable in PostgreSQL. Complete snapshots and
+optimistic concurrency bind confirmation to the values actually reviewed.
+Required immutable evidence explains why KC3 intentionally differs from current
+provider text and supports later auditing without altering provider history.
+
+**Consequences / follow-up**
+
+Operators must locate an authoritative source and supply evidence for every
+change. City, coordinates, timezone, lifecycle, movement, merge/create/delete,
+and place relationships remain unavailable and require separate decisions. Use
+the workflow for the reviewed dataset anomalies after verifying each final value;
+design host/tenant relationships separately.
+
 ### 2026-09-24 — Use a constrained attended boundary for KC3 detail curation
 
 **Status:** Accepted

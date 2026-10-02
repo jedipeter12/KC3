@@ -4,7 +4,7 @@ create extension if not exists pgtap with schema extensions;
 
 set local search_path = public, extensions;
 
-select plan(26);
+select plan(29);
 
 select set_eq(
   $$
@@ -18,7 +18,8 @@ select set_eq(
     ('place_google_data'),
     ('place_details'),
     ('place_hours'),
-    ('place_overrides')
+    ('place_overrides'),
+    ('place_canonical_corrections')
   $$,
   'the approved public tables exist without additional public tables'
 );
@@ -216,6 +217,20 @@ select set_eq(
   'place_overrides stores the effective-dated KC3 override contract'
 );
 
+select set_eq(
+  $$
+    select column_name::text
+    from information_schema.columns
+    where table_schema = 'public'
+      and table_name = 'place_canonical_corrections'
+  $$,
+  $$ values
+    ('id'), ('place_id'), ('before_values'), ('after_values'), ('source_url'),
+    ('source_observed_on'), ('correction_notes'), ('created_at')
+  $$,
+  'place_canonical_corrections stores immutable sourced before/after evidence'
+);
+
 select ok(
   exists (
     select 1 from pg_constraint
@@ -256,6 +271,15 @@ select ok(
   'place_overrides has a primary key'
 );
 
+select ok(
+  exists (
+    select 1 from pg_constraint
+    where conrelid = 'public.place_canonical_corrections'::regclass
+      and contype = 'p'
+  ),
+  'place_canonical_corrections has a primary key'
+);
+
 select is(
   (
     select count(*)::integer
@@ -264,14 +288,26 @@ select is(
       'public.place_google_data'::regclass,
       'public.place_details'::regclass,
       'public.place_hours'::regclass,
-      'public.place_overrides'::regclass
+      'public.place_overrides'::regclass,
+      'public.place_canonical_corrections'::regclass
     )
       and confrelid = 'public.places'::regclass
       and contype = 'f'
       and confdeltype = 'c'
   ),
-  4,
-  'all four dependent tables cascade when their place is deleted'
+  5,
+  'all five dependent tables cascade when their place is deleted'
+);
+
+select is(
+  (
+    select count(*)::integer
+    from pg_constraint
+    where conrelid = 'public.place_canonical_corrections'::regclass
+      and contype = 'c'
+  ),
+  3,
+  'canonical correction evidence requires HTTPS, notes, and an actual change'
 );
 
 select is(

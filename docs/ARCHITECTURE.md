@@ -24,6 +24,9 @@ used if an approved feature needs object storage. A separate operator-run
 TypeScript CLI performs bounded Google Places discovery and persists normalized
 records through a server-only transactional function; neither its Google key nor
 its Supabase service-role key is part of the Expo environment or import graph.
+Two additional attended TypeScript CLIs maintain KC3-owned details and bounded
+canonical corrections through separate least-privilege database owners. The
+canonical correction transaction also appends immutable source evidence.
 
 KC3-30 implements the richer anonymous summary/detail data boundary, effective
 regular-hours resolution, typed freshness states, address precision, and
@@ -145,6 +148,16 @@ use the ignored `dist/` directory.
   hours, or override mutation privilege. Complete-snapshot validation and an
   expected `updated_at` version prevent unsupported fields, partial writes, and
   stale attended overwrites.
+- Canonical correction operator CLI: An attended
+  `npm run edit:place-canonical` command searches the same active,
+  provider-backed identity boundary but can update only canonical name, address,
+  address precision, and place type. The complete snapshot requires an
+  authoritative HTTPS URL, source observation date, explanatory note, reviewed
+  diff, exact confirmation, and expected place `updated_at`. Its dedicated
+  `NOLOGIN`, non-bypass-RLS owner has column-level mutation access to those four
+  fields and insert-only access to correction evidence; city, provider values,
+  lifecycle, coordinates, timezone, details, hours, and overrides stay outside
+  the boundary. The place update and immutable audit insert are one transaction.
 - Google ingestion CLI: A manual `npm run ingest:google` entry point requires
   allowlisted MVP cities and KC3 place categories, caps pages and unique places,
   defaults to dry-run, and requires `--write` to persist. Text Search requests
@@ -174,7 +187,7 @@ use the ignored `dist/` directory.
 
 ## Data Model
 
-The approved MVP data model consists of five public tables:
+The approved MVP data model consists of six public tables:
 
 - `places`: Canonical physical-place identity and lifecycle. It has a UUID primary
   key, required name/city/address/place type, optional unique Google Place ID,
@@ -201,12 +214,17 @@ The approved MVP data model consists of five public tables:
   at the application boundary. An internal invoker-rights function resolves an
   active override using the accepted place IANA timezone and carries its own
   source observation timestamp.
+- `place_canonical_corrections`: Append-only evidence for attended canonical
+  corrections. Each row belongs to one place and records exact four-field
+  before/after snapshots, an authoritative HTTPS source, the source observation
+  date, explanatory notes, and creation time. The operator role can insert but
+  cannot update, delete, or directly read these rows.
 
 The public enum types include `place_type`, `place_status`, `address_precision`,
 `outlet_level`, `wifi_type`, `work_suitability`, `food_beverage_level`,
-`hours_source`, `regular_hours_state`, and `kc3_verification_state`. All
-five tables have creation/update timestamps; a shared trigger maintains
-`updated_at` automatically. Hours checks require valid weekday numbers, null
+`hours_source`, `regular_hours_state`, and `kc3_verification_state`. The five
+mutable tables have creation/update timestamps and a shared trigger maintains
+`updated_at`; the immutable correction log has only `created_at`. Hours checks require valid weekday numbers, null
 times for closed rows, both times for open rows, and forward same-day intervals.
 Coordinate pairs and Google
 rating/count/status/price shapes have database constraints.
@@ -219,6 +237,9 @@ only to values required to build the approved projections. The role is `NOLOGIN`
 and cannot bypass RLS. Default
 public-schema privileges for `postgres`-owned project migrations remain revoked
 so future project tables, sequences, and functions require intentional grants.
+Server-only operator RPC execution is granted to `service_role`, but each
+security-definer function is owned by its own narrower role; the gateway
+credential does not translate into broad privileges inside these functions.
 
 The local MVP seed uses stable UUIDs and insert-only conflict handling. It creates
 canonical `places` rows and unknown/unverified `place_details` shells only when
