@@ -43,6 +43,54 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-10-02 — Gate provider-backed launch on the content-rights audit
+
+**Status:** Accepted (audit finding and release gate; sourcing choice pending)
+
+**Decision**
+
+Treat the current persisted Google-backed dataset as uncleared for production.
+Complete the board's KC3-36 rights audit and require KC3-37 remediation before
+production backend deployment or final App Store content-rights declarations.
+The field inventory, current primary sources, account uncertainties, blockers,
+and implementation options are in
+[`KC3_36_PROVIDER_CONTENT_AUDIT.md`](KC3_36_PROVIDER_CONTENT_AUDIT.md).
+
+**Context**
+
+The repository's Google ingestion contract specifies technical ownership and
+integrity rules but did not establish production content permissions. The audit
+finds indefinite provider retention and canonical/history copies, missing
+source/attribution transport, provider-derived Apple Maps queries, and unresolved
+directory/native speech authorization. Billing region and the actual accepted
+agreement are not established by repository evidence. Earlier repository
+canonical-correction work reused the KC3-36 number; it is separate from the
+board's audit ticket and remains completed historical work.
+
+**Alternatives considered**
+
+- Assume canonical naming, operator confirmation, attribution, or frequent
+  refresh alone clears the existing architecture.
+- Replace ingestion/storage immediately without a Product Owner sourcing choice.
+- Record the findings and gate production while KC3-37 resolves them.
+
+**Reasoning**
+
+The third option makes the launch conflict explicit while respecting the audit's
+scope and preserving existing KC3-owned work. Possible independent sourcing,
+conditional live integration, and additional written rights have different
+coverage, cost, and permission requirements; none is silently approved here.
+
+**Consequences / follow-up**
+
+KC3-37 must record the chosen strategy, establish account/region permissions,
+implement field provenance and allowed retention/display/navigation, address
+secondary copies and immutable audit history safely, and verify preservation of
+KC3 enrichment. KC3-39 and final privacy/content-rights disclosures remain
+dependent on that work. KC3-34 native accessibility evidence remains open.
+Existing technical ingestion decisions describe implementation behavior; they
+must not be interpreted as provider licensing clearance.
+
 ### 2026-09-29 — Require sourced immutable evidence for canonical corrections
 
 **Status:** Accepted
