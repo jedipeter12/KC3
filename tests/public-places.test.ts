@@ -1,4 +1,5 @@
 import { supabase } from "../src/lib/supabase";
+import { PUBLIC_REQUEST_TIMEOUT_MS } from "../src/data/publicRequest";
 import {
   getPublicPlaceDetail,
   listPublicPlaceSummaries,
@@ -14,6 +15,7 @@ jest.mock("../src/lib/supabase", () => ({
 }));
 
 const mockRpc = supabase.rpc as jest.Mock;
+const mockReply = jest.fn();
 
 const summaryFixture = {
   id: "00000000-0000-0000-0000-000000000001",
@@ -41,10 +43,54 @@ const summaryFixture = {
 describe("public place data layer", () => {
   beforeEach(() => {
     mockRpc.mockReset();
+    mockReply.mockReset();
+    mockRpc.mockImplementation(() => ({ abortSignal: () => mockReply() }));
+  });
+
+  afterEach(() => jest.useRealTimers());
+
+  it.each([
+    ["legacy list", (signal?: AbortSignal) => listPublicPlaces(signal)],
+    [
+      "summary list",
+      (signal?: AbortSignal) => listPublicPlaceSummaries(signal),
+    ],
+    [
+      "details",
+      (signal?: AbortSignal) => getPublicPlaceDetail(summaryFixture.id, signal),
+    ],
+  ])("settles and sanitizes a stalled %s request", async (_name, load) => {
+    jest.useFakeTimers();
+    mockReply.mockImplementation(() => new Promise(() => {}));
+    const assertion = expect(load()).rejects.toMatchObject({
+      code: PUBLIC_PLACES_ERROR_CODE,
+      message: PUBLIC_PLACES_ERROR_MESSAGE,
+    });
+    await jest.advanceTimersByTimeAsync(PUBLIC_REQUEST_TIMEOUT_MS);
+    await assertion;
+  });
+
+  it("passes cancellation to the Supabase transport without exposing abort details", async () => {
+    const controller = new AbortController();
+    const abortSignal = jest.fn(
+      (_signal: AbortSignal) => new Promise(() => {}),
+    );
+    mockRpc.mockReturnValue({ abortSignal });
+    const assertion = expect(
+      listPublicPlaceSummaries(controller.signal),
+    ).rejects.toMatchObject({
+      code: PUBLIC_PLACES_ERROR_CODE,
+      message: PUBLIC_PLACES_ERROR_MESSAGE,
+    });
+    const transportSignal = abortSignal.mock
+      .calls[0][0] as unknown as AbortSignal;
+    controller.abort();
+    await assertion;
+    expect(transportSignal.aborted).toBe(true);
   });
 
   it("calls the public RPC and preserves its ordering and exact projection", async () => {
-    mockRpc.mockResolvedValue({
+    mockReply.mockResolvedValue({
       data: [
         {
           id: "00000000-0000-0000-0000-000000000002",
@@ -86,14 +132,14 @@ describe("public place data layer", () => {
   });
 
   it("returns an empty array for a successful empty response", async () => {
-    mockRpc.mockResolvedValue({ data: [], error: null });
+    mockReply.mockResolvedValue({ data: [], error: null });
 
     await expect(listPublicPlaces()).resolves.toEqual([]);
   });
 
   it("sanitizes provider errors", async () => {
     const providerDetails = "database credential and internal relation name";
-    mockRpc.mockResolvedValue({
+    mockReply.mockResolvedValue({
       data: null,
       error: { message: providerDetails },
     });
@@ -115,7 +161,7 @@ describe("public place data layer", () => {
     ["a non-array response", {}],
     ["a malformed place", [{ id: "missing-approved-fields" }]],
   ])("sanitizes %s", async (_description, data) => {
-    mockRpc.mockResolvedValue({ data, error: null });
+    mockReply.mockResolvedValue({ data, error: null });
 
     await expect(listPublicPlaces()).rejects.toMatchObject({
       code: PUBLIC_PLACES_ERROR_CODE,
@@ -125,7 +171,7 @@ describe("public place data layer", () => {
 
   it("sanitizes rejected provider requests", async () => {
     const providerDetails = "fetch failed for a private endpoint";
-    mockRpc.mockRejectedValue(new Error(providerDetails));
+    mockReply.mockRejectedValue(new Error(providerDetails));
 
     const request = listPublicPlaces();
 
@@ -139,7 +185,7 @@ describe("public place data layer", () => {
   });
 
   it("validates and narrows the expanded summary projection", async () => {
-    mockRpc.mockResolvedValue({
+    mockReply.mockResolvedValue({
       data: [{ ...summaryFixture, google_place_id: "must not escape" }],
       error: null,
     });
@@ -149,7 +195,7 @@ describe("public place data layer", () => {
   });
 
   it("loads a detail with normalized weekly rows", async () => {
-    mockRpc.mockResolvedValue({
+    mockReply.mockResolvedValue({
       data: [
         {
           ...summaryFixture,
@@ -204,7 +250,7 @@ describe("public place data layer", () => {
   });
 
   it("returns null when a detail ID is unavailable", async () => {
-    mockRpc.mockResolvedValue({ data: [], error: null });
+    mockReply.mockResolvedValue({ data: [], error: null });
 
     await expect(getPublicPlaceDetail("missing")).resolves.toBeNull();
   });
@@ -253,7 +299,7 @@ describe("public place data layer", () => {
       () => getPublicPlaceDetail(summaryFixture.id),
     ],
   ])("sanitizes %s", async (_description, data, request) => {
-    mockRpc.mockResolvedValue({ data, error: null });
+    mockReply.mockResolvedValue({ data, error: null });
 
     await expect(request()).rejects.toMatchObject({
       code: PUBLIC_PLACES_ERROR_CODE,

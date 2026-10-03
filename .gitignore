@@ -1,6 +1,9 @@
 # macOS Finder metadata
 .DS_Store
 
+# Generated review workbooks and licensed data snapshots (not source code)
+outputs/
+
 # Logs
 logs
 *.log

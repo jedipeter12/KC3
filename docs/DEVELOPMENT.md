@@ -51,6 +51,11 @@ inspection and direct actions are useful for practical checks, but they do not
 replace a user-attended VoiceOver pass with actual spoken output and VoiceOver
 gestures.
 
+VoiceOver itself is unavailable in iOS Simulator. Use a physical iPhone for a
+claimed VoiceOver pass; Simulator accessibility inspection cannot substitute for
+it. See Apple's [Performing accessibility testing for your
+app](https://developer.apple.com/documentation/accessibility/performing-accessibility-testing-for-your-app).
+
 ### Local Android emulator setup
 
 The KC3-31 native pass used the following Apple-silicon Homebrew toolchain:
@@ -85,6 +90,20 @@ adb reverse tcp:54321 tcp:54321
 Replace `8085` with the actual Expo port. The Supabase tunnel is required for the
 app's `127.0.0.1:54321` public API URL; without it, the app intentionally reaches
 the sanitized retry state.
+
+For a user-attended TalkBack evidence recording, enable TalkBack's developer
+“Display speech output” option and use macOS Screen Recording with the Mac's
+built-in microphone selected. Keep the emulator and speakers in the selected
+recording region so the file contains focus, speech text, and audio. Expo Go
+development banners can enter TalkBack traversal; dismiss and identify them as
+Expo Go UI rather than KC3. Restore TalkBack, notification permissions, font
+scale, and any temporary rooted adb state after the pass.
+
+The Android Emulator Extended Controls recorder stopped at 180 seconds during
+the 2026-09-29 KC3-34 pass and did not retain the overlong attempts. When using
+that recorder, split the checklist into clips shorter than 180 seconds and save
+each WebM immediately before starting the next clip. Do not rely on one long
+recording for the attended pass.
 
 ## Building
 
@@ -225,6 +244,76 @@ focused Web pressed-state and iOS announcement regression tests.
 The approved Supabase RPC authorization behavior is tested at the PostgreSQL role
 level with pgTAP and over the local Data API with the Jest smoke suite. Component
 tests use React Native Testing Library. No end-to-end framework has been selected.
+
+## KC3-37 Read-only Content Inventory
+
+From a trusted local administrator session, run the aggregate inventory without
+resetting or modifying the current dataset:
+
+```sh
+docker exec -i supabase_db_KC3 psql -X -U postgres -d postgres -v ON_ERROR_STOP=1 \
+  < supabase/audits/kc3_37_content_inventory.sql
+```
+
+The SQL uses a repeatable-read, read-only transaction and rolls back. It prints
+counts for canonical/provider copies, hours, details, overrides, correction
+history, and populated provider columns without returning content or credentials.
+Matching values are review candidates, not proof of source or permission. This
+does not inventory external logs, dumps, backups, or other target databases.
+See [`KC3_37_REMEDIATION_PLAN.md`](KC3_37_REMEDIATION_PLAN.md) for the local
+baseline, accepted Overture direction, and implementation/verification sequence.
+The separate [alternate-source evaluation](KC3_37_SOURCE_EVALUATION.md) documents
+standalone DuckDB research queries under `scripts/research/`. These query an
+Overture release into a disposable scratch database; they are not Supabase
+migrations, project runtime dependencies, or an approved import path.
+
+## Overture Review Preparation and Import Staging
+
+The Product Owner selected Overture Places on 2026-10-02. Follow
+[`OVERTURE_REVIEW.md`](OVERTURE_REVIEW.md) for the workbook, separate amber/blue
+verification/missing flags, Ready/Pending/Exclude states, independent evidence,
+weekly hours, and private staging contract. The public directory and old Google
+copies have not been migrated by this preparation.
+
+`npm run prepare:overture-review -- regional.json output-directory` writes
+licensed candidate manifests and CSV templates without database access.
+`npm run import:overture-review -- manifest.json places.csv hours.csv preview.json`
+validates partial review and creates an exact preview without credentials. Use a
+new preview filename when content changes; existing files are never overwritten.
+An identical preview can be reused for staging. `--stage` requires
+the literal batch-ID confirmation and server-only operator credentials after
+the staging migration is applied to an approved target. No anon/direct table
+write path exists. The current implementation supports release 2026-09-23.1;
+new releases need schema/license review. No Overture account or API key is needed.
+
+The staging migration and pgTAP tests can be combined and executed in one
+transaction ending in rollback on a target with the current preceding schema.
+Initialize pgTAP in `extensions` as the test does; do not reset the curated
+database just to test this path. Application checks include
+`tests/overture-review.test.ts`; database contract tests are
+`supabase/tests/014_overture_review_staging.test.sql`.
+
+## Offline Overture Reconciliation Planning
+
+Run `npm run plan:overture-reconciliation -- manifest.json places.csv hours.csv snapshot.json report.json`
+with reviewed CSVs and a complete permitted offline snapshot. Start with
+synthetic fixtures; this is not an authorization to export Google-backed data.
+There are no credentials, database reads/writes, automatic matches, ID
+allocation, or apply mode. The report filename must be new. See
+[Overture Reconciliation](OVERTURE_RECONCILIATION.md) for snapshot fields,
+conflicts, preservation verification, and remaining publication gates.
+
+Anonymous list/detail requests now settle within 15 seconds and abort their
+Supabase transport. Screen cleanup and replacement requests cancel obsolete
+loads; timeout failures keep the existing sanitized error and retry behavior.
+Focused tests use fake timers and deferred promises, not live outage simulation.
+
+The HTTP integration suite requires the complete current migration set,
+including Overture staging. It checks direct anonymous read denial for all seven
+private tables and execution denial for eight privileged RPCs. An absent table
+or function, network failure, or payload validation error cannot substitute for
+the expected HTTP 401 / PostgreSQL `42501` permission error. Mutation probes
+use invalid payloads so accidental grants cannot apply a valid edit.
 
 ## Manual Google Places Ingestion
 

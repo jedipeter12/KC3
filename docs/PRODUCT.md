@@ -34,6 +34,14 @@ and final App Store content-rights/privacy disclosures. No alternate provider or
 changed discovery scope is approved by the audit. See
 [`KC3_36_PROVIDER_CONTENT_AUDIT.md`](KC3_36_PROVIDER_CONTENT_AUDIT.md).
 
+**Sourcing choice, 2026-10-02:** The Product Owner selected Overture Places as
+the starting directory source, with manual spreadsheet review and independently
+maintained hours. Review uses amber verification flags and blue missing-value
+flags, plus text labels. Partial review is supported. Only reviewed Ready rows
+enter private staging; missing hours remain unknown. This does not publish the
+candidate set or complete the current Google-data remediation. Cities, place
+types, suitability meanings, and the existing hours-freshness rules stay intact.
+
 ### Included
 
 - A Supabase data foundation for individual places, Google-sourced metadata,

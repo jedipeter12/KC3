@@ -6,11 +6,18 @@ KC3 is a planned app for finding third places in the Kansas City metro area.
 
 - Stage: Implemented real-data-driven place list/detail slice over the approved
   anonymous public contract and refresh-verified local MVP dataset
-- Current focus: Complete the user-attended VoiceOver and TalkBack verification
-  tracked in KC3-34 for the KC3-21/KC3-23 release gate.
+- Current state: KC3-35's operator workflow is complete. KC3-34 accessibility
+  work is on hold at the Product Owner's request as of 2026-10-02; its
+  KC3-21/KC3-23 release gate remains open.
 - Production gate: KC3-36's provider-content rights audit is complete; KC3-37
   must resolve sourcing, retention, attribution, and use permissions before
   deploying the Google-backed architecture or finalizing App Store disclosures.
+  KC3-37 now uses the approved Overture starting-source direction. Spreadsheet
+  review and private import staging are prepared; launch cutover remains open. See
+  [`docs/KC3_37_REMEDIATION_PLAN.md`](docs/KC3_37_REMEDIATION_PLAN.md).
+  Overture coverage and source-quality research is recorded in
+  [`docs/KC3_37_SOURCE_EVALUATION.md`](docs/KC3_37_SOURCE_EVALUATION.md).
+  Review/import instructions: [`docs/OVERTURE_REVIEW.md`](docs/OVERTURE_REVIEW.md).
 - Latest tooling milestone: the attended KC3 place-detail CLI safely searches
   provider-backed records and maintains only KC3-owned suitability and
   verification data behind explicit validation, review, and confirmation. A

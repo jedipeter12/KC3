@@ -1,3 +1,4 @@
+import { publicRequest } from "./publicRequest";
 import { supabase } from "../lib/supabase";
 import type {
   AddressPrecision,
@@ -236,9 +237,15 @@ function toPublicPlaceDetail(value: unknown): PublicPlaceDetail {
  * successful empty result; provider failures and malformed responses use the
  * same safe application error without retaining provider details.
  */
-export async function listPublicPlaces(): Promise<PublicPlace[]> {
+export async function listPublicPlaces(
+  signal?: AbortSignal,
+): Promise<PublicPlace[]> {
   try {
-    const { data, error } = await supabase.rpc("list_public_places");
+    const { data, error } = await publicRequest(
+      (requestSignal) =>
+        supabase.rpc("list_public_places").abortSignal(requestSignal),
+      signal,
+    );
 
     if (error || !Array.isArray(data)) {
       throw new PublicPlacesError();
@@ -254,11 +261,15 @@ export async function listPublicPlaces(): Promise<PublicPlace[]> {
   }
 }
 
-export async function listPublicPlaceSummaries(): Promise<
-  PublicPlaceSummary[]
-> {
+export async function listPublicPlaceSummaries(
+  signal?: AbortSignal,
+): Promise<PublicPlaceSummary[]> {
   try {
-    const { data, error } = await supabase.rpc("list_public_place_summaries");
+    const { data, error } = await publicRequest(
+      (requestSignal) =>
+        supabase.rpc("list_public_place_summaries").abortSignal(requestSignal),
+      signal,
+    );
 
     if (error || !Array.isArray(data)) {
       throw new PublicPlacesError();
@@ -273,11 +284,16 @@ export async function listPublicPlaceSummaries(): Promise<
 
 export async function getPublicPlaceDetail(
   placeId: string,
+  signal?: AbortSignal,
 ): Promise<PublicPlaceDetail | null> {
   try {
-    const { data, error } = await supabase.rpc("get_public_place_detail", {
-      target_place_id: placeId,
-    });
+    const { data, error } = await publicRequest(
+      (requestSignal) =>
+        supabase
+          .rpc("get_public_place_detail", { target_place_id: placeId })
+          .abortSignal(requestSignal),
+      signal,
+    );
 
     if (error || !Array.isArray(data) || data.length > 1) {
       throw new PublicPlacesError();

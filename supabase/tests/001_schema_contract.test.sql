@@ -19,7 +19,8 @@ select set_eq(
     ('place_details'),
     ('place_hours'),
     ('place_overrides'),
-    ('place_canonical_corrections')
+    ('place_canonical_corrections'),
+    ('overture_review_batches')
   $$,
   'the approved public tables exist without additional public tables'
 );

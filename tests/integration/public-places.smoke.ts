@@ -153,11 +153,53 @@ it("applies production search and city/type filters to the live RPC dataset", as
   }
 });
 
-it("denies direct anonymous access to places with a permission error", async () => {
-  // Intentionally probe an API excluded from the production Database type.
+it.each([
+  "places",
+  "place_google_data",
+  "place_details",
+  "place_hours",
+  "place_overrides",
+  "place_canonical_corrections",
+  "overture_review_batches",
+])(
+  "denies direct anonymous reads of %s with an explicit permission error",
+  async (table) => {
+    const { data, error, status } = await supabase
+      .from(table as never)
+      .select("*")
+      .abortSignal(AbortSignal.timeout(5000));
+    expect(data).toBeNull();
+    expect(status).toBe(401);
+    expect(error?.code).toBe("42501");
+  },
+);
+
+// Invalid payloads ensure a broken grant cannot turn these probes into edits.
+// Validation errors and missing endpoints must not satisfy the permission assertion.
+it.each([
+  ["kc3_google_import_state", {}],
+  ["kc3_import_google_place", { payload: {} }],
+  ["kc3_reconcile_google_place", { payload: {} }],
+  [
+    "kc3_search_places_for_details",
+    { name_query: "Fixture", city_query: "Lenexa" },
+  ],
+  [
+    "kc3_upsert_place_details",
+    { target_place_id: "00000000-0000-0000-0000-000000000000", payload: {} },
+  ],
+  [
+    "kc3_search_places_for_canonical_correction",
+    { name_query: "Fixture", city_query: "Lenexa" },
+  ],
+  [
+    "kc3_correct_canonical_place",
+    { target_place_id: "00000000-0000-0000-0000-000000000000", payload: {} },
+  ],
+  ["kc3_stage_overture_review", { batch: {} }],
+])("denies anonymous execution of %s", async (name, args) => {
   const { data, error, status } = await supabase
-    .from("places" as never)
-    .select("*")
+    .rpc(name as never, args as never)
     .abortSignal(AbortSignal.timeout(5000));
   expect(data).toBeNull();
   expect(status).toBe(401);

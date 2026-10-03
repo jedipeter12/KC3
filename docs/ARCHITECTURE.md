@@ -13,6 +13,29 @@ KC3-37 must select and implement an evidenced sourcing/retention/display strateg
 before KC3-39 deploys the production backend. The audit makes no framework or
 database replacement and does not itself implement remediation.
 
+**KC3-37 selected direction (2026-10-02):** Overture Places is the approved
+starting source, followed by attended spreadsheet review and independently
+sourced hours. `overtureReview.ts` prepares licensed candidates and compiles
+reviewed CSVs against an original manifest. The service-only
+`kc3_stage_overture_review(jsonb)` accepts bounded reviewed batches in the
+private RLS-protected `overture_review_batches` table. Its dedicated NOLOGIN,
+non-bypass-RLS owner can only select/insert staging and read canonical IDs.
+It has no canonical/KC3/history write privileges. Batches are append-only and
+repeatable by content-derived identity; mismatched repeats fail. Pending and
+Exclude rows are skipped; incomplete Ready rows fail validation before a write.
+This is a staging boundary, not the launch cutover. Exact ID reconciliation,
+source-aware public contracts, operator eligibility, Google/history/secondary
+copy retirement, and final attribution/navigation remain KC3-37 work after
+review. No direct base-table client access or new framework is introduced.
+
+A separate offline TypeScript reconciliation planner compiles the same reviewed
+CSVs and compares them with an explicitly supplied complete snapshot. It reports
+explicit ID matches, unresolved new identities, changed field names, protected
+value hashes, expected versions, and conflicts without database access or
+publication. Exact before/after preservation verification covers KC3 details,
+KC3 hours, overrides, correction evidence, hidden decisions, city, and move
+links. See [Overture Reconciliation](OVERTURE_RECONCILIATION.md).
+
 KC3 has an Expo SDK 57 TypeScript client targeting React Native and Expo Web, but
 no deployed architecture yet. Application code lives in `src/`, a root entry
 point registers the app, and application tests live separately in `tests/`. The
@@ -145,7 +168,9 @@ use the ignored `dist/` directory.
   `get_public_place_detail(uuid)`. The data layer validates both operations,
   narrows every response to its exact public
   shape, and converts provider or malformed responses to a stable application
-  error without retaining provider details.
+  error without retaining provider details. Anonymous requests have a 15-second
+  deadline and abort their transport; list/detail cleanup and superseding loads
+  cancel requests while existing request IDs guard against late UI updates.
 - Supabase backend: Approved platform for backend services, database, and
   authentication. The initial public place schema is defined in a versioned
   migration. The first anonymous read RPC is implemented; authenticated and

@@ -14,6 +14,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "ingest:google": "node --env-file-if-exists=.env.local --import tsx scripts/import-google-places.ts",
+    "prepare:overture-review": "node --import tsx scripts/prepare-overture-review.ts",
+    "import:overture-review": "node --env-file-if-exists=.env.local --import tsx scripts/import-overture-review.ts",
     "edit:place-canonical": "node --env-file-if-exists=.env.local --import tsx scripts/edit-place-canonical.ts",
     "edit:place-details": "node --env-file-if-exists=.env.local --import tsx scripts/edit-place-details.ts",
     "typecheck": "tsc --noEmit",
@@ -25,7 +27,8 @@
     "export": "expo export --platform all --output-dir dist",
     "test": "npm run test:db",
     "test:db": "supabase test db --local",
-    "lint:db": "supabase db lint --local --schema public --level warning --fail-on warning"
+    "lint:db": "supabase db lint --local --schema public --level warning --fail-on warning",
+    "plan:overture-reconciliation": "node --import tsx scripts/plan-overture-reconciliation.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",

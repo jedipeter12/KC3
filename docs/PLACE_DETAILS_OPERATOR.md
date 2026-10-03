@@ -93,3 +93,29 @@ For local testing, include missing rows, partial rows, already-verified rows,
 duplicate-looking results, cancellation, invalid values, and each of Lenexa,
 Overland Park, and Olathe. Database regression coverage also snapshots protected
 identity, provider, and hours rows around supported updates.
+
+## KC3-35 delivery and tracker reconciliation
+
+The [KC3-35 ticket](https://app.notion.com/3e635ab73db38141b093fcd3e9627ee8)
+was implemented by commit `2a21d01` and merged in
+[PR #18](https://github.com/jedipeter12/KC3/pull/18) on 2026-09-24
+(America/Chicago), as merge commit `2b2155a`. Both Application checks and
+Database checks passed before merge, including the configured production
+exports and local Supabase integration checks.
+
+On 2026-10-02, the Product Owner requested KC3-35 while holding accessibility
+work. The ticket still said Not started although the repository recorded it as
+complete. Review confirmed the existing implementation covers its scope; no
+replacement CLI or new public surface was needed. The tracker was reconciled
+with the delivered work and its acceptance criteria.
+
+The focused recheck passed TypeScript, ESLint, formatting, all five operator
+runner tests, CLI help invocation, all 296 pgTAP assertions across 13 database
+files (including the 30 detail-operator assertions), and database lint. Tests
+used the running local database without resetting the curated dataset; pgTAP
+fixtures roll back their writes. This supplemental check used the host's
+Node.js 26.7.0 and npm 11.19.0; the original successful CI used the repository
+runtime pin. No factual suitability values or verification dates were entered
+for real places during the recheck. Accessibility remains on hold with its
+release requirements open, and launch-data population remains separate KC3-40
+work requiring real verification evidence.

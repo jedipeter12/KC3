@@ -56,6 +56,62 @@ function deferred<Value>() {
 describe("place-list screen", () => {
   afterEach(() => jest.restoreAllMocks());
 
+  it("cancels superseded and unmounted list loads and ignores late responses", async () => {
+    const initial = deferred<PublicPlaceSummary[]>();
+    let firstSignal: AbortSignal | undefined;
+    const first = jest.fn((signal?: AbortSignal) => {
+      firstSignal = signal;
+      return initial.promise;
+    });
+    const { rerender, unmount } = await render(
+      <PlaceListScreen loadPlaces={first} />,
+    );
+    let nextSignal: AbortSignal | undefined;
+    const next = jest.fn(async (signal?: AbortSignal) => {
+      nextSignal = signal;
+      return [PLACES[0]];
+    });
+    await rerender(<PlaceListScreen loadPlaces={next} />);
+    await screen.findByText("Second Place");
+    expect(firstSignal?.aborted).toBe(true);
+    await act(async () => initial.resolve(PLACES));
+    expect(screen.queryByText(PLACES[1].name)).not.toBeOnTheScreen();
+    await unmount();
+    expect(nextSignal?.aborted).toBe(true);
+  });
+
+  it("cancels detail requests on place changes and ignores old results", async () => {
+    const old = deferred<ReturnType<typeof makePlaceDetail>>();
+    const signals: AbortSignal[] = [];
+    const load = jest.fn((placeId: string, signal?: AbortSignal) => {
+      signals.push(signal!);
+      return placeId === PLACES[0].id
+        ? old.promise
+        : Promise.resolve(makePlaceDetail(PLACES[1]));
+    });
+    const { rerender, unmount } = await render(
+      <PlaceDetailScreen
+        placeId={PLACES[0].id}
+        loadPlaceDetail={load}
+        onBack={() => {}}
+      />,
+    );
+    await rerender(
+      <PlaceDetailScreen
+        placeId={PLACES[1].id}
+        loadPlaceDetail={load}
+        onBack={() => {}}
+      />,
+    );
+    await screen.findByText("Good to know");
+    expect(signals[0].aborted).toBe(true);
+    await act(async () => old.resolve(makePlaceDetail(PLACES[0])));
+    expect(screen.queryByText("Second Place")).not.toBeOnTheScreen();
+    expect(screen.getByText(PLACES[1].name)).toBeOnTheScreen();
+    await unmount();
+    expect(signals[1].aborted).toBe(true);
+  });
+
   it("renders compact summary cards and hides drive-thru-only places by default", async () => {
     await render(<PlaceListScreen loadPlaces={async () => PLACES} />);
     await screen.findByText("Second Place");
@@ -70,7 +126,22 @@ describe("place-list screen", () => {
     expect(screen.queryByText("Drive-through Place")).not.toBeOnTheScreen();
   });
 
-  it("adds addresses to same-name, same-city card labels", async () => {
+  it("includes addresses in every card label", async () => {
+    await render(<PlaceListScreen loadPlaces={async () => PLACES} />);
+
+    expect(
+      await screen.findByRole("link", {
+        name: /Second Place, Library, Olathe, 2 Main St, Open 24 hours, Good for working, Public Wi-Fi/,
+      }),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByRole("link", {
+        name: /First Place, Coffee shop, Lenexa, 1 Main St, Hours unavailable, KC3 details not yet verified/,
+      }),
+    ).toBeOnTheScreen();
+  });
+
+  it("keeps addresses in same-name, same-city card labels", async () => {
     const duplicate = makePlaceSummary({
       address: "99 Other St",
       id: "00000000-0000-0000-0000-000000000099",
@@ -200,7 +271,10 @@ describe("place-list screen", () => {
       "value",
       "second",
     );
-    expect(loadPlaceDetail).toHaveBeenCalledWith(PLACES[0].id);
+    expect(loadPlaceDetail).toHaveBeenCalledWith(
+      PLACES[0].id,
+      expect.any(AbortSignal),
+    );
   });
 
   it("restores list position when browser Back returns from details", async () => {
@@ -359,7 +433,7 @@ describe("place-list screen", () => {
         "Check back soon as we add more Lenexa, Overland Park, and Olathe third places.",
       ),
     ).toBeOnTheScreen();
-    unmount();
+    await unmount();
 
     await render(
       <PlaceListScreen

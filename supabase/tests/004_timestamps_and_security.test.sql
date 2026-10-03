@@ -88,7 +88,7 @@ select set_eq(
   $$,
   $$ values
     ('places'), ('place_google_data'), ('place_details'), ('place_hours'),
-    ('place_overrides'), ('place_canonical_corrections')
+    ('place_overrides'), ('place_canonical_corrections'), ('overture_review_batches')
   $$,
   'row level security is enabled on every approved public table'
 );
@@ -100,7 +100,7 @@ select set_eq(
     where schemaname = 'public'
       and tablename in (
         'places', 'place_google_data', 'place_details', 'place_hours',
-        'place_overrides', 'place_canonical_corrections'
+        'place_overrides', 'place_canonical_corrections', 'overture_review_batches'
       )
   $$,
   $$
@@ -120,7 +120,10 @@ select set_eq(
       ('canonical_correction_operator_reads_active_provider_places'),
       ('canonical_correction_operator_updates_active_provider_places'),
       ('canonical_correction_operator_reads_provider_context'),
-      ('canonical_correction_operator_inserts_audit_rows')
+      ('canonical_correction_operator_inserts_audit_rows'),
+      ('overture_staging_reads_target_ids'),
+      ('overture_staging_reads'),
+      ('overture_staging_inserts')
   $$,
   'only the approved public-reader and server-operator policies open table rows'
 );
@@ -154,7 +157,8 @@ select ok(
         ('public.place_details'),
         ('public.place_hours'),
         ('public.place_overrides'),
-        ('public.place_canonical_corrections')
+        ('public.place_canonical_corrections'),
+        ('public.overture_review_batches')
     ) as tables(table_name)
     cross join (
       values ('select'), ('insert'), ('update'), ('delete')

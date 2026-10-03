@@ -440,3 +440,18 @@ interactions, large text, and spoken screen-reader checks remain incomplete.
 - Responsive interaction check: passed at 1280×800 and 390×844 with local place
   fixtures; combined filters, no-match behavior, clearing, and a clean browser
   console were verified.
+
+## Background readiness verification, 2026-10-03
+
+Focused tests cover public request deadlines, transport/caller cancellation,
+retry and late-response protection; offline reconciliation with explicit ID
+mappings, hidden/city/move/hour conflicts, incomplete snapshots, exact
+protected-value changes, row-order-independent comparison, and exclusive CLI
+report creation. The planner uses synthetic data and performs no database call.
+
+HTTP integration checks now require explicit anonymous permission denials for
+seven private tables and eight privileged RPCs, alongside the existing public
+contract tests. The schema/RLS/policy allowlists now include the approved private
+Overture staging table and its dedicated policies. These updates preserve exact
+allowlists rather than weakening the security assertions. Database tests run on
+a separate disposable local stack, never a reset of the curated KC3 dataset.
