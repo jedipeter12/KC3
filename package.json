@@ -27,7 +27,8 @@
     "export": "expo export --platform all --output-dir dist",
     "test": "npm run test:db",
     "test:db": "supabase test db --local",
-    "lint:db": "supabase db lint --local --schema public --level warning --fail-on warning"
+    "lint:db": "supabase db lint --local --schema public --level warning --fail-on warning",
+    "plan:overture-reconciliation": "node --import tsx scripts/plan-overture-reconciliation.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.115.0",

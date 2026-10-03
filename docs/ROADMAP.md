@@ -74,6 +74,13 @@ starting source with spreadsheet review and independently maintained hours.
 
 ## Completed
 
+- [x] 2026-10-03 background readiness: offline Overture reconciliation planner
+  and exact protected-snapshot verification, bounded/cancellable anonymous
+  list/detail requests, and expanded HTTP authorization regression coverage.
+  The planner requires explicit mappings and never publishes, merges, clears
+  hours, or retires records; see `docs/OVERTURE_RECONCILIATION.md`. KC3-37
+  cutover and all release gates remain open.
+
 - [x] KC3-36 (Notion board): Audit Google Maps/Places launch data rights and
   attribution. The 2026-10-02 audit inventories every provider field and copy,
   checks current Google/Apple sources, identifies release blockers, and gives

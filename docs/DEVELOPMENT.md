@@ -293,6 +293,28 @@ database just to test this path. Application checks include
 `tests/overture-review.test.ts`; database contract tests are
 `supabase/tests/014_overture_review_staging.test.sql`.
 
+## Offline Overture Reconciliation Planning
+
+Run `npm run plan:overture-reconciliation -- manifest.json places.csv hours.csv snapshot.json report.json`
+with reviewed CSVs and a complete permitted offline snapshot. Start with
+synthetic fixtures; this is not an authorization to export Google-backed data.
+There are no credentials, database reads/writes, automatic matches, ID
+allocation, or apply mode. The report filename must be new. See
+[Overture Reconciliation](OVERTURE_RECONCILIATION.md) for snapshot fields,
+conflicts, preservation verification, and remaining publication gates.
+
+Anonymous list/detail requests now settle within 15 seconds and abort their
+Supabase transport. Screen cleanup and replacement requests cancel obsolete
+loads; timeout failures keep the existing sanitized error and retry behavior.
+Focused tests use fake timers and deferred promises, not live outage simulation.
+
+The HTTP integration suite requires the complete current migration set,
+including Overture staging. It checks direct anonymous read denial for all seven
+private tables and execution denial for eight privileged RPCs. An absent table
+or function, network failure, or payload validation error cannot substitute for
+the expected HTTP 401 / PostgreSQL `42501` permission error. Mutation probes
+use invalid payloads so accidental grants cannot apply a valid edit.
+
 ## Manual Google Places Ingestion
 
 The KC3-25 importer is an operator-run command, not an application feature or

@@ -154,3 +154,11 @@ canonical/provider/hours/history and secondary copies, prevention of old
 import/restore resurrection, and full application/database/integration/platform
 verification. Keep the applicable Google agreement/internal-export check open;
 do not use it as a prerequisite for this independent-source workbook.
+
+## Dry-run reconciliation follow-up, 2026-10-03
+
+The reviewed CSV compiler now also feeds an offline reconciliation planner.
+It requires a complete permitted snapshot, reports explicit ID matches and
+conflicts, and never publishes or retires data. See
+[Overture Reconciliation](OVERTURE_RECONCILIATION.md). This does not complete
+spreadsheet review or authorize a Google-content export.

@@ -48,7 +48,10 @@ function openWithLinking(url: string): Promise<unknown> {
 
 export type PlaceDetailScreenProps = Readonly<{
   cachedSummary?: PublicPlaceSummary;
-  loadPlaceDetail?: (placeId: string) => Promise<PublicPlaceDetail | null>;
+  loadPlaceDetail?: (
+    placeId: string,
+    signal?: AbortSignal,
+  ) => Promise<PublicPlaceDetail | null>;
   onBack: () => void;
   openExternalUrl?: (url: string) => Promise<unknown>;
   placeId: string;
@@ -107,34 +110,42 @@ export function PlaceDetailScreen({
   const [mapsError, setMapsError] = useState(false);
   const headingRef = useRef<ComponentRef<typeof Text>>(null);
   const requestIdRef = useRef(0);
+  const requestControllerRef = useRef<AbortController | null>(null);
 
-  const requestDetail = useCallback(async () => {
+  const requestDetail = useCallback(() => {
+    requestControllerRef.current?.abort();
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
     const requestId = ++requestIdRef.current;
-    try {
-      const place = await loadPlaceDetail(placeId);
-      if (requestId !== requestIdRef.current) return;
-      setState(place ? { status: "loaded", place } : { status: "missing" });
-    } catch {
-      if (requestId === requestIdRef.current) setState({ status: "error" });
-    }
+    return Promise.resolve()
+      .then(() => loadPlaceDetail(placeId, controller.signal))
+      .then(
+        (result) => {
+          if (
+            requestId === requestIdRef.current &&
+            !controller.signal.aborted
+          ) {
+            setState(
+              result
+                ? { status: "loaded", place: result }
+                : { status: "missing" },
+            );
+          }
+        },
+        () => {
+          if (requestId === requestIdRef.current && !controller.signal.aborted)
+            setState({ status: "error" });
+        },
+      );
   }, [loadPlaceDetail, placeId]);
 
   useEffect(() => {
-    const requestId = ++requestIdRef.current;
-    void loadPlaceDetail(placeId).then(
-      (place) => {
-        if (requestId === requestIdRef.current) {
-          setState(place ? { status: "loaded", place } : { status: "missing" });
-        }
-      },
-      () => {
-        if (requestId === requestIdRef.current) setState({ status: "error" });
-      },
-    );
+    void requestDetail();
     return () => {
       requestIdRef.current += 1;
+      requestControllerRef.current?.abort();
     };
-  }, [loadPlaceDetail, placeId]);
+  }, [requestDetail]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {

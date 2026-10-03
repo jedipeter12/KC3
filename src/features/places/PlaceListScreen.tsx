@@ -74,8 +74,11 @@ type PlaceListState =
   | { status: "error" };
 
 export type PlaceListScreenProps = Readonly<{
-  loadPlaceDetail?: (placeId: string) => Promise<PublicPlaceDetail | null>;
-  loadPlaces?: () => Promise<PublicPlaceSummary[]>;
+  loadPlaceDetail?: (
+    placeId: string,
+    signal?: AbortSignal,
+  ) => Promise<PublicPlaceDetail | null>;
+  loadPlaces?: (signal?: AbortSignal) => Promise<PublicPlaceSummary[]>;
 }>;
 
 type FilterChipProps = Readonly<{
@@ -360,6 +363,7 @@ export function PlaceListScreen({
   const originScrollOffsetRef = useRef(0);
   const restorePendingRef = useRef(false);
   const requestIdRef = useRef(0);
+  const requestControllerRef = useRef<AbortController | null>(null);
 
   const loadedPlaces = state.status === "loaded" ? state.places : EMPTY_PLACES;
   const filterOptions = useMemo(
@@ -375,33 +379,36 @@ export function PlaceListScreen({
     ? visiblePlaces.findIndex((place) => place.id === originCardId)
     : -1;
 
-  const requestPlaces = useCallback(async () => {
+  const requestPlaces = useCallback(() => {
+    requestControllerRef.current?.abort();
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
     const requestId = ++requestIdRef.current;
-    try {
-      const places = await loadPlaces();
-      if (requestId === requestIdRef.current)
-        setState({ status: "loaded", places });
-    } catch {
-      if (requestId === requestIdRef.current) setState({ status: "error" });
-    }
+    return Promise.resolve()
+      .then(() => loadPlaces(controller.signal))
+      .then(
+        (result) => {
+          if (
+            requestId === requestIdRef.current &&
+            !controller.signal.aborted
+          ) {
+            setState({ status: "loaded", places: result });
+          }
+        },
+        () => {
+          if (requestId === requestIdRef.current && !controller.signal.aborted)
+            setState({ status: "error" });
+        },
+      );
   }, [loadPlaces]);
 
   useEffect(() => {
-    const requestId = ++requestIdRef.current;
-    void loadPlaces().then(
-      (places) => {
-        if (requestId === requestIdRef.current) {
-          setState({ status: "loaded", places });
-        }
-      },
-      () => {
-        if (requestId === requestIdRef.current) setState({ status: "error" });
-      },
-    );
+    void requestPlaces();
     return () => {
       requestIdRef.current += 1;
+      requestControllerRef.current?.abort();
     };
-  }, [loadPlaces]);
+  }, [requestPlaces]);
 
   useEffect(() => {
     if (Platform.OS !== "ios") return;
