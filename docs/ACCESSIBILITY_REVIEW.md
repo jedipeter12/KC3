@@ -221,3 +221,93 @@ This pass is proportional evidence, not a spoken assistive-technology audit.
 VoiceOver and TalkBack reading order, announcements, modal containment, and focus
 movement still require the user-attended KC3-34 pass. KC3-33 does not close or
 weaken that KC3-21/KC3-23 release gate.
+
+## KC3-34 User-attended TalkBack Pass — 2026-09-26
+
+KC3-34 remains in progress. A user-attended TalkBack pass ran on the Pixel 9
+Android 16 / API 36 Google APIs emulator with Expo Go 57.0.9, TalkBack from
+Android Accessibility Suite, font scale 1.0, the clean local 15-place seed, and
+the application revision based on `2b2155a`. A 5:29 macOS screen recording
+captured the emulator, TalkBack audio, focus indicator, and TalkBack's developer
+speech-output overlay. Accessibility-tree and direct-emulator checks were used
+only as supporting evidence where noted.
+
+Observed spoken behavior:
+
+- The list exposed “KC3, heading,” Search by name, the search edit box, the
+  result count, Filters as a button, and actionable place cards in a useful
+  order. Mixed-case `LiBrArY` input produced intelligible character echo and
+  live result-count changes, including 12 places after `L` and six after `Li`.
+- The first pass found that an ordinary card omitted its street address and the
+  visible compact KC3 verification summary. Every card accessibility name now
+  includes its address and compact KC3 summary, including stale copy when
+  applicable. After the fix, TalkBack spoke the complete card identity,
+  address, hours state, and “KC3 details not yet verified.” It pronounced `KS`
+  as separate letters and `66061` as “sixty-six thousand sixty-one”; this is
+  intelligible TalkBack number behavior, not KC3-generated speech. Focused
+  React Native Testing Library coverage protects both ordinary and duplicate
+  same-name card labels.
+- Opening Filters placed focus on Close before the Filters heading. All cities,
+  Olathe, and Library exposed their selected state. Applying Lenexa plus Library
+  returned focus to Filters, announced one place, and exposed the expected
+  Lenexa City Center Library card with its full label.
+- Opening the Lenexa result placed accessibility focus on the detail heading in
+  a supporting focus-ring check. The recorded spoken traversal reached identity,
+  address, hours, Good for work, and Wi-Fi content. Activating Back restored the
+  originating Lenexa card, its one-place discovery state, and the complete card
+  announcement.
+- Typing `zzzz` produced zero places and the distinct No matching places state;
+  deleting the query restored one place. Character echo and visual state are
+  recorded, but the no-match status utterance itself was not isolated from the
+  keyboard echo, so its spoken timing is not yet claimed.
+
+Two test-environment behaviors are not KC3 defects. An Expo Go “Cannot connect
+to Expo CLI” development banner persisted after the adb server restarted,
+entered TalkBack traversal, and exposed its own dismiss control as “Unlabelled.”
+Reopening the local Expo URL removed it. A MacBook two-finger trackpad gesture
+also jumped unpredictably while trying to scroll the emulator. The recording
+shows KC3 remained responsive, and these behaviors belong to Expo Go/emulator
+input rather than the application UI.
+
+The Android pass still needs a shorter clean follow-up for preference-filter and
+Clear announcements, spoken containment at both filter boundaries, Regular
+hours and About this information below the detail fold, the isolated no-match
+announcement, and controlled sanitized error/retry/success speech. Cleanup for
+this attempt is complete: TalkBack is disabled, its original preferences are
+restored, the temporary notification permission is revoked, adb is no longer
+rooted, and font scale is 1.0.
+
+### Android follow-up — 2026-09-29
+
+A second user-attended emulator session exercised the Wi-Fi preference filter,
+both filter-boundary attempts, Apply, and Clear. Emulator input remained
+unreliable for TalkBack swipe and two-finger scroll gestures, so those actions
+are not claimed as clean containment evidence. To reach content below the
+detail fold without misrepresenting the gesture result, TalkBack was briefly
+disabled, the detail scroll was moved with adb, and TalkBack was immediately
+re-enabled. The attending user then confirmed that Regular hours, Hours
+unavailable, About this information, both verification notices, and the holiday
+or special-event caveat all spoke successfully.
+
+No video evidence is claimed from this follow-up. The Android Emulator Extended
+Controls recorder stopped at its 180-second limit and the attempted recordings
+were not saved. Resume with separate clips shorter than 180 seconds, saving each
+clip immediately. The remaining saved-evidence pass should cover the initial
+loading/count announcement, preference/Clear feedback, both modal boundaries,
+automatic detail-heading focus plus the now-confirmed lower-detail speech, the
+isolated no-match/recovery announcement, and sanitized error/retry/success.
+TalkBack was returned to its original disabled state after the paused session.
+
+Post-change verification passed all 88 application tests across 12 suites,
+typecheck, lint, formatting, diff validation, 258 pgTAP assertions across 12
+files, public-schema database lint, six live anonymous integration tests, and
+Web/iOS/Android production export.
+
+The requested VoiceOver target cannot be completed on the named iPhone 17 / iOS
+26.5 Simulator: Apple documents that VoiceOver is unavailable in Simulator and
+requires testing on a physical device. The simulator accessibility hierarchy and
+direct actions remain supporting evidence only. No physical iPhone was attached
+during this pass, so no VoiceOver result is claimed. Complete the full KC3-34
+VoiceOver checklist on a physical iPhone before closing KC3-34, KC3-21, or
+KC3-23. See Apple's [Performing accessibility testing for your
+app](https://developer.apple.com/documentation/accessibility/performing-accessibility-testing-for-your-app).

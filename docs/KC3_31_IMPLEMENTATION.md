@@ -155,3 +155,25 @@ The defects discovered in the practical iOS and Android passes were corrected
 and rechecked. Splitting the spoken work does not remove it from the MVP release
 gate; it prevents device-attended verification from obscuring KC3-31's completed
 implementation and practical native evidence.
+
+## KC3-34 follow-up — 2026-09-26
+
+A user-attended Pixel 9 / Android 16 TalkBack pass found that list-card speech
+omitted addresses for ordinary records and omitted the visible compact KC3
+verification summary. Card accessibility names now always contain both values,
+with focused component coverage for ordinary and duplicate-location records.
+The affected card traversal was rechecked with spoken TalkBack output and passed.
+
+The same pass recorded useful search, selected city/type filters, Apply feedback,
+one-result traversal, detail traversal, Back restoration, and no-match recovery.
+It did not complete every KC3-34 checkpoint: preference/Clear feedback, clean
+filter-boundary traversal, below-fold detail sections, isolated no-match speech,
+and failure/retry speech remain. Apple's documented lack of VoiceOver in iOS
+Simulator also means the VoiceOver pass requires a physical iPhone. Full evidence
+and remaining risk are recorded in `docs/ACCESSIBILITY_REVIEW.md`; KC3-31 remains
+complete, while KC3-34 remains an MVP release gate.
+
+After the TalkBack fixes, all 88 application tests, typecheck, lint, formatting,
+diff validation, 258 pgTAP assertions, public-schema database lint, six live
+anonymous integration tests, and Web/iOS/Android production export passed. The
+temporary Android test settings were restored.

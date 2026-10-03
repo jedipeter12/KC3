@@ -70,7 +70,22 @@ describe("place-list screen", () => {
     expect(screen.queryByText("Drive-through Place")).not.toBeOnTheScreen();
   });
 
-  it("adds addresses to same-name, same-city card labels", async () => {
+  it("includes addresses in every card label", async () => {
+    await render(<PlaceListScreen loadPlaces={async () => PLACES} />);
+
+    expect(
+      await screen.findByRole("link", {
+        name: /Second Place, Library, Olathe, 2 Main St, Open 24 hours, Good for working, Public Wi-Fi/,
+      }),
+    ).toBeOnTheScreen();
+    expect(
+      screen.getByRole("link", {
+        name: /First Place, Coffee shop, Lenexa, 1 Main St, Hours unavailable, KC3 details not yet verified/,
+      }),
+    ).toBeOnTheScreen();
+  });
+
+  it("keeps addresses in same-name, same-city card labels", async () => {
     const duplicate = makePlaceSummary({
       address: "99 Other St",
       id: "00000000-0000-0000-0000-000000000099",

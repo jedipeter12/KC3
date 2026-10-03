@@ -14,6 +14,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "ingest:google": "node --env-file-if-exists=.env.local --import tsx scripts/import-google-places.ts",
+    "prepare:overture-review": "node --import tsx scripts/prepare-overture-review.ts",
+    "import:overture-review": "node --env-file-if-exists=.env.local --import tsx scripts/import-overture-review.ts",
     "edit:place-canonical": "node --env-file-if-exists=.env.local --import tsx scripts/edit-place-canonical.ts",
     "edit:place-details": "node --env-file-if-exists=.env.local --import tsx scripts/edit-place-details.ts",
     "typecheck": "tsc --noEmit",

@@ -4,17 +4,44 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
-Complete user-attended native screen-reader verification in KC3-34 without
-weakening source ownership or the anonymous read boundary. KC3-34 continues to
-govern the remaining KC3-21/KC3-23 release gate. Before production deployment,
-KC3-37 must resolve the completed KC3-36 provider-content rights audit; the
-current Google-backed storage/display architecture is not cleared for launch.
+KC3-35's operator workflow is implemented and merged; its previously stale
+Notion status is reconciled with repository completion evidence. Accessibility
+work is on hold at the Product Owner's request as of 2026-10-02. KC3-34 continues
+to govern the remaining KC3-21/KC3-23 release gate when work resumes. Before
+production deployment, KC3-37 must resolve the completed KC3-36 provider-content
+rights audit; the current Google-backed storage/display architecture is not
+cleared for launch. On 2026-10-02 the Product Owner selected Overture as the
+starting source with spreadsheet review and independently maintained hours.
 
 ## In Progress
 
+- [ ] KC3-37: Sourcing/remediation preparation started 2026-10-02. Ticket and
+  audit reviewed; aggregate read-only local inventory executed; phased plan in
+  `docs/KC3_37_REMEDIATION_PLAN.md`. Overture was selected by the Product Owner.
+  A 462-row workbook with separate verification/missing flags and a tested
+  CSV preview/private staging boundary are prepared for attended review; see
+  `docs/OVERTURE_REVIEW.md`. Current database records remain unchanged.
+  Overture sampling found 462 raw category candidates across the three target
+  postal localities; coverage/quality and hours limits are recorded in
+  `docs/KC3_37_SOURCE_EVALUATION.md`. Direct Foursquare sampling is deferred at
+  the Product Owner's request because its portal requires account access.
+  Implementation must resolve provenance, retention, attribution, navigation,
+  and applicable use/account permissions while preserving KC3 enrichment.
+  Reconciled directory cutover, Google/history/secondary-copy retirement,
+  source/attribution/navigation display, and adapted operator eligibility remain
+  open after the review. No research threshold is a publication rule.
+  KC3-39 and final content-rights/privacy declarations remain gated.
 - [ ] KC3-34: Complete user-attended VoiceOver and TalkBack verification for the
   KC3 place discovery/detail experience, implement and recheck any resulting
   fixes, and record spoken evidence for the KC3-21/KC3-23 closeout gate.
+  **On hold by Product Owner request, 2026-10-02.** The
+  2026-09-26 TalkBack pass fixed and rechecked ordinary-card address and compact
+  KC3-summary speech, and recorded search/filter/detail/Back/no-match evidence.
+  A 2026-09-29 attended follow-up confirmed the below-fold Regular hours and
+  About this information speech, but the emulator's 180-second recorder limit
+  prevented retaining the attempted clips. A short, segmented Android evidence
+  pass remains for the unrecorded checkpoints. VoiceOver requires a physical
+  iPhone because Apple does not provide it in iOS Simulator.
 - [ ] KC3-23: Final automated verification and live Expo Web and iOS Simulator
   functional smoke passes complete; milestone closure remains blocked by the
   KC3-21 native accessibility checks. See `docs/MVP_VERIFICATION.md` for evidence
@@ -24,13 +51,6 @@ current Google-backed storage/display architecture is not cleared for launch.
   open under KC3-34.
 
 ## Next
-
-- [ ] KC3-37: Choose and implement the evidenced provider-content sourcing,
-  provenance, retention, attribution, and navigation strategy described in
-  `docs/KC3_36_PROVIDER_CONTENT_AUDIT.md`. Resolve account/region, directory,
-  and native speech permissions; preserve KC3 enrichment during remediation.
-  This blocks KC3-39 production backend deployment and final content-rights
-  and privacy declarations.
 
 - [ ] Resolve the Boba Tea area-only identity/address only if authoritative
   evidence establishes the exact physical place. Do not infer a mall tenant or
@@ -75,7 +95,10 @@ current Google-backed storage/display architecture is not cleared for launch.
   provider-backed places, creates or updates the existing KC3 detail contract
   with explicit unknown and verification semantics, requires a reviewed
   before/after confirmation, rejects stale edits, and enforces a constrained
-  database ownership boundary that cannot mutate provider-owned fields.
+  database ownership boundary that cannot mutate provider-owned fields. Merged
+  in PR #18 on 2026-09-24 (America/Chicago), with both CI jobs passing.
+  Rechecked on 2026-10-02 and synchronized to the previously stale Notion
+  ticket; see `docs/PLACE_DETAILS_OPERATOR.md` for the evidence.
 - [x] KC3-33 exercises every record from a fresh bounded 160-place provider run
   through summary, detail, and applicable discovery paths; fixes stable filter
   ordering, narrow-dialog entry focus, Web Back restoration, duplicate-location
@@ -192,4 +215,5 @@ Use this section for ideas intentionally postponed or rejected so they are not r
 
 - KC3-34 tracks the outstanding user-attended VoiceOver and TalkBack passes. The
   practical iOS and Android interaction and large-text checks are complete; see
-  `docs/ACCESSIBILITY_REVIEW.md` for evidence and the remaining spoken checks.
+  `docs/ACCESSIBILITY_REVIEW.md` for the partial 2026-09-26 TalkBack evidence,
+  the remaining spoken checks, and the physical-iPhone VoiceOver requirement.

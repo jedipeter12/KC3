@@ -43,6 +43,54 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-10-02 — Choose Overture as the starting directory source
+
+**Status:** Accepted (Product Owner instruction; launch cutover pending)
+
+**Decision**
+
+Use Overture Places as KC3's starting data source, with attended spreadsheet
+review and independently sourced weekly hours. Preserve React Native, Expo,
+Supabase, PostgreSQL, the six approved types, stable KC3 IDs, and KC3-owned data.
+Show verification flags in amber and missing values in blue, with text labels.
+Leave draft rows Pending and accept partial review. No Foursquare account is
+required for this path; direct Foursquare evaluation remains deferred.
+
+**Context**
+
+The Product Owner explicitly selected Overture after the
+[source evaluation](KC3_37_SOURCE_EVALUATION.md), requesting spreadsheet review
+and different flags for uncertain and empty values. The 462 candidate records
+include questionable classifications, unknown lifecycle, missing addresses, and
+duplicates. Overture supplies no weekly hours. Existence confidence and metadata
+updates do not establish KC3 suitability or field verification.
+
+**Alternatives considered**
+
+- Entirely manual inventory, direct Foursquare OS Places, or OSM with its
+  database-license considerations.
+- Conditional live Google or additional Google rights, after applicable-use
+  permissions and costs are established.
+
+**Reasoning**
+
+Overture provides an accessible licensed baseline and reduces manual identity
+entry while allowing deliberate review. Its source-specific permissive licenses
+support reuse with the relevant license text, notices, and modification records.
+Research thresholds are not adopted as automatic publication rules.
+
+**Consequences / follow-up**
+
+The current phase prepares a workbook, strict CSV validation/preview, and a
+private append-only reviewed-batch staging RPC. Staging cannot mutate public
+places, KC3 details, schedules, overrides, or correction history. Only Ready rows
+enter staging; unknown hours remain unknown. A later reconciled cutover must
+preserve exact KC3 data, retire unsupported Google copies/history/secondary
+artifacts, prevent resurrection, adapt operator eligibility, and provide
+attribution/source-aware display/navigation. The Google agreement/export check
+remains open. Paying Google later would be a separately evaluated integration.
+KC3-37 and KC3-39 release gates remain open; accessibility remains on hold.
+
 ### 2026-10-02 — Gate provider-backed launch on the content-rights audit
 
 **Status:** Accepted (audit finding and release gate; sourcing choice pending)

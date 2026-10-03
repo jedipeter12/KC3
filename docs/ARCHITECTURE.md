@@ -13,6 +13,21 @@ KC3-37 must select and implement an evidenced sourcing/retention/display strateg
 before KC3-39 deploys the production backend. The audit makes no framework or
 database replacement and does not itself implement remediation.
 
+**KC3-37 selected direction (2026-10-02):** Overture Places is the approved
+starting source, followed by attended spreadsheet review and independently
+sourced hours. `overtureReview.ts` prepares licensed candidates and compiles
+reviewed CSVs against an original manifest. The service-only
+`kc3_stage_overture_review(jsonb)` accepts bounded reviewed batches in the
+private RLS-protected `overture_review_batches` table. Its dedicated NOLOGIN,
+non-bypass-RLS owner can only select/insert staging and read canonical IDs.
+It has no canonical/KC3/history write privileges. Batches are append-only and
+repeatable by content-derived identity; mismatched repeats fail. Pending and
+Exclude rows are skipped; incomplete Ready rows fail validation before a write.
+This is a staging boundary, not the launch cutover. Exact ID reconciliation,
+source-aware public contracts, operator eligibility, Google/history/secondary
+copy retirement, and final attribution/navigation remain KC3-37 work after
+review. No direct base-table client access or new framework is introduced.
+
 KC3 has an Expo SDK 57 TypeScript client targeting React Native and Expo Web, but
 no deployed architecture yet. Application code lives in `src/`, a root entry
 point registers the app, and application tests live separately in `tests/`. The

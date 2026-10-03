@@ -229,7 +229,6 @@ function parseDetailPath(): string | null {
 }
 
 type PlaceCardProps = Readonly<{
-  announceAddress: boolean;
   focused: boolean;
   onBlur: () => void;
   onFocus: () => void;
@@ -254,7 +253,6 @@ export function focusFilterModalEntry(
 }
 
 function PlaceCard({
-  announceAddress,
   focused,
   onBlur,
   onFocus,
@@ -263,13 +261,18 @@ function PlaceCard({
   setRef,
 }: PlaceCardProps) {
   const hoursStatus = getHoursStatus(place);
+  const compactSummary = getCompactKc3Summary(place);
   const accessibleName = [
     place.name,
     PLACE_TYPE_LABELS[place.place_type],
     place.city,
-    announceAddress ? place.address : null,
+    place.address,
     hoursStatus,
     place.drive_thru_only === true ? "Drive-thru only" : null,
+    ...compactSummary,
+    place.kc3_verification_state === "stale"
+      ? "KC3 details may have changed"
+      : null,
   ]
     .filter(Boolean)
     .join(", ");
@@ -314,7 +317,7 @@ function PlaceCard({
           </Text>
         ) : null}
         <View style={styles.summary}>
-          {getCompactKc3Summary(place).map((line) => (
+          {compactSummary.map((line) => (
             <Text key={line} style={styles.summaryText}>
               {line}
             </Text>
@@ -371,18 +374,6 @@ export function PlaceListScreen({
   const originCardIndex = originCardId
     ? visiblePlaces.findIndex((place) => place.id === originCardId)
     : -1;
-  const duplicateIdentityKeys = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const place of loadedPlaces) {
-      const key = `${place.city}\u0000${place.name.toLocaleLowerCase()}`;
-      counts.set(key, (counts.get(key) ?? 0) + 1);
-    }
-    return new Set(
-      [...counts.entries()]
-        .filter(([, count]) => count > 1)
-        .map(([key]) => key),
-    );
-  }, [loadedPlaces]);
 
   const requestPlaces = useCallback(async () => {
     const requestId = ++requestIdRef.current;
@@ -859,9 +850,6 @@ export function PlaceListScreen({
               ref={listRef}
               renderItem={({ item }) => (
                 <PlaceCard
-                  announceAddress={duplicateIdentityKeys.has(
-                    `${item.city}\u0000${item.name.toLocaleLowerCase()}`,
-                  )}
                   focused={focusedCardId === item.id}
                   onBlur={() => setFocusedCardId(null)}
                   onFocus={() => setFocusedCardId(item.id)}
