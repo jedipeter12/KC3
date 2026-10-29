@@ -23,6 +23,33 @@ From the repository root:
 
 ## Running Locally
 
+### Third-space classification and intake
+
+Migration `20261028000000_expand_third_space_classification.sql` adds private
+KC3-owned classification and `place_discoveries` fields. New Google imports are
+active canonical records but remain unpublished until a separate review. The
+existing six-category Google discovery CLI and Overture workbook import retain
+their current bounded scopes. Provider refresh does not edit `place_details`,
+`place_discoveries`, or `mvp_published`.
+
+For now, trusted database administrators may curate these private fields in SQL;
+no anonymous, authenticated, or service-role table access is granted. Record
+source/date without recommender identities. Mark the checklist `verified` only
+after independently checking existence, operation, public access, hours,
+amenities, and suitability. Set `is_third_space` and `mvp_eligible` separately.
+Private-to-public publication requires a verified eligible discovery in Lenexa,
+Overland Park, or Olathe and a known schedule interval covering 8 p.m. Existing
+records are grandfathered for compatibility; the local bootstrap seed explicitly
+inserts them as published without claiming the new checklist was completed.
+Direct administrative insertion with `mvp_published = true` is for that bootstrap
+path only. The current detail editor does not write these new fields.
+
+The migration is non-destructive. Run a clean local Supabase reset in a disposable
+project before `npm test` and `npm run lint:db`; do not reset a database holding
+uncommitted operator work. `supabase/tests/015_third_space_classification.test.sql`
+covers independent classifications, unknown values, intake, publication, and
+Google refresh preservation.
+
 Run `npm start` to launch Expo's development server. Use a target-specific command
 when preferred:
 

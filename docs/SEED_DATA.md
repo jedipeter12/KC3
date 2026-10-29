@@ -15,6 +15,9 @@ cover every approved place type.
 - The complete seed runs inside one transaction.
 - Every seed place has a repository-owned stable UUID.
 - Existing UUIDs and exact canonical matches win; the seed never updates them.
+- The local bootstrap explicitly inserts its 15 canonical rows as MVP-published
+  for compatibility. This does not assert the new comprehensive discovery
+  verification checklist or establish eligibility for newly discovered places.
 - KC3 detail rows are inserted only when absent, using the schema's explicit
   unknown and nullable-unverified defaults.
 - A rerun never overwrites KC3-curated detail fields.

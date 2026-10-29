@@ -28,6 +28,12 @@ const MVP_PLACE_TYPE_ORDER: readonly PlaceType[] = [
   "library",
   "coworking",
   "park",
+  "bookstore",
+  "board_game_cafe",
+  "gaming_venue",
+  "community_center",
+  "hobby_space",
+  "community_venue",
 ];
 
 export const DEFAULT_PLACE_FILTERS: PlaceFilters = {

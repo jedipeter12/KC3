@@ -57,7 +57,7 @@ types, suitability meanings, and the existing hours-freshness rules stay intact.
   provider variability documented rather than represented as exhaustive. A
   fresh KC3-33 audit returned 160 active records, reinforcing that each bounded
   run is a current provider result rather than a fixed product inventory.
-- Anonymous, read-only discovery of active places through an approved public
+- Anonymous, read-only discovery of active, MVP-published places through an approved public
   projection containing only place ID, name, city, address, and place type.
 - The approved public discovery boundary does not require accounts and does not
   permit client writes or direct access to the underlying place tables.
@@ -95,7 +95,7 @@ types, suitability meanings, and the existing hours-freshness rules stay intact.
 The first client implementation is intentionally bounded to the existing public
 RPC contract:
 
-- Display active places in a list with name, city, address, and place type.
+- Display active, MVP-published places in a list with name, city, address, and place type.
 - Support client-side name search and city/place-type filters.
 - Provide loading, empty, and sanitized error states.
 - Use a mobile-friendly layout that also works through Expo Web.
@@ -165,8 +165,8 @@ are preserved for Product Owner review and must not be treated as implementation
 tickets until approved. The place data model itself is approved separately below.
 
 - Map presentation.
-- Place categories or tags beyond the six approved types, cost to occupy,
-  website, ratings, phone number, and live/special hours.
+- Client filters for the newly modeled venue, social, activity, and financial
+  access attributes; website, ratings, phone number, and live/special hours.
 - Distance sorting, geolocation, and deployment.
 
 ## Approved MVP Data Model
@@ -175,16 +175,19 @@ The approved MVP schema uses an individual physical place as its canonical recor
 and separates data by ownership and purpose:
 
 - `places` stores the canonical name, city, address, place type, optional unique
-  Google Place ID, and lifecycle status.
+  Google Place ID, lifecycle status, and an independent MVP publication gate.
 - `place_google_data` stores optional Google-derived attributes separately from
   KC3-owned details. The approved MVP allowlist and refresh behavior are defined
   in [`GOOGLE_INGESTION_CONTRACT.md`](GOOGLE_INGESTION_CONTRACT.md); unrestricted
   raw responses and phone data are not retained by that workflow.
   `google_fetched_at` records the latest successful validated provider response;
   it is provider freshness, not a KC3 verification claim.
-- `place_details` stores seating notes, outlets, Wi-Fi, work suitability, food and
-  beverage level, nullable verified/unknown booleans, separate nullable
-  drive-thru available and drive-thru-only facts, and verification metadata.
+- `place_details` stores seating notes, outlets, Wi-Fi, work/study suitability,
+  food and beverage level, nullable verified/unknown booleans, separate nullable
+  drive-thru facts, and verification metadata. It also stores independent casual
+  hangout and social/community suitability, overlapping social-environment facts,
+  supported versus regularly organized activity types, and separate financial
+  access facts. Nullable values preserve unknown; `false` is a verified negative.
 - `place_hours` stores zero or more intervals per place and day, including closed
   days, overnight closing, source, and verification metadata.
   Google rows use `source_observed_at` for the response that produced the stored
@@ -195,17 +198,39 @@ and separates data by ownership and purpose:
 - `place_canonical_corrections` stores immutable evidence for attended changes
   to canonical name, address, address precision, or place type, including exact
   before/after snapshots, authoritative source URL, observation date, and notes.
+- `place_discoveries` privately records source and date, an optional lead without
+  a canonical place, review checklist, general third-space conclusion, and MVP
+  eligibility. A verified third space may be retained as a future candidate.
 
 Canonical places may retain accepted latitude/longitude and an IANA timezone for
 future map, distance, clustering, navigation, and local-date override behavior.
 An old physical place may link to a distinct replacement place after a move; a
 move never transfers KC3-owned suitability data automatically.
 
-Approved place types are coffee shop, cafe, boba/tea, library, coworking, and park.
+Supported place types are coffee shop, cafe, boba/tea, library, coworking, park,
+bookstore, board-game cafe, gaming venue, community center, hobby space, and a
+general community venue. Categories describe a venue; they do not establish
+third-space suitability. The six-category Google search and current Overture
+review remain bounded to their existing scopes; the new types require attended
+classification and have no automatic publication path.
 Approved place statuses are active, temporarily closed, permanently closed, and
 hidden. Detail classifications include explicit `unknown` values where specified;
 nullable booleans use `true` for verified yes, `false` for verified no, and `null`
 for unknown.
+
+The current public list and detail RPCs still expose only active, explicitly
+published MVP records. Existing records and the local bootstrap seed retain their
+prior visibility, without retroactively claiming full intake verification. New
+Google imports are private by default. Publication of a private candidate
+requires verified intake, an explicit positive third-space conclusion, MVP
+eligibility, one reviewed operating interval covering 8 p.m., and a target-city
+location. Classification and publication remain separate decisions.
+
+The user-facing MVP remains centered on Lenexa, Overland Park, and Olathe and
+evening discovery. Social networking, accounts, user submissions/reviews, event
+scheduling, alcohol-free and detailed affordability filters, recommendations,
+and numerical suitability scores are deferred. `place_discoveries` is an
+internal intake model, not a community submission feature.
 
 Hours use `0` for Sunday through `6` for Saturday. Multiple rows per place and day
 are allowed so split operating periods can be represented.

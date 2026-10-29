@@ -43,9 +43,62 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-10-28 — Separate broad third-space classification from MVP publication
+
+**Status:** Accepted
+
+**Decision**
+
+Keep the established `work_suitability` classification and add independent
+nullable casual-hangout and social/community suitability to `place_details`.
+Represent overlapping social environment and financial access with nullable
+facts, and supported versus regularly organized activity types with separate
+nullable enum arrays. Add six broad venue types without expanding the current
+six-category automated search. Store private discovery leads and verification
+checks in `place_discoveries`; gate new canonical records from public RPCs with
+`places.mvp_published` independently of operational status and general
+third-space value. Existing records and the local bootstrap seed retain their
+prior public visibility.
+
+**Context**
+
+The Product Owner approved a broader third-space directory architecture while
+keeping the current three-city evening MVP and client contract. Existing Google
+ingestion made active new records public, and the single work-suitability field
+could not express multiple reasons to visit. The earlier Overture decision kept
+six types for that bounded review; this decision expands the general schema
+without changing that review or its source/licensing gate.
+
+**Alternatives considered**
+
+- Replace `work_suitability` with a numerical or mutually exclusive score.
+- Put Google, KC3 assessments, and discovery review in one table.
+- Reuse `places.status = 'hidden'` for intake or expose all active candidates.
+- Build event and community-submission systems now.
+
+**Reasoning**
+
+Independent nullable values preserve unknown versus confirmed no, allow a venue
+to serve several uses, and remain queryable. A private intake table can retain
+Reddit/manual leads lacking canonical identity. A publication flag avoids
+conflating operational closure with editorial eligibility. Existing public rows
+are grandfathered to avoid changing the shipped MVP; new Google imports default
+private. Explicit publication of a private record requires verified intake,
+three-city scope, and an interval covering 8 p.m.
+
+**Consequences / follow-up**
+
+The current public RPC shapes and UI remain stable. Admins can curate the new
+private fields in SQL; the existing Google-specific detail CLI does not edit them.
+An attended source-agnostic intake/classification operator, source-aware
+Overture reconciliation, and any broader public filters are separate follow-up
+work. The KC3-37 rights and cutover gate remains open. Reassess legacy records
+against the fuller verification checklist before asserting their new eligibility.
+
 ### 2026-10-02 — Choose Overture as the starting directory source
 
-**Status:** Accepted (Product Owner instruction; launch cutover pending)
+**Status:** Accepted for source selection (general six-type limit superseded
+2026-10-28; launch cutover pending)
 
 **Decision**
 

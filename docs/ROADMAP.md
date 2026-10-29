@@ -4,6 +4,11 @@ This file tracks project state. It should describe what is finished, what is bei
 
 ## Current Objective
 
+The broader third-space data model now records independent suitability,
+social/activity, financial-access, and private intake classifications. New
+Google discoveries remain outside the MVP public RPCs pending review. This is a
+data-model milestone; it does not close KC3-37's source-rights or launch gate.
+
 KC3-35's operator workflow is implemented and merged; its previously stale
 Notion status is reconciled with repository completion evidence. Accessibility
 work is on hold at the Product Owner's request as of 2026-10-02. KC3-34 continues
@@ -52,6 +57,15 @@ starting source with spreadsheet review and independently maintained hours.
 
 ## Next
 
+- [ ] Build an attended, source-agnostic operator for the new KC3-owned
+  classifications and discovery checklist, with reviewed changes and constrained
+  privileges. The current place-detail editor remains Google-specific.
+- [ ] Reconcile reviewed Overture candidates into canonical places under KC3-37,
+  preserving private publication and independently sourced hours; assess existing
+  records against the expanded third-space/MVP checklist before reasserting
+  eligibility.
+- [ ] Design any public social/activity/cost filters and event system only after
+  separate product approval; keep the current client MVP unchanged.
 - [ ] Resolve the Boba Tea area-only identity/address only if authoritative
   evidence establishes the exact physical place. Do not infer a mall tenant or
   silently normalize it in the UI.
@@ -73,6 +87,13 @@ starting source with spreadsheet review and independently maintained hours.
   workflow is proven and repeatable.
 
 ## Completed
+
+- [x] Expanded the third-space data foundation with six broad venue types,
+  independent work/hangout/social suitability, overlapping social and financial
+  access facts, two structured activity classifications, private discovery
+  records, and a separate MVP publication gate. Existing public records and the
+  local seed retain visibility; new Google imports begin private. Database and
+  application contract tests cover the migration.
 
 - [x] 2026-10-03 background readiness: offline Overture reconciliation planner
   and exact protected-snapshot verification, bounded/cancellable anonymous

@@ -13,6 +13,12 @@ export const placeTypes = [
   "library",
   "coworking",
   "park",
+  "bookstore",
+  "board_game_cafe",
+  "gaming_venue",
+  "community_center",
+  "hobby_space",
+  "community_venue",
 ] as const satisfies readonly PlaceType[];
 
 export type CanonicalPlaceValues = Readonly<{

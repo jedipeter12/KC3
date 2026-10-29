@@ -20,7 +20,8 @@ select set_eq(
     ('place_hours'),
     ('place_overrides'),
     ('place_canonical_corrections'),
-    ('overture_review_batches')
+    ('overture_review_batches'),
+    ('place_discoveries')
   $$,
   'the approved public tables exist without additional public tables'
 );
@@ -38,7 +39,13 @@ select results_eq(
     ('boba_tea'),
     ('library'),
     ('coworking'),
-    ('park')
+    ('park'),
+    ('bookstore'),
+    ('board_game_cafe'),
+    ('gaming_venue'),
+    ('community_center'),
+    ('hobby_space'),
+    ('community_venue')
   $$,
   'place_type contains the approved classifications'
 );
@@ -152,7 +159,7 @@ select set_eq(
     ('id'), ('name'), ('city'), ('address'), ('place_type'),
     ('google_place_id'), ('status'), ('latitude'), ('longitude'),
     ('time_zone'), ('moved_to_place_id'), ('address_precision'),
-    ('created_at'), ('updated_at')
+    ('mvp_published'), ('created_at'), ('updated_at')
   $$,
   'places retains the approved canonical fields'
 );
@@ -185,7 +192,14 @@ select set_eq(
     ('place_id'), ('seating_notes'), ('outlets'), ('wifi'),
     ('work_suitability'), ('food_beverage'), ('phone_calls_allowed'),
     ('bathroom_available'), ('drive_thru_available'), ('drive_thru_only'),
-    ('last_verified_at'), ('verification_notes'), ('created_at'), ('updated_at')
+    ('last_verified_at'), ('verification_notes'),
+    ('casual_hangout_suitable'), ('social_community_suitable'),
+    ('quiet_independent_activity'), ('casual_conversation'),
+    ('group_gatherings'), ('meet_new_people'),
+    ('supported_activities'), ('organized_activities'),
+    ('free_public_access'), ('purchase_expected'),
+    ('paid_admission'), ('activity_fees'),
+    ('created_at'), ('updated_at')
   $$,
   'place_details retains the approved KC3-owned fields'
 );

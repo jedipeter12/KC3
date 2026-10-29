@@ -154,7 +154,7 @@ describe("KC3 canonical correction operator workflow", () => {
       "Allowed values: street_address, approximate, unknown.",
     );
     expect(result.output).toContain(
-      "Allowed values: coffee_shop, cafe, boba_tea, library, coworking, park.",
+      "Allowed values: coffee_shop, cafe, boba_tea, library, coworking, park, bookstore, board_game_cafe, gaming_venue, community_center, hobby_space, community_venue.",
     );
     expect(result.output).toContain("Enter a real date in YYYY-MM-DD format.");
     expect(result.output).toContain("Correction notes cannot be blank.");

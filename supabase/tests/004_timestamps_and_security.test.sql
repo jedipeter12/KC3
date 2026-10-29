@@ -88,7 +88,8 @@ select set_eq(
   $$,
   $$ values
     ('places'), ('place_google_data'), ('place_details'), ('place_hours'),
-    ('place_overrides'), ('place_canonical_corrections'), ('overture_review_batches')
+    ('place_overrides'), ('place_canonical_corrections'),
+    ('overture_review_batches'), ('place_discoveries')
   $$,
   'row level security is enabled on every approved public table'
 );
@@ -100,7 +101,8 @@ select set_eq(
     where schemaname = 'public'
       and tablename in (
         'places', 'place_google_data', 'place_details', 'place_hours',
-        'place_overrides', 'place_canonical_corrections', 'overture_review_batches'
+        'place_overrides', 'place_canonical_corrections',
+        'overture_review_batches', 'place_discoveries'
       )
   $$,
   $$
@@ -123,7 +125,8 @@ select set_eq(
       ('canonical_correction_operator_inserts_audit_rows'),
       ('overture_staging_reads_target_ids'),
       ('overture_staging_reads'),
-      ('overture_staging_inserts')
+      ('overture_staging_inserts'),
+      ('google_importer_creates_discovery')
   $$,
   'only the approved public-reader and server-operator policies open table rows'
 );
@@ -142,7 +145,7 @@ select is(
       and not tgisinternal
       and tgenabled = 'O'
   ),
-  7,
+  9,
   'updated_at, address-precision, and timezone-validation triggers are enabled'
 );
 
