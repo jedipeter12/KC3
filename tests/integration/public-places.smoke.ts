@@ -93,6 +93,12 @@ it("returns active MVP-city places with exactly the five serialized fields", asy
       "library",
       "coworking",
       "park",
+      "bookstore",
+      "board_game_cafe",
+      "gaming_venue",
+      "community_center",
+      "hobby_space",
+      "community_venue",
     ]).toContain(place.place_type);
   }
   if (requireProviderDataset) expect(data.length).toBeGreaterThan(100);

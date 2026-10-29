@@ -10,7 +10,18 @@ type ExpectedPublicPlace = {
   id: string;
   name: string;
   place_type:
-    "coffee_shop" | "cafe" | "boba_tea" | "library" | "coworking" | "park";
+    | "coffee_shop"
+    | "cafe"
+    | "boba_tea"
+    | "library"
+    | "coworking"
+    | "park"
+    | "bookstore"
+    | "board_game_cafe"
+    | "gaming_venue"
+    | "community_center"
+    | "hobby_space"
+    | "community_venue";
 };
 
 type TypesAreEqual<Left, Right> =

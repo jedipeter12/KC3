@@ -1,6 +1,9 @@
 # KC3
 
 KC3 is a planned app for finding third places in the Kansas City metro area.
+Its data model supports work/study, casual hangout, and social/community uses
+while the current public MVP remains focused on evening places in Lenexa,
+Overland Park, and Olathe.
 
 ## Status
 

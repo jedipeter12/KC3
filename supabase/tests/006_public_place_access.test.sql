@@ -56,10 +56,10 @@ select is(
       and policyname = 'public_place_reader_selects_active_places'
       and cmd = 'SELECT'
       and roles = array['kc3_public_place_reader']::name[]
-      and qual = '(status = ''active''::place_status)'
+      and qual = '((status = ''active''::place_status) AND mvp_published)'
   ),
   1,
-  'the reader policy permits only active place rows for the dedicated role'
+  'the reader policy permits only active published rows for the dedicated role'
 );
 
 select is(
@@ -177,7 +177,7 @@ select set_eq(
   'the public RPC returns exactly the approved fields'
 );
 
-insert into public.places (id, name, city, address, place_type, status)
+insert into public.places (id, name, city, address, place_type, status, mvp_published)
 values
   (
     '60000000-0000-0000-0000-000000000001',
@@ -185,7 +185,7 @@ values
     'Kansas City',
     '1 Access Way',
     'cafe',
-    'active'
+    'active', true
   ),
   (
     '60000000-0000-0000-0000-000000000002',
@@ -193,7 +193,7 @@ values
     'Kansas City',
     '2 Access Way',
     'cafe',
-    'temporarily_closed'
+    'temporarily_closed', true
   ),
   (
     '60000000-0000-0000-0000-000000000003',
@@ -201,7 +201,7 @@ values
     'Kansas City',
     '3 Access Way',
     'cafe',
-    'permanently_closed'
+    'permanently_closed', true
   ),
   (
     '60000000-0000-0000-0000-000000000004',
@@ -209,7 +209,7 @@ values
     'Kansas City',
     '4 Access Way',
     'cafe',
-    'hidden'
+    'hidden', true
   );
 
 select results_eq(

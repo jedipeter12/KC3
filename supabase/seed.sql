@@ -119,8 +119,8 @@ values
     'park'
   );
 
-insert into public.places (id, name, city, address, place_type)
-select id, name, city, address, place_type
+insert into public.places (id, name, city, address, place_type, mvp_published)
+select id, name, city, address, place_type, true
 from kc3_mvp_seed_places as seed
 where not exists (
   select 1

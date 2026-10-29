@@ -3,6 +3,15 @@
 **Status:** Accepted for KC3-24, persistence-verified by KC3-26, and live
 repeat-verified by KC3-28
 **Applies to:** the manual KC3-25 importer and later refresh workflows
+
+**Third-space intake extension (2026-10-28):** A newly imported canonical place
+defaults to `mvp_published = false` even when its operational status is active.
+An insert creates a private `place_discoveries` row with Google as the discovery
+source and an unverified state. Refreshes do not change KC3-owned suitability,
+social/activity/cost classifications, discovery review, eligibility, or
+publication. Existing public records retain their pre-migration visibility.
+The six-category automated Google search remains unchanged; additional venue
+types are available for attended classification, not automatic inclusion.
 **Implementation:** KC3-25 implements the bounded single-place create/refresh
 path; KC3-26 verifies its hours, freshness, ownership, and rollback behavior.
 Explicit duplicate attachment is implemented; moved-listing resolution remains

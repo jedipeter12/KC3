@@ -1,5 +1,48 @@
 export type PlaceType =
-  "coffee_shop" | "cafe" | "boba_tea" | "library" | "coworking" | "park";
+  | "coffee_shop"
+  | "cafe"
+  | "boba_tea"
+  | "library"
+  | "coworking"
+  | "park"
+  | "bookstore"
+  | "board_game_cafe"
+  | "gaming_venue"
+  | "community_center"
+  | "hobby_space"
+  | "community_venue";
+
+export type ActivityType =
+  | "board_games"
+  | "community_gathering"
+  | "workshop"
+  | "hobby_meetup"
+  | "organized_social";
+
+/** Private KC3-owned classifications; intentionally absent from public RPCs. */
+export type ThirdSpaceClassification = {
+  casual_hangout_suitable: boolean | null;
+  social_community_suitable: boolean | null;
+  quiet_independent_activity: boolean | null;
+  casual_conversation: boolean | null;
+  group_gatherings: boolean | null;
+  meet_new_people: boolean | null;
+  supported_activities: ActivityType[] | null;
+  organized_activities: ActivityType[] | null;
+  free_public_access: boolean | null;
+  purchase_expected: boolean | null;
+  paid_admission: boolean | null;
+  activity_fees: boolean | null;
+};
+
+export type DiscoverySource =
+  | "google_places"
+  | "overture"
+  | "reddit"
+  | "community_suggestion"
+  | "manual_research";
+export type DiscoveryVerificationState =
+  "discovered" | "in_review" | "verified";
 
 export type AddressPrecision = "street_address" | "approximate" | "unknown";
 

@@ -168,6 +168,12 @@ export function isOperatorPlace(value: unknown): value is OperatorPlace {
       "library",
       "coworking",
       "park",
+      "bookstore",
+      "board_game_cafe",
+      "gaming_venue",
+      "community_center",
+      "hobby_space",
+      "community_venue",
     ].includes(place.placeType) &&
     typeof place.googlePlaceId === "string" &&
     isNullableString(place.googleName) &&

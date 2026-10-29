@@ -25,6 +25,9 @@ Options:
   --create <GoogleID>  Create despite one deterministic duplicate candidate
   --write              Commit validated records (default is dry-run)
   --help               Show this help
+
+Newly inserted places are private discovery candidates. Importing does not
+verify third-space suitability or publish a place to the MVP directory.
 `;
 
 async function main(): Promise<void> {
@@ -53,6 +56,9 @@ async function main(): Promise<void> {
   );
   console.log(`Skipped: ${summary.skipped}`);
   console.log(`Failed: ${summary.failed}`);
+  console.log(
+    "New inserts remain private discovery candidates until independently reviewed and published.",
+  );
   for (const query of summary.queries) {
     console.log(
       `Query ${query.category} in ${query.city}: ${query.failed ? "failed" : `${query.discovered} IDs across ${query.pagesFetched} page(s); provider capped=${query.providerCapped ? "yes" : "no"}; selection capped=${query.selectionCapped ? "yes" : "no"}`}`,

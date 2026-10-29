@@ -110,4 +110,25 @@ describe("place filters", () => {
       placeTypes: ["cafe", "coworking", "park"],
     });
   });
+
+  it("keeps expanded venue types queryable when a reviewed place is published", () => {
+    const bookstore = makePlaceSummary({
+      name: "Evening Books",
+      place_type: "bookstore",
+    });
+    const boardGameCafe = makePlaceSummary({
+      name: "Game Table",
+      place_type: "board_game_cafe",
+    });
+
+    expect(
+      getPlaceFilterOptions([boardGameCafe, bookstore]).placeTypes,
+    ).toEqual(["bookstore", "board_game_cafe"]);
+    expect(
+      filterPlaces([bookstore, boardGameCafe], {
+        ...DEFAULT_PLACE_FILTERS,
+        placeType: "board_game_cafe",
+      }),
+    ).toEqual([boardGameCafe]);
+  });
 });

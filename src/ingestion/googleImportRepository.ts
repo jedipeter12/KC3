@@ -74,6 +74,12 @@ const placeTypes = new Set([
   "library",
   "coworking",
   "park",
+  "bookstore",
+  "board_game_cafe",
+  "gaming_venue",
+  "community_center",
+  "hobby_space",
+  "community_venue",
 ]);
 const placeStatuses = new Set([
   "active",

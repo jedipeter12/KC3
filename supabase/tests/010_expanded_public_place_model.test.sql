@@ -7,7 +7,8 @@ set local search_path = public, extensions;
 select plan(32);
 
 insert into public.places (
-  id, name, city, address, address_precision, place_type, status, time_zone
+  id, name, city, address, address_precision, place_type, status, time_zone,
+  mvp_published
 ) values
   (
     'a0000000-0000-0000-0000-000000000001',
@@ -17,7 +18,7 @@ insert into public.places (
     'street_address',
     'cafe',
     'active',
-    'America/Chicago'
+    'America/Chicago', true
   ),
   (
     'a0000000-0000-0000-0000-000000000002',
@@ -27,7 +28,7 @@ insert into public.places (
     'street_address',
     'cafe',
     'hidden',
-    'America/Chicago'
+    'America/Chicago', true
   ),
   (
     'a0000000-0000-0000-0000-000000000003',
@@ -37,7 +38,7 @@ insert into public.places (
     'street_address',
     'cafe',
     'active',
-    'America/Chicago'
+    'America/Chicago', true
   ),
   (
     'a0000000-0000-0000-0000-000000000004',
@@ -47,7 +48,7 @@ insert into public.places (
     'unknown',
     'cafe',
     'active',
-    'America/Chicago'
+    'America/Chicago', true
   ),
   (
     'a0000000-0000-0000-0000-000000000005',
@@ -57,7 +58,7 @@ insert into public.places (
     'street_address',
     'cafe',
     'active',
-    'America/Chicago'
+    'America/Chicago', true
   );
 
 insert into public.place_details (place_id, last_verified_at)

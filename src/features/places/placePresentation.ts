@@ -10,6 +10,12 @@ export const PLACE_TYPE_LABELS = {
   library: "Library",
   coworking: "Coworking",
   park: "Park",
+  bookstore: "Bookstore",
+  board_game_cafe: "Board-game café",
+  gaming_venue: "Gaming venue",
+  community_center: "Community center",
+  hobby_space: "Hobby space",
+  community_venue: "Community venue",
 } as const;
 
 export const WORK_LABELS = {

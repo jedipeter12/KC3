@@ -51,7 +51,7 @@ fresh KC3-33 audit exercised a current 160-place provider result, both with all
 15 representative seeds reconciled while preserving that resettable seed
 boundary and unknown KC3 suitability values. A
 read-only Supabase RPC exposes the five
-approved identity fields for active places to unauthenticated clients without
+approved identity fields for active, MVP-published places to unauthenticated clients without
 granting them base-table access. Supabase Auth is the selected authentication
 platform if later approved features require accounts, and Supabase Storage may be
 used if an approved feature needs object storage. A separate operator-run
@@ -224,13 +224,15 @@ use the ignored `dist/` directory.
 
 ## Data Model
 
-The approved MVP data model consists of six public tables:
+The place data model retains the established ownership tables and adds a
+private discovery/intake table:
 
 - `places`: Canonical physical-place identity and lifecycle. It has a UUID primary
   key, required name/city/address/place type, optional unique Google Place ID,
   explicit address precision, accepted coordinates, a write-validated IANA
   timezone, an optional move relationship to another KC3 place, and an
-  active-by-default status.
+  active-by-default status, and a separate MVP publication flag. Existing rows
+  are backfilled as published; new rows default private.
 - `place_google_data`: Optional one-to-one Google-derived data for a place. Its
   shared primary key cascades on place deletion and it holds the allowlisted
   provider values, structured address/type metadata, coordinates, timezone,
@@ -241,7 +243,10 @@ The approved MVP data model consists of six public tables:
   primary key cascades on place deletion and it holds workability classifications,
   nullable verified/unknown booleans, separate drive-thru availability and
   drive-thru-only facts, notes, and verification date. A true drive-thru-only
-  value requires drive-thru availability to be true.
+  value requires drive-thru availability to be true. Additional nullable
+  hangout/social suitability and environment/financial-access facts retain
+  unknown versus false. Two enum arrays distinguish supported activities from
+  regularly organized activities; null means unknown and empty means known none.
 - `place_hours`: Zero-to-many weekly schedule rows for a place. Each row has its
   own UUID, cascades on place deletion, uses Sunday `0` through Saturday `6`, and
   records its Google or KC3 source and source observation time. Multiple
@@ -256,10 +261,18 @@ The approved MVP data model consists of six public tables:
   before/after snapshots, an authoritative HTTPS source, the source observation
   date, explanatory notes, and creation time. The operator role can insert but
   cannot update, delete, or directly read these rows.
+- `place_discoveries`: Private leads and linked canonical-place reviews. It records
+  source/date, independently nullable verification checks, review state, general
+  third-space conclusion, MVP eligibility, and internal notes without storing a
+  recommender identity. Verification and eligibility are independent; a verified
+  daytime location stays a future candidate. Only a verified eligible discovery
+  with a target-city place and an interval covering 8 p.m. may transition from
+  private to published. Revoking eligibility unpublishes it.
 
 The public enum types include `place_type`, `place_status`, `address_precision`,
 `outlet_level`, `wifi_type`, `work_suitability`, `food_beverage_level`,
-`hours_source`, `regular_hours_state`, and `kc3_verification_state`. The five
+`hours_source`, `regular_hours_state`, `kc3_verification_state`, `activity_type`,
+`discovery_source`, and `discovery_verification_state`. The mutable tables
 mutable tables have creation/update timestamps and a shared trigger maintains
 `updated_at`; the immutable correction log has only `created_at`. Hours checks require valid weekday numbers, null
 times for closed rows, both times for open rows, and forward same-day intervals.
@@ -269,7 +282,7 @@ rating/count/status/price shapes have database constraints.
 Row Level Security is enabled on every table. Direct table privileges for `anon`,
 `authenticated`, and `service_role` remain explicitly revoked. The only current
 public-reader policies permit the dedicated `kc3_public_place_reader` role to
-select only data belonging to active places; it receives column-level access
+select only active, MVP-published places; it receives column-level access
 only to values required to build the approved projections. The role is `NOLOGIN`
 and cannot bypass RLS. Default
 public-schema privileges for `postgres`-owned project migrations remain revoked
@@ -284,6 +297,14 @@ they are missing. It does not update existing records, populate Google-owned
 fields, or seed volatile weekly hours. See `SEED_DATA.md` for provenance and
 maintenance rules.
 
+The Google importer creates a private `place_discoveries` row for each new
+provider-backed canonical place. Its existing refresh writes do not touch
+KC3-owned classifications, intake decisions, or publication. The Overture
+review batch remains a separate private staging boundary; reconciliation from
+that batch into canonical places remains part of KC3-37. Public RPC signatures
+and the client MVP fields remain unchanged; an RLS policy on `places` applies the
+publication gate to all three RPCs.
+
 KC3-30's exact implemented storage and response shapes, effective-hours
 precedence, nullability, freshness, and compatibility behavior are documented in
 [`KC3_30_PUBLIC_PLACE_CONTRACT.md`](KC3_30_PUBLIC_PLACE_CONTRACT.md).
@@ -292,7 +313,7 @@ precedence, nullability, freshness, and compatibility behavior are documented in
 
 Supabase is the only approved integration. Anonymous clients may execute
 `public.list_public_places()` through the Supabase RPC API. The zero-argument RPC
-returns active places ordered by name and ID with exactly `id`, `name`, `city`,
+returns active, MVP-published places ordered by name and ID with exactly `id`, `name`, `city`,
 `address`, and `place_type`. Its dedicated security-definer owner has only the
 source access required by that contract, and `anon` has no direct table access.
 The Expo client initializes `@supabase/supabase-js` with that narrow database type
@@ -415,7 +436,7 @@ state.
   active summary and matching detail and exercises every record through exact
   name and applicable city/type discovery, hours presentation, and map-query
   construction. Provider-dataset mode also requires more than 100 records and
-  all six approved place types.
+  all six original MVP search types.
 - Importer tests: Offline Jest fixtures protect transformation, field masks,
   continuation and cap reporting, duplicate/change/reconciliation planning,
   configuration failures, and sanitized provider/database errors. pgTAP runs
