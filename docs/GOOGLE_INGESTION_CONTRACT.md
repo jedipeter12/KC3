@@ -12,6 +12,9 @@ social/activity/cost classifications, discovery review, eligibility, or
 publication. Existing public records retain their pre-migration visibility.
 The six-category automated Google search remains unchanged; additional venue
 types are available for attended classification, not automatic inclusion.
+The 2026-10-29 operator boundary removes the importer's insert/update privilege
+on `mvp_published`. Provider hours writes mark a separate eligibility-review
+revision; they do not edit KC3 classification, eligibility, or publication values.
 **Implementation:** KC3-25 implements the bounded single-place create/refresh
 path; KC3-26 verifies its hours, freshness, ownership, and rollback behavior.
 Explicit duplicate attachment is implemented; moved-listing resolution remains

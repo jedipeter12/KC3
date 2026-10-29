@@ -43,6 +43,47 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-10-29 — Pause public visibility after hours change until attended eligibility review
+
+**Status:** Accepted
+
+**Decision**
+
+Track base hours and regular-hours override changes in a separate revision table. Public place reads exclude a
+published place while its latest hours revision is pending review. An attended
+source-agnostic operator may review a discovery, edit only new KC3 classification
+fields, and confirm eligibility against the effective 8 p.m. interval. Starting a
+review for an older canonical place requires explicit source and discovery date.
+
+**Context**
+
+The expanded model separates general third-space value, MVP eligibility, and
+publication, but had no operator workflow or response to hours changes. Earlier
+canonical records can lack a discovery row. Provider refresh must preserve
+KC3-owned assessments and publication values.
+
+**Alternatives considered**
+
+- Automatically set `mvp_eligible` or `mvp_published` false on every hours write.
+- Leave a published record visible while an hours review is pending.
+- Infer historical discovery provenance from a Google ID or seed membership.
+
+**Reasoning**
+
+A separate revision records the need for review without asking a provider write
+to make a KC3 editorial decision. Hiding pending records avoids displaying an
+unreassessed evening claim. Explicit provenance avoids inventing a discovery
+source for older canonical records. The operator's exact confirmation and
+version checks cover concurrent discovery, place, detail, and hours changes.
+
+**Consequences / follow-up**
+
+Existing published records remain visible until their hours change. After a
+change, the full verification checklist and current evening interval are needed
+to keep them public. Provider ingestion loses publication-column write privilege.
+Operators must monitor pending reviews; Overture rights and cutover remain
+separate release work.
+
 ### 2026-10-28 — Separate broad third-space classification from MVP publication
 
 **Status:** Accepted

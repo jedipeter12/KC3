@@ -32,9 +32,9 @@ existing six-category Google discovery CLI and Overture workbook import retain
 their current bounded scopes. Provider refresh does not edit `place_details`,
 `place_discoveries`, or `mvp_published`.
 
-For now, trusted database administrators may curate these private fields in SQL;
-no anonymous, authenticated, or service-role table access is granted. Record
-source/date without recommender identities. Mark the checklist `verified` only
+The attended operator reviews these private fields through a constrained RPC;
+no anonymous, authenticated, or service-role direct table access is granted.
+Record source/date without recommender identities. Mark the checklist `verified` only
 after independently checking existence, operation, public access, hours,
 amenities, and suitability. Set `is_third_space` and `mvp_eligible` separately.
 Private-to-public publication requires a verified eligible discovery in Lenexa,
@@ -42,7 +42,18 @@ Overland Park, or Olathe and a known schedule interval covering 8 p.m. Existing
 records are grandfathered for compatibility; the local bootstrap seed explicitly
 inserts them as published without claiming the new checklist was completed.
 Direct administrative insertion with `mvp_published = true` is for that bootstrap
-path only. The current detail editor does not write these new fields.
+path only. The older detail editor does not write these new fields.
+
+Use `npm run review:third-space -- --name <text> [--city <city>] [--source
+<source>]` for an existing private discovery, or `npm run review:third-space
+-- --place-id <canonical UUID>` to start a review for an existing canonical
+place lacking one. The operator supplies the actual source and discovery date.
+See [`THIRD_SPACE_OPERATOR.md`](THIRD_SPACE_OPERATOR.md) for prompts,
+unknown/false and activity-list semantics, exact confirmation, stale-edit
+recovery, and the hours-change eligibility path. A changed hours revision hides
+a published place until reviewed; it does not overwrite KC3-owned classification,
+eligibility, or publication columns. Database test
+`016_third_space_operator.test.sql` covers the constrained RPC and hours gate.
 
 The migration is non-destructive. Run a clean local Supabase reset in a disposable
 project before `npm test` and `npm run lint:db`; do not reset a database holding

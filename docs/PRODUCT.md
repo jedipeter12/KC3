@@ -201,6 +201,9 @@ and separates data by ownership and purpose:
 - `place_discoveries` privately records source and date, an optional lead without
   a canonical place, review checklist, general third-space conclusion, and MVP
   eligibility. A verified third space may be retained as a future candidate.
+- An attended internal workflow reviews discoveries from any recorded source,
+  starts a private review for an existing canonical place when needed, and edits
+  the new KC3-owned classifications with explicit unknown and confirmed-no states.
 
 Canonical places may retain accepted latitude/longitude and an IANA timezone for
 future map, distance, clustering, navigation, and local-date override behavior.
@@ -225,6 +228,9 @@ Google imports are private by default. Publication of a private candidate
 requires verified intake, an explicit positive third-space conclusion, MVP
 eligibility, one reviewed operating interval covering 8 p.m., and a target-city
 location. Classification and publication remain separate decisions.
+When a place's hours change, its published listing pauses until an attended
+eligibility review checks the current schedule and verification requirements.
+The hours update does not change KC3-owned classification or publication values.
 
 The user-facing MVP remains centered on Lenexa, Overland Park, and Olathe and
 evening discovery. Social networking, accounts, user submissions/reviews, event

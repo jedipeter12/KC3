@@ -93,6 +93,9 @@ select throws_ok($$ update public.place_discoveries set mvp_eligible = true
 insert into public.place_hours (place_id, day_of_week, open_time, close_time,
   source, is_closed) values (
   'f0000000-0000-0000-0000-000000000002', 1, '10:00', '20:00', 'kc3', false);
+update public.place_hours_eligibility_reviews
+set reviewed_revision = hours_revision
+where place_id = 'f0000000-0000-0000-0000-000000000002';
 update public.place_discoveries set mvp_eligible = true
 where place_id = 'f0000000-0000-0000-0000-000000000002';
 update public.places set mvp_published = true
