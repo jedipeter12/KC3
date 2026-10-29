@@ -202,7 +202,7 @@ export function createManifest(input: unknown): ReviewManifest {
       a.name.localeCompare(b.name) ||
       a.id.localeCompare(b.id),
   );
-  if (new Set(records.map((r) => r.id)).size !== records.length)
+  if (new Set(records.map((r) => r.id.toLowerCase())).size !== records.length)
     throw new Error("Duplicate external identity.");
   return { schemaVersion: 1, release: OVERTURE_RELEASE, records };
 }
@@ -315,7 +315,11 @@ export function compileReview(
   if (manifest.schemaVersion !== 1 || manifest.release !== OVERTURE_RELEASE)
     throw new Error("Unsupported manifest version/release.");
   const originals = new Map(manifest.records.map((r) => [r.id, r]));
-  if (originals.size !== manifest.records.length)
+  if (
+    originals.size !== manifest.records.length ||
+    new Set(manifest.records.map((r) => r.id.toLowerCase())).size !==
+      manifest.records.length
+  )
     throw new Error("Duplicate manifest identity.");
   const reviewed: ReviewedRecord[] = [];
   const seen = new Set<string>();

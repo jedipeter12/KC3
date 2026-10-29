@@ -1,7 +1,9 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(18);
+select plan(20);
+create temporary table original_staging_count as
+select count(*)::integer as count from public.overture_review_batches;
 create function pg_temp.review_batch() returns jsonb language sql as $$
 select '{
   "schemaVersion":1,"batchId":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
@@ -31,7 +33,58 @@ select throws_ok($$select public.kc3_stage_overture_review(jsonb_set(pg_temp.rev
 select is(public.kc3_stage_overture_review(pg_temp.review_batch())->>'action','staged','valid batch staged');
 select is(public.kc3_stage_overture_review(pg_temp.review_batch())->>'action','unchanged','same batch repeats without mutation');
 select throws_ok($$select public.kc3_stage_overture_review(jsonb_set(pg_temp.review_batch(),'{records,0,identity,name}','"Different name"'))$$,'40001','batch ID already contains different reviewed content','batch identity cannot overwrite prior reviewed content');
-select is((select count(*)::integer from public.overture_review_batches),1,'invalid batches leave no partial staging rows');
+select is((select count(*)::integer from public.overture_review_batches),(select count + 1 from original_staging_count),'invalid batches leave no partial staging rows');
 select ok(not exists(select 1 from public.places where name='Review fixture'), 'staging never publishes or inserts canonical records');
+insert into public.places (id, name, city, address, place_type)
+values ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'Synthetic target', 'Lenexa', '1 Fixture Way', 'cafe');
+create function pg_temp.case_variant_target_batch() returns jsonb language sql as $$
+with original as (select pg_temp.review_batch() as batch),
+two_records as (
+  select
+    jsonb_set(batch->'records'->0, '{targetPlaceId}', '"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"') as first_record,
+    jsonb_set(
+      jsonb_set(
+        jsonb_set(batch->'records'->0, '{overtureId}', '"dddddddd-dddd-4ddd-8ddd-dddddddddddd"'),
+        '{source,id}', '"dddddddd-dddd-4ddd-8ddd-dddddddddddd"'
+      ),
+      '{targetPlaceId}', '"AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA"'
+    ) as second_record,
+    batch
+  from original
+)
+select jsonb_set(
+  jsonb_set(batch, '{batchId}', '"eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"'),
+  '{records}', jsonb_build_array(first_record, second_record)
+)
+from two_records;
+$$;
+select throws_ok(
+  $$select public.kc3_stage_overture_review(pg_temp.case_variant_target_batch())$$,
+  '22023', 'duplicate KC3 target identity',
+  'case-variant KC3 UUID mappings cannot stage as two distinct targets'
+);
+create function pg_temp.case_variant_overture_batch() returns jsonb language sql as $$
+with original as (select pg_temp.review_batch() as batch),
+two_records as (
+  select
+    batch->'records'->0 as first_record,
+    jsonb_set(
+      jsonb_set(batch->'records'->0, '{overtureId}', '"AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA"'),
+      '{source,id}', '"AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA"'
+    ) as second_record,
+    batch
+  from original
+)
+select jsonb_set(
+  jsonb_set(batch, '{batchId}', '"ffffffff-ffff-4fff-8fff-ffffffffffff"'),
+  '{records}', jsonb_build_array(first_record, second_record)
+)
+from two_records;
+$$;
+select throws_ok(
+  $$select public.kc3_stage_overture_review(pg_temp.case_variant_overture_batch())$$,
+  '22023', 'duplicate or missing external identity',
+  'case-variant Overture UUIDs cannot stage as distinct identities'
+);
 select * from finish();
 rollback;

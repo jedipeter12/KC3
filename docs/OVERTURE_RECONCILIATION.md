@@ -4,6 +4,10 @@ Implemented 2026-10-03. This is planning and preservation verification for KC3-3
 not a publication, migration, matching, or retirement boundary. Spreadsheet
 review and all existing launch gates remain open.
 
+A synthetic 2026-10-29 rehearsal of preview, private staging, this planner,
+and exact protected-value checks is recorded in
+[KC3-37 Synthetic Rehearsal](KC3_37_SYNTHETIC_REHEARSAL.md).
+
 ## Run
 
 ```sh

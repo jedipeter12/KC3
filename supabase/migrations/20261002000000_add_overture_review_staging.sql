@@ -47,12 +47,12 @@ begin
   if jsonb_array_length(incoming_records) not between 1 and 1000 then
     raise exception using errcode = '22023', message = 'review batch must contain 1-1000 records';
   end if;
-  if (select count(distinct value ->> 'overtureId') from jsonb_array_elements(incoming_records))
+  if (select count(distinct (value ->> 'overtureId')::uuid) from jsonb_array_elements(incoming_records))
       <> jsonb_array_length(incoming_records) then
     raise exception using errcode = '22023', message = 'duplicate or missing external identity';
   end if;
   if (select count(*) from jsonb_array_elements(incoming_records) where value ->> 'targetPlaceId' is not null)
-      <> (select count(distinct value ->> 'targetPlaceId') from jsonb_array_elements(incoming_records)) then
+      <> (select count(distinct (value ->> 'targetPlaceId')::uuid) from jsonb_array_elements(incoming_records)) then
     raise exception using errcode = '22023', message = 'duplicate KC3 target identity';
   end if;
   for record in select value from jsonb_array_elements(incoming_records) loop

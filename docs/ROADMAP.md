@@ -26,6 +26,9 @@ starting source with spreadsheet review and independently maintained hours.
   A 462-row workbook with separate verification/missing flags and a tested
   CSV preview/private staging boundary are prepared for attended review; see
   `docs/OVERTURE_REVIEW.md`. Current database records remain unchanged.
+  A synthetic end-to-end rehearsal of the implemented staging and offline
+  planning path passed in a disposable Supabase project on 2026-10-29; see
+  `docs/KC3_37_SYNTHETIC_REHEARSAL.md`. It did not publish or retire records.
   Overture sampling found 462 raw category candidates across the three target
   postal localities; coverage/quality and hours limits are recorded in
   `docs/KC3_37_SOURCE_EVALUATION.md`. Direct Foursquare sampling is deferred at
