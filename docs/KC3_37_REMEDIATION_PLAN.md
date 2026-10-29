@@ -15,6 +15,10 @@ The Product Owner explicitly selected Overture as the starting source and
 requested spreadsheet review with separate verification/missing flags. The
 decision is recorded in `docs/DECISIONS.md`; review/import preparation and
 remaining cutover work are described in [Overture Review](OVERTURE_REVIEW.md).
+A [synthetic pipeline rehearsal](KC3_37_SYNTHETIC_REHEARSAL.md) on 2026-10-29
+verified the implemented private staging and offline planning path in a
+disposable Supabase project. It did not establish publication eligibility or
+change the curated directory.
 The table below records the alternatives considered before that selection.
 
 | Path | Implementation direction | Prerequisite / tradeoff |

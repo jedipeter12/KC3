@@ -221,6 +221,40 @@ test("review batches are repeatable and source license changes cannot be hidden"
   ).toThrow("license");
 });
 
+test("rejects case variants of the same Overture UUID", () => {
+  const manifest = fixture();
+  manifest.records.push({
+    ...structuredClone(manifest.records[0]),
+    id: id.toUpperCase(),
+  });
+  const rows = draftRows(manifest);
+  expect(() =>
+    compileReview(manifest, rows.places, rows.hours, "2026-10-02"),
+  ).toThrow("Duplicate manifest identity");
+  expect(() =>
+    createManifest([
+      {
+        id,
+        name: "First",
+        addresses: [{ locality: "Lenexa", freeform: "1 Main St" }],
+        taxonomy: { primary: "cafe" },
+        sources: [{ dataset: "meta", license: "CDLA-Permissive-2.0" }],
+        latitude: 38.9,
+        longitude: -94.7,
+      },
+      {
+        id: id.toUpperCase(),
+        name: "Second",
+        addresses: [{ locality: "Lenexa", freeform: "2 Main St" }],
+        taxonomy: { primary: "cafe" },
+        sources: [{ dataset: "meta", license: "CDLA-Permissive-2.0" }],
+        latitude: 38.91,
+        longitude: -94.71,
+      },
+    ]),
+  ).toThrow("Duplicate external identity");
+});
+
 test("unknown lifecycle cannot default to an active Ready place", () => {
   const manifest = fixture();
   manifest.records[0].operatingStatus = null;

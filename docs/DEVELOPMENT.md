@@ -322,6 +322,11 @@ database just to test this path. Application checks include
 
 ## Offline Overture Reconciliation Planning
 
+The reproducible synthetic rehearsal, including a separate-port local Supabase
+project, rollback probes, and exact database snapshot comparison, is in
+[`KC3_37_SYNTHETIC_REHEARSAL.md`](KC3_37_SYNTHETIC_REHEARSAL.md). It does not
+authorize use of curated records or a cutover.
+
 Run `npm run plan:overture-reconciliation -- manifest.json places.csv hours.csv snapshot.json report.json`
 with reviewed CSVs and a complete permitted offline snapshot. Start with
 synthetic fixtures; this is not an authorization to export Google-backed data.
