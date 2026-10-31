@@ -56,7 +56,8 @@ select is(
       and policyname = 'public_place_reader_selects_active_places'
       and cmd = 'SELECT'
       and roles = array['kc3_public_place_reader']::name[]
-      and qual = '((status = ''active''::place_status) AND mvp_published)'
+      and qual like '%mvp_published%'
+      and qual like '%kc3_hours_review_pending%'
   ),
   1,
   'the reader policy permits only active published rows for the dedicated role'

@@ -91,6 +91,12 @@ starting source with spreadsheet review and independently maintained hours.
 
 ## Completed
 
+- [x] 2026-10-29 attended third-space operator: private source-agnostic
+  discovery review, canonical review start with explicit provenance, nullable
+  KC3 classification editing, optimistic concurrency, and an hours-change
+  eligibility revision that pauses public visibility until review. The Google
+  importer loses publication-column write privilege. See
+  `docs/THIRD_SPACE_OPERATOR.md`. Overture rights/cutover and release gates stay open.
 - [x] Expanded the third-space data foundation with six broad venue types,
   independent work/hangout/social suitability, overlapping social and financial
   access facts, two structured activity classifications, private discovery

@@ -172,6 +172,11 @@ select
   '2026-09-07 15:00:00+00'
 from generate_series(0, 6) as days(day_number);
 
+-- These legacy contract fixtures represent already-reviewed published schedules.
+update public.place_hours_eligibility_reviews
+set reviewed_revision = hours_revision
+where place_id = 'a0000000-0000-0000-0000-000000000001';
+
 insert into public.place_hours (
   place_id, day_of_week, open_time, close_time, is_closed,
   closes_next_day, source, source_observed_at
@@ -186,6 +191,10 @@ select
   'google',
   '2026-09-21 15:00:00+00'
 from generate_series(0, 6) as days(day_number);
+
+update public.place_hours_eligibility_reviews
+set reviewed_revision = hours_revision
+where place_id = 'a0000000-0000-0000-0000-000000000003';
 
 select is(
   (
@@ -439,6 +448,10 @@ insert into public.place_overrides (
   '2026-09-21 14:00:00+00'
 );
 
+update public.place_hours_eligibility_reviews
+set reviewed_revision = hours_revision
+where place_id = 'a0000000-0000-0000-0000-000000000001';
+
 select is(
   (
     select effective_source
@@ -477,6 +490,10 @@ select
   'kc3',
   '2026-09-21 14:30:00+00'
 from generate_series(0, 6) as days(day_number);
+
+update public.place_hours_eligibility_reviews
+set reviewed_revision = hours_revision
+where place_id = 'a0000000-0000-0000-0000-000000000001';
 
 select is(
   (

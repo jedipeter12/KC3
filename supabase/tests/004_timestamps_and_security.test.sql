@@ -89,7 +89,8 @@ select set_eq(
   $$ values
     ('places'), ('place_google_data'), ('place_details'), ('place_hours'),
     ('place_overrides'), ('place_canonical_corrections'),
-    ('overture_review_batches'), ('place_discoveries')
+    ('overture_review_batches'), ('place_discoveries'),
+    ('place_hours_eligibility_reviews')
   $$,
   'row level security is enabled on every approved public table'
 );
@@ -102,7 +103,8 @@ select set_eq(
       and tablename in (
         'places', 'place_google_data', 'place_details', 'place_hours',
         'place_overrides', 'place_canonical_corrections',
-        'overture_review_batches', 'place_discoveries'
+        'overture_review_batches', 'place_discoveries',
+        'place_hours_eligibility_reviews'
       )
   $$,
   $$
@@ -126,7 +128,22 @@ select set_eq(
       ('overture_staging_reads_target_ids'),
       ('overture_staging_reads'),
       ('overture_staging_inserts'),
-      ('google_importer_creates_discovery')
+      ('google_importer_creates_discovery'),
+      ('third_space_operator_reads_places'),
+      ('third_space_operator_publishes_places'),
+      ('third_space_operator_reads_discoveries'),
+      ('third_space_operator_reviews_discoveries'),
+      ('third_space_operator_starts_discoveries'),
+      ('third_space_operator_reads_details'),
+      ('third_space_operator_inserts_details'),
+      ('third_space_operator_updates_details'),
+      ('third_space_operator_reads_hours'),
+      ('third_space_operator_reads_hours_reviews'),
+      ('third_space_operator_inserts_hours_reviews'),
+      ('third_space_operator_updates_hours_reviews'),
+      ('google_importer_inserts_hours_reviews'),
+      ('google_importer_updates_hours_reviews'),
+      ('google_importer_reads_hours_reviews')
   $$,
   'only the approved public-reader and server-operator policies open table rows'
 );
@@ -145,7 +162,7 @@ select is(
       and not tgisinternal
       and tgenabled = 'O'
   ),
-  9,
+  11,
   'updated_at, address-precision, and timezone-validation triggers are enabled'
 );
 
@@ -161,7 +178,9 @@ select ok(
         ('public.place_hours'),
         ('public.place_overrides'),
         ('public.place_canonical_corrections'),
-        ('public.overture_review_batches')
+        ('public.overture_review_batches'),
+        ('public.place_discoveries'),
+        ('public.place_hours_eligibility_reviews')
     ) as tables(table_name)
     cross join (
       values ('select'), ('insert'), ('update'), ('delete')

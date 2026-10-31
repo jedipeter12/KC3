@@ -58,9 +58,10 @@ used if an approved feature needs object storage. A separate operator-run
 TypeScript CLI performs bounded Google Places discovery and persists normalized
 records through a server-only transactional function; neither its Google key nor
 its Supabase service-role key is part of the Expo environment or import graph.
-Two additional attended TypeScript CLIs maintain KC3-owned details and bounded
-canonical corrections through separate least-privilege database owners. The
-canonical correction transaction also appends immutable source evidence.
+Three additional attended TypeScript CLIs maintain KC3-owned details, bounded
+canonical corrections, and source-agnostic third-space reviews through separate
+least-privilege database owners. The canonical correction transaction also
+appends immutable source evidence.
 
 KC3-30 implements the richer anonymous summary/detail data boundary, effective
 regular-hours resolution, typed freshness states, address precision, and
@@ -268,6 +269,14 @@ private discovery/intake table:
   daytime location stays a future candidate. Only a verified eligible discovery
   with a target-city place and an interval covering 8 p.m. may transition from
   private to published. Revoking eligibility unpublishes it.
+- `place_hours_eligibility_reviews`: A separate revision marker for changes to
+  base hours or effective regular-hours overrides. The public reader hides a
+  published place while its latest hours revision has not been reviewed.
+  Provider hours writes update this marker only; the attended operator reviews
+  the effective schedule against the 8 p.m. interval and intake checklist.
+  The currently active override identity also participates in the review gate,
+  so future-dated activation and expiry reopen review without another write.
+  The importer cannot write `mvp_published`.
 
 The public enum types include `place_type`, `place_status`, `address_precision`,
 `outlet_level`, `wifi_type`, `work_suitability`, `food_beverage_level`,

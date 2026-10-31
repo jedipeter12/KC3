@@ -26,6 +26,9 @@ Overland Park, and Olathe.
   verification data behind explicit validation, review, and confirmation. A
   separate attended canonical-correction CLI records authoritative evidence and
   immutable before/after values for bounded factual corrections.
+- A source-agnostic attended CLI now reviews private discoveries and new
+  third-space classifications. Changed hours pause public visibility until
+  eligibility is reviewed against the current schedule.
 
 KC3-23 final automated checks and live Expo Web and iOS Simulator functional
 smoke checks pass. Milestone closure remains pending native accessibility
@@ -56,6 +59,7 @@ the public environment configuration required to run the client.
 - [`docs/SEED_DATA.md`](docs/SEED_DATA.md) — local seed behavior, data provenance, and maintenance rules
 - [`docs/GOOGLE_INGESTION_CONTRACT.md`](docs/GOOGLE_INGESTION_CONTRACT.md) — approved Google field, ownership, normalization, refresh, and override rules
 - [`docs/PLACE_DETAILS_OPERATOR.md`](docs/PLACE_DETAILS_OPERATOR.md) — internal KC3-owned detail curation CLI and recovery workflow
+- [`docs/THIRD_SPACE_OPERATOR.md`](docs/THIRD_SPACE_OPERATOR.md) — attended discovery, classification, and hours eligibility review
 - [`docs/KC3_27_DATASET.md`](docs/KC3_27_DATASET.md) — bounded MVP dataset run record, counts, review findings, and coverage limitations
 - [`docs/KC3_28_VERIFICATION.md`](docs/KC3_28_VERIFICATION.md) — repeat import, ownership, timestamp, anonymous integration, and real-data UI verification record
 - [`docs/KC3_29_PLACE_EXPERIENCE.md`](docs/KC3_29_PLACE_EXPERIENCE.md) — approved real-data-driven list, detail, field, state, responsive, and accessibility contract
