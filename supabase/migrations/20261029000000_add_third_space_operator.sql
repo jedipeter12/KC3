@@ -183,13 +183,15 @@ grant execute on function public.kc3_has_eight_pm_schedule(uuid)
 create or replace function public.kc3_validate_mvp_eligibility()
 returns trigger language plpgsql set search_path = '' as $$
 begin
-  if new.mvp_eligible is true and (
-    not exists (select 1 from public.places p where p.id = new.place_id
+  -- A new provider discovery has unknown eligibility. Do not plan the
+  -- operator-only hours helper for the importer in that case.
+  if new.mvp_eligible is true then
+    if not exists (select 1 from public.places p where p.id = new.place_id
       and p.status = 'active' and p.city in ('Lenexa','Overland Park','Olathe'))
-    or not public.kc3_has_eight_pm_schedule(new.place_id)
-  ) then
-    raise exception using errcode = '23514',
-      message = 'MVP eligibility requires an active target-city place open through 8 p.m.';
+      or not public.kc3_has_eight_pm_schedule(new.place_id) then
+      raise exception using errcode = '23514',
+        message = 'MVP eligibility requires an active target-city place open through 8 p.m.';
+    end if;
   end if;
   return new;
 end;
