@@ -58,8 +58,8 @@ public repository. Ignore the local KC3-34 evidence directory in Git.
 The recordings are preliminary accessibility evidence, and the public GitHub
 repository is not an appropriate review store for clips showing the local
 provider-backed place dataset. The Product Owner requested Notion storage rather
-than GitHub. A temporary public evidence branch was deleted after this concern
-was raised; deleting a branch does not guarantee its old commit is inaccessible.
+than GitHub. A temporary public evidence branch and its CI run were deleted
+after this concern was raised. GitHub still serves the old commit by ID.
 
 **Alternatives considered**
 
@@ -77,9 +77,9 @@ documentation still records project status without distributing the videos.
 
 The Notion page must remain private; anyone without access to it cannot open the
 recording links in repository documentation. Future accessibility clips should
-follow the same storage rule. Check whether any cached GitHub reference to the
-deleted branch needs further removal before treating the earlier public upload
-as fully remediated.
+follow the same storage rule. The earlier public upload is not fully purged;
+server-side removal may require GitHub Support. Do not treat branch or workflow
+run deletion as proof that the old files are inaccessible.
 
 ### 2026-10-29 — Pause public visibility after hours change until attended eligibility review
 
