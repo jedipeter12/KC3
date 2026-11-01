@@ -10,10 +10,10 @@ Google discoveries remain outside the MVP public RPCs pending review. This is a
 data-model milestone; it does not close KC3-37's source-rights or launch gate.
 
 KC3-35's operator workflow is implemented and merged; its previously stale
-Notion status is reconciled with repository completion evidence. Accessibility
-work is on hold at the Product Owner's request as of 2026-10-02. KC3-34 continues
-to govern the remaining KC3-21/KC3-23 release gate when work resumes. Before
-production deployment, KC3-37 must resolve the completed KC3-36 provider-content
+Notion status is reconciled with repository completion evidence. KC3-34 Android
+evidence capture resumed on 2026-10-31 after the Product Owner's 2026-10-02
+hold; its user-attended checks remain open for the KC3-21/KC3-23 release gate.
+Before production deployment, KC3-37 must resolve the completed KC3-36 provider-content
 rights audit; the current Google-backed storage/display architecture is not
 cleared for launch. On 2026-10-02 the Product Owner selected Overture as the
 starting source with spreadsheet review and independently maintained hours.
@@ -42,14 +42,24 @@ starting source with spreadsheet review and independently maintained hours.
 - [ ] KC3-34: Complete user-attended VoiceOver and TalkBack verification for the
   KC3 place discovery/detail experience, implement and recheck any resulting
   fixes, and record spoken evidence for the KC3-21/KC3-23 closeout gate.
-  **On hold by Product Owner request, 2026-10-02.** The
-  2026-09-26 TalkBack pass fixed and rechecked ordinary-card address and compact
-  KC3-summary speech, and recorded search/filter/detail/Back/no-match evidence.
+  Resumed for a saved Android evidence pass on 2026-10-31 after the Product
+  Owner's 2026-10-02 hold. The 2026-09-26 TalkBack pass fixed and rechecked
+  ordinary-card address and compact KC3-summary speech, and recorded
+  search/filter/detail/Back/no-match evidence.
   A 2026-09-29 attended follow-up confirmed the below-fold Regular hours and
   About this information speech, but the emulator's 180-second recorder limit
-  prevented retaining the attempted clips. A short, segmented Android evidence
-  pass remains for the unrecorded checkpoints. VoiceOver requires a physical
-  iPhone because Apple does not provide it in iOS Simulator.
+  prevented retaining the attempted clips. Separate clips are now saved in a
+  [private Notion index](https://app.notion.com/p/40b35ab73db3815d8311f63702ba22d5).
+  Further short clips show direct TalkBack focus and speech-overlay output for
+  lower-detail items, the selected Wi-Fi preference, an isolated no-match
+  heading, and recovery count. Spoken
+  modal containment requires a person to make actual TalkBack swipes at both
+  Filters boundaries; injected swipes did not reliably invoke traversal. The
+  automatic timing of some status announcements also remains uncertain. These
+  checks block KC3-34 acceptance and KC3-21/KC3-23 release closeout, but do
+  not by themselves block merging the documentation into `main`.
+  VoiceOver requires a physical iPhone because Apple does not provide it in
+  iOS Simulator.
 - [ ] KC3-23: Final automated verification and live Expo Web and iOS Simulator
   functional smoke passes complete; milestone closure remains blocked by the
   KC3-21 native accessibility checks. See `docs/MVP_VERIFICATION.md` for evidence

@@ -9,9 +9,10 @@ Overland Park, and Olathe.
 
 - Stage: Implemented real-data-driven place list/detail slice over the approved
   anonymous public contract and refresh-verified local MVP dataset
-- Current state: KC3-35's operator workflow is complete. KC3-34 accessibility
-  work is on hold at the Product Owner's request as of 2026-10-02; its
-  KC3-21/KC3-23 release gate remains open.
+- Current state: KC3-35's operator workflow is complete. KC3-34 Android
+  TalkBack recordings resumed on 2026-10-31; a person must still check both
+  Filters swipe boundaries and the Product Owner must review the evidence.
+  Its KC3-21/KC3-23 release gate remains open.
 - Production gate: KC3-36's provider-content rights audit is complete; KC3-37
   must resolve sourcing, retention, attribution, and use permissions before
   deploying the Google-backed architecture or finalizing App Store disclosures.

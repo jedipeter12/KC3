@@ -143,6 +143,22 @@ that recorder, split the checklist into clips shorter than 180 seconds and save
 each WebM immediately before starting the next clip. Do not rely on one long
 recording for the attended pass.
 
+On the Android 16 emulator, `scrcpy --no-window --record=clip.mp4
+--audio-source=output --require-audio --time-limit=45` can capture the device
+display and TalkBack output directly. Check the saved file for both video and
+non-silent audio before using it as evidence. The 2026-10-31 local pass used
+short MP4 clips and raised their quiet captured audio by 20 dB in separate
+AAC review copies; see the
+[private Notion recording index](https://app.notion.com/p/40b35ab73db3815d8311f63702ba22d5).
+Keep recordings in private review storage, not in this public Git repository.
+Injected adb gestures did not reliably establish TalkBack swipe traversal.
+Root-only raw touch events could focus static detail headings and labels for
+individual speech evidence,
+but they did not prove modal-boundary containment or full reading order. Use
+swipes made by a person on the emulator or an Android device, with direct
+observation and listening, for those remaining checks. Restore the original
+TalkBack keyboard modifier and adb privilege level after any such capture.
+
 ## Building
 
 Run `npm run export` to create production bundles for Web, iOS, and Android in the

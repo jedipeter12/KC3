@@ -303,6 +303,33 @@ typecheck, lint, formatting, diff validation, 258 pgTAP assertions across 12
 files, public-schema database lint, six live anonymous integration tests, and
 Web/iOS/Android production export.
 
+### Android saved-evidence follow-up — 2026-10-31
+
+An isolated checkout of `main` at `d14702d` produced separate TalkBack video
+and audio clips for loading/count, preference/Clear, both Filters boundaries,
+detail heading and lower sections, no-match/recovery, and controlled
+error/retry/success. The
+[private Notion recording index](https://app.notion.com/p/40b35ab73db3815d8311f63702ba22d5)
+gives each file, observed state, and uncertain result. All clips are under 180
+seconds. Raw emulator touch events later moved TalkBack focus onto static
+lower-detail headings and rows, the selected Wi-Fi preference, the isolated no-match
+heading, and the restored result count. The speech-output overlay is visible
+during these focused events. Injected swipes still did not establish spoken
+modal containment; automatic loading, Clear, and error/retry/success utterance
+timing is not fully isolated. A later attempted error take restarted Expo Go
+into TalkBack settings and is retained as a failed attempt. No clear KC3 defect
+was reproduced. KC3-34 remains open for the Product Owner's listening review
+and user-attended acceptance pass. Temporary TalkBack, keyboard-modifier, root,
+and adb network settings were restored after capture.
+
+The remaining Filters boundary check requires a person to perform actual
+TalkBack next/previous swipes on the emulator or an Android device. Injected
+swipes did not reliably invoke TalkBack traversal, so the saved keyboard and
+touch attempts cannot establish spoken focus containment. Observe focus and
+speech at both ends of the open modal, record the outcome, and retain KC3-34 as
+open until Product Owner review. This check gates accessibility acceptance and
+the KC3-21/KC3-23 release closeout, not merging the partial evidence itself.
+
 The requested VoiceOver target cannot be completed on the named iPhone 17 / iOS
 26.5 Simulator: Apple documents that VoiceOver is unavailable in Simulator and
 requires testing on a physical device. The simulator accessibility hierarchy and

@@ -43,6 +43,44 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-10-31 — Keep unverified accessibility recordings out of public Git
+
+**Status:** Accepted (Product Owner instruction)
+
+**Decision**
+
+Store KC3-34 TalkBack recordings and their scenario index in a private Notion
+review page. Keep only the outcome, uncertainty, and remaining checks in the
+public repository. Ignore the local KC3-34 evidence directory in Git.
+
+**Context**
+
+The recordings are preliminary accessibility evidence, and the public GitHub
+repository is not an appropriate review store for clips showing the local
+provider-backed place dataset. The Product Owner requested Notion storage rather
+than GitHub. A temporary public evidence branch was deleted after this concern
+was raised; deleting a branch does not guarantee its old commit is inaccessible.
+
+**Alternatives considered**
+
+- Commit the videos directly to the public repository.
+- Keep the videos only on the local Mac.
+- Use a private Notion page for review copies and retain local originals.
+
+**Reasoning**
+
+Notion gives the Product Owner a reviewable index and playable clips with
+restricted access. Local originals preserve the capture files. Repository
+documentation still records project status without distributing the videos.
+
+**Consequences / follow-up**
+
+The Notion page must remain private; anyone without access to it cannot open the
+recording links in repository documentation. Future accessibility clips should
+follow the same storage rule. Check whether any cached GitHub reference to the
+deleted branch needs further removal before treating the earlier public upload
+as fully remediated.
+
 ### 2026-10-29 — Pause public visibility after hours change until attended eligibility review
 
 **Status:** Accepted
