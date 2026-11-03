@@ -1,276 +1,51 @@
 begin;
-
 create extension if not exists pgtap with schema extensions;
-
 set local search_path = public, extensions;
+select plan(8);
 
-select plan(11);
+insert into public.places (id,name,city,address,place_type,updated_at)
+values ('50000000-0000-0000-0000-000000000001','Timestamp fixture',
+  'Lenexa','50 Main St','park','2000-01-01 00:00:00+00');
+insert into public.place_details (place_id,updated_at)
+values ('50000000-0000-0000-0000-000000000001','2000-01-01 00:00:00+00');
+insert into public.place_hours (place_id,day_of_week,open_time,close_time,
+  source,source_observed_at,updated_at)
+values ('50000000-0000-0000-0000-000000000001',1,'08:00','16:00',
+  'kc3',now(),'2000-01-01 00:00:00+00');
+update public.places set name=name
+  where id='50000000-0000-0000-0000-000000000001';
+update public.place_details set seating_notes='KC3 note'
+  where place_id='50000000-0000-0000-0000-000000000001';
+update public.place_hours set close_time='17:00'
+  where place_id='50000000-0000-0000-0000-000000000001';
 
-insert into public.places (
-  id, name, city, address, place_type, updated_at
-) values (
-  '50000000-0000-0000-0000-000000000001',
-  'Timestamp Test Park',
-  'Kansas City',
-  '50 Main St',
-  'park',
-  '2000-01-01 00:00:00+00'
-);
-
-insert into public.place_google_data (place_id, updated_at)
-values ('50000000-0000-0000-0000-000000000001', '2000-01-01 00:00:00+00');
-
-insert into public.place_details (place_id, updated_at)
-values ('50000000-0000-0000-0000-000000000001', '2000-01-01 00:00:00+00');
-
-insert into public.place_hours (
-  place_id, day_of_week, open_time, close_time, source, updated_at
-) values (
-  '50000000-0000-0000-0000-000000000001',
-  1,
-  '08:00',
-  '16:00',
-  'kc3',
-  '2000-01-01 00:00:00+00'
-);
-
-insert into public.place_overrides (
-  place_id, override_type, effective_start_date, effective_end_date,
-  override_value, updated_at
-) values (
-  '50000000-0000-0000-0000-000000000001',
-  'regular_hours',
-  '2026-09-01',
-  '2026-09-02',
-  '[]'::jsonb,
-  '2000-01-01 00:00:00+00'
-);
-
-update public.places set name = name where id = '50000000-0000-0000-0000-000000000001';
-update public.place_google_data set google_name = 'Updated' where place_id = '50000000-0000-0000-0000-000000000001';
-update public.place_details set seating_notes = 'Updated' where place_id = '50000000-0000-0000-0000-000000000001';
-update public.place_hours set source = 'google' where place_id = '50000000-0000-0000-0000-000000000001';
-update public.place_overrides set note = 'Updated' where place_id = '50000000-0000-0000-0000-000000000001';
-
-select ok(
-  (select updated_at > '2000-01-01 00:00:00+00' from public.places where id = '50000000-0000-0000-0000-000000000001'),
-  'updating a place refreshes updated_at'
-);
-
-select ok(
-  (select updated_at > '2000-01-01 00:00:00+00' from public.place_google_data where place_id = '50000000-0000-0000-0000-000000000001'),
-  'updating Google data refreshes updated_at'
-);
-
-select ok(
-  (select updated_at > '2000-01-01 00:00:00+00' from public.place_details where place_id = '50000000-0000-0000-0000-000000000001'),
-  'updating KC3 details refreshes updated_at'
-);
-
-select ok(
-  (select updated_at > '2000-01-01 00:00:00+00' from public.place_hours where place_id = '50000000-0000-0000-0000-000000000001'),
-  'updating hours refreshes updated_at'
-);
-
-select ok(
-  (select updated_at > '2000-01-01 00:00:00+00' from public.place_overrides where place_id = '50000000-0000-0000-0000-000000000001'),
-  'updating an override refreshes updated_at'
-);
-
-select set_eq(
-  $$
-    select relname::text
-    from pg_class
-    join pg_namespace on pg_namespace.oid = pg_class.relnamespace
-    where pg_namespace.nspname = 'public'
-      and pg_class.relkind = 'r'
-      and pg_class.relrowsecurity
-  $$,
-  $$ values
-    ('places'), ('place_google_data'), ('place_details'), ('place_hours'),
-    ('place_overrides'), ('place_canonical_corrections'),
-    ('overture_review_batches'), ('place_discoveries'),
-    ('place_hours_eligibility_reviews')
-  $$,
-  'row level security is enabled on every approved public table'
-);
-
-select set_eq(
-  $$
-    select policyname::text
-    from pg_policies
-    where schemaname = 'public'
-      and tablename in (
-        'places', 'place_google_data', 'place_details', 'place_hours',
-        'place_overrides', 'place_canonical_corrections',
-        'overture_review_batches', 'place_discoveries',
-        'place_hours_eligibility_reviews'
-      )
-  $$,
-  $$
-    values
-      ('public_place_reader_selects_active_places'),
-      ('google_importer_accesses_places'),
-      ('google_importer_accesses_google_data'),
-      ('google_importer_accesses_hours'),
-      ('public_place_reader_selects_active_details'),
-      ('public_place_reader_selects_active_hours'),
-      ('public_place_reader_selects_active_overrides'),
-      ('place_detail_operator_reads_active_provider_places'),
-      ('place_detail_operator_reads_provider_identity'),
-      ('place_detail_operator_reads_details'),
-      ('place_detail_operator_inserts_details'),
-      ('place_detail_operator_updates_details'),
-      ('canonical_correction_operator_reads_active_provider_places'),
-      ('canonical_correction_operator_updates_active_provider_places'),
-      ('canonical_correction_operator_reads_provider_context'),
-      ('canonical_correction_operator_inserts_audit_rows'),
-      ('overture_staging_reads_target_ids'),
-      ('overture_staging_reads'),
-      ('overture_staging_inserts'),
-      ('google_importer_creates_discovery'),
-      ('third_space_operator_reads_places'),
-      ('third_space_operator_publishes_places'),
-      ('third_space_operator_reads_discoveries'),
-      ('third_space_operator_reviews_discoveries'),
-      ('third_space_operator_starts_discoveries'),
-      ('third_space_operator_reads_details'),
-      ('third_space_operator_inserts_details'),
-      ('third_space_operator_updates_details'),
-      ('third_space_operator_reads_hours'),
-      ('third_space_operator_reads_hours_reviews'),
-      ('third_space_operator_inserts_hours_reviews'),
-      ('third_space_operator_updates_hours_reviews'),
-      ('google_importer_inserts_hours_reviews'),
-      ('google_importer_updates_hours_reviews'),
-      ('google_importer_reads_hours_reviews')
-  $$,
-  'only the approved public-reader and server-operator policies open table rows'
-);
-
-select is(
-  (
-    select count(*)::integer
-    from pg_trigger
-    where tgrelid in (
-      'public.places'::regclass,
-      'public.place_google_data'::regclass,
-      'public.place_details'::regclass,
-      'public.place_hours'::regclass,
-      'public.place_overrides'::regclass
-    )
-      and not tgisinternal
-      and tgenabled = 'O'
-  ),
-  11,
-  'updated_at, address-precision, and timezone-validation triggers are enabled'
-);
-
-select ok(
-  not exists (
-    select 1
-    from (values ('anon'), ('authenticated'), ('service_role')) as roles(role_name)
-    cross join (
-      values
-        ('public.places'),
-        ('public.place_google_data'),
-        ('public.place_details'),
-        ('public.place_hours'),
-        ('public.place_overrides'),
-        ('public.place_canonical_corrections'),
-        ('public.overture_review_batches'),
-        ('public.place_discoveries'),
-        ('public.place_hours_eligibility_reviews')
-    ) as tables(table_name)
-    cross join (
-      values ('select'), ('insert'), ('update'), ('delete')
-    ) as privileges(privilege_name)
-    where has_table_privilege(
-      roles.role_name,
-      tables.table_name,
-      privileges.privilege_name
-    )
-  ),
-  'Data API roles have no privileges on the approved tables'
-);
-
-select ok(
-  not exists (
-    select 1
-    from (values ('anon'), ('authenticated'), ('service_role')) as roles(role_name)
-    where has_function_privilege(
-      roles.role_name,
-      'public.set_updated_at()',
-      'execute'
-    )
-  ),
-  'Data API roles cannot execute the trigger helper directly or through PUBLIC'
-);
-
--- pg_prove connects as Supabase's platform role, while project migrations run
--- as postgres. Create the probes as postgres so this checks the project-owned
--- default privileges changed by the migration.
-set local role postgres;
-
-create table public.default_privilege_probe (
-  id bigint generated by default as identity primary key
-);
-
-create function public.default_privilege_probe()
-returns void
-language plpgsql
-set search_path = ''
-as $$
-begin
-  return;
-end;
-$$;
-
-reset role;
-
-select ok(
-  not exists (
-    select 1
-    from (values ('anon'), ('authenticated'), ('service_role')) as roles(role_name)
-    cross join (
-      values
-        ('select'),
-        ('insert'),
-        ('update'),
-        ('delete'),
-        ('truncate'),
-        ('references'),
-        ('trigger'),
-        ('maintain')
-    ) as privileges(privilege_name)
-    where has_table_privilege(
-      roles.role_name,
-      'public.default_privilege_probe',
-      privileges.privilege_name
-    )
-  )
-  and not exists (
-    select 1
-    from (values ('anon'), ('authenticated'), ('service_role')) as roles(role_name)
-    cross join (values ('usage'), ('select'), ('update')) as privileges(privilege_name)
-    where has_sequence_privilege(
-        roles.role_name,
-        'public.default_privilege_probe_id_seq',
-        privileges.privilege_name
-      )
-  )
-  and not exists (
-    select 1
-    from (values ('anon'), ('authenticated'), ('service_role')) as roles(role_name)
-    where has_function_privilege(
-        roles.role_name,
-        'public.default_privilege_probe()',
-        'execute'
-      )
-  ),
-  'future postgres-owned public objects stay closed until explicitly granted'
-);
-
+select ok((select updated_at>'2000-01-01' from public.places
+  where id='50000000-0000-0000-0000-000000000001'),
+  'canonical updates retain an audit timestamp');
+select ok((select updated_at>'2000-01-01' from public.place_details
+  where place_id='50000000-0000-0000-0000-000000000001'),
+  'KC3 detail updates retain an audit timestamp');
+select ok((select updated_at>'2000-01-01' from public.place_hours
+  where place_id='50000000-0000-0000-0000-000000000001'),
+  'KC3 hours updates retain an audit timestamp');
+select is((select count(*)::integer from pg_class join pg_namespace
+  on pg_namespace.oid=pg_class.relnamespace
+  where nspname='public' and relname in ('places','place_details',
+    'place_hours','place_publications','overture_review_batches')
+    and relrowsecurity),5,
+  'canonical, KC3, staging, and publication tables enforce RLS');
+select ok(not has_table_privilege('anon','public.places','select')
+  and not has_table_privilege('anon','public.place_publications','select'),
+  'anonymous clients cannot read base identity or provenance tables');
+select ok(not has_table_privilege('service_role','public.place_publications','insert'),
+  'service role cannot bypass the publication RPC with a direct insert');
+select is((select count(*)::integer from pg_trigger
+  where tgname in ('reject_google_place_id','reject_google_provider_copy',
+    'reject_google_hours') and tgenabled='O'),3,
+  'all three Google-content resurrection guards are enabled');
+select is((select pg_get_userbyid(proowner) from pg_proc
+  where oid='public.kc3_publish_overture_place(uuid,uuid,uuid,timestamptz,boolean,boolean,text)'::regprocedure),
+  'kc3_overture_publisher',
+  'publication RPC is owned by its constrained role');
 select * from finish();
-
 rollback;

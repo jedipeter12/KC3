@@ -3,10 +3,28 @@ import {
   formatHoursRows,
   getCompactKc3Summary,
   getHoursStatus,
+  getCurrentHoursState,
 } from "../src/features/places/placePresentation";
 import { makePlaceSummary } from "./place-fixtures";
 
 describe("place presentation", () => {
+  it.each(["open", "closed"] as const)(
+    "does not extend a cached %s claim beyond its reported transition",
+    (state) => {
+      const place = makePlaceSummary({
+        regular_hours_available: true,
+        regular_hours_observed_at: "2026-10-03T16:00:00Z",
+        regular_hours_state: state,
+        regular_hours_next_transition_at: "2026-10-03T17:00:00Z",
+      });
+      expect(
+        getCurrentHoursState(place, new Date("2026-10-03T16:59:59.999Z")),
+      ).toBe(state);
+      expect(getHoursStatus(place, new Date("2026-10-03T17:00:00Z"))).toBe(
+        "Current hours status unavailable",
+      );
+    },
+  );
   it("keeps unavailable, stale, and continuous-open states distinct", () => {
     expect(getHoursStatus(makePlaceSummary())).toBe("Hours unavailable");
     expect(
@@ -29,6 +47,29 @@ describe("place presentation", () => {
         new Date("2026-09-22T12:00:00Z"),
       ),
     ).toBe("Open 24 hours");
+  });
+
+  it("keeps an older dawn-to-dusk policy current until its server transition", () => {
+    const place = makePlaceSummary({
+      place_type: "park",
+      regular_hours_available: true,
+      regular_hours_rule: "dawn_to_dusk",
+      regular_hours_observed_at: "2026-09-01T12:00:00Z",
+      regular_hours_state: "open",
+      regular_hours_next_transition_at: "2026-10-03T23:00:00Z",
+    });
+    expect(getCurrentHoursState(place, new Date("2026-10-03T22:59:59Z"))).toBe(
+      "open",
+    );
+    expect(getHoursStatus(place, new Date("2026-10-03T22:59:59Z"))).toMatch(
+      /^Open · until/,
+    );
+    expect(getCurrentHoursState(place, new Date("2026-10-03T23:00:00Z"))).toBe(
+      "unknown",
+    );
+    expect(getHoursStatus(place, new Date("2026-10-03T23:00:00Z"))).toBe(
+      "Current hours status unavailable",
+    );
   });
 
   it("formats split, overnight, closed, and 24-hour schedule rows", () => {

@@ -1,4 +1,5 @@
 import type { PlaceType, PublicPlaceSummary } from "../../types/database";
+import { getCurrentHoursState } from "./placePresentation";
 
 export type PlaceFilters = Readonly<{
   bathroomAvailable: boolean;
@@ -76,6 +77,7 @@ export function hasNonDefaultPlaceFilters(filters: PlaceFilters): boolean {
 export function filterPlaces(
   places: readonly PublicPlaceSummary[],
   filters: PlaceFilters,
+  now = new Date(),
 ): PublicPlaceSummary[] {
   const normalizedNameQuery = normalizePlaceNameQuery(filters.nameQuery);
 
@@ -85,9 +87,7 @@ export function filterPlaces(
         place.name.toLowerCase().includes(normalizedNameQuery)) &&
       (filters.city === null || place.city === filters.city) &&
       (filters.placeType === null || place.place_type === filters.placeType) &&
-      (!filters.openNow ||
-        (place.regular_hours_available &&
-          place.regular_hours_state === "open")) &&
+      (!filters.openNow || getCurrentHoursState(place, now) === "open") &&
       (!filters.goodForWork || place.work_suitability === "good") &&
       (!filters.wifiAvailable ||
         (place.wifi !== "none" && place.wifi !== "unknown")) &&

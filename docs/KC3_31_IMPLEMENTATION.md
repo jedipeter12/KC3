@@ -177,3 +177,25 @@ After the TalkBack fixes, all 88 application tests, typecheck, lint, formatting,
 diff validation, 258 pgTAP assertions, public-schema database lint, six live
 anonymous integration tests, and Web/iOS/Android production export passed. The
 temporary Android test settings were restored.
+
+## Active-screen hours refresh — 2026-10-03
+
+The list and detail now reread the existing anonymous RPCs at reported hours
+transitions, immediately after schedule freshness expires, and each active
+minute. Native/Web background screens pause polling; resume and return to the
+list refresh the visible snapshot, including a list loaded behind a direct
+detail view. The server remains responsible for effective hours and timezone
+calculations. Expired states are suppressed during pending/failed refreshes and
+cannot match Open now. Failure retains successful rows, filters, navigation,
+and weekly schedules with sanitized retry. Requests are coalesced, late responses
+remain guarded, and unmount removes timers/listeners. Routine unchanged refreshes
+do not repeat iOS loading/result announcements.
+
+Automated evidence: 116 application tests, including 11 clock/lifecycle component
+cases and expired-state/freshness helper regressions; typecheck, lint, formatting,
+six live local anonymous integration checks, diff validation, and Web/iOS/Android
+exports pass. Local checks use available Node 26.7.0 and npm 11.19.0; pinned Node
+24.20.0 CI verification remains required before release. No new dependency, SQL
+change, database write/reset, provider fetch, native/browser lifecycle smoke pass,
+or attended accessibility verification is claimed. KC3-34 remains on hold and
+the existing sourcing/release gates stay open.

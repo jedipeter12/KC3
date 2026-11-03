@@ -88,12 +88,18 @@ function formatSearchResult(
   place: CanonicalCorrectionPlace,
   index: number,
 ): string {
+  if (place.overtureId) {
+    return [
+      `[${index + 1}] ${oneLine(place.name)} — ${oneLine(place.address)} (${place.addressPrecision}; ${place.placeType})`,
+      `    KC3 ID: ${place.id}; reviewed Overture ID: ${place.overtureId}`,
+    ].join("\n");
+  }
   return [
     `[${index + 1}] ${oneLine(place.name)} — ${oneLine(place.address)} (${place.addressPrecision}; ${place.placeType})`,
     `    KC3 ID: ${place.id}`,
     `    Google identity: ${oneLine(place.googleName ?? "not supplied")} — ${oneLine(place.googleAddress ?? "not supplied")}`,
     `    Google type: ${oneLine(place.googlePrimaryType ?? "not supplied")}; types: ${oneLine(place.googleTypes.join(", ") || "not supplied")}`,
-    `    Google Place ID: ${oneLine(place.googlePlaceId)}; status: ${oneLine(place.googleBusinessStatus ?? "not supplied")}; fetched: ${oneLine(place.googleFetchedAt ?? "not supplied")}`,
+    `    Google Place ID: ${oneLine(place.googlePlaceId ?? "not supplied")}; status: ${oneLine(place.googleBusinessStatus ?? "not supplied")}; fetched: ${oneLine(place.googleFetchedAt ?? "not supplied")}`,
   ].join("\n");
 }
 

@@ -124,6 +124,11 @@ describe("place-list screen", () => {
       within(rows[1]).getByText("KC3 details not yet verified"),
     ).toBeOnTheScreen();
     expect(screen.queryByText("Drive-through Place")).not.toBeOnTheScreen();
+    expect(
+      screen.getByText(
+        /Place data adapted from Overture Maps and contributors/,
+      ),
+    ).toBeOnTheScreen();
   });
 
   it("includes addresses in every card label", async () => {
@@ -252,7 +257,9 @@ describe("place-list screen", () => {
     expect(await screen.findByText("Good to know")).toBeOnTheScreen();
     expect(screen.getByText("Tables near the windows")).toBeOnTheScreen();
     expect(screen.getByText("Regular hours")).toBeOnTheScreen();
-    await fireEvent.press(screen.getByRole("link", { name: "Open in Maps" }));
+    await fireEvent.press(
+      screen.getByRole("link", { name: /Open in (Apple|Google) Maps/ }),
+    );
     expect(openUrl).toHaveBeenCalledWith(
       expect.stringContaining("maps.apple.com/?q=Second%20Place"),
     );
@@ -275,6 +282,34 @@ describe("place-list screen", () => {
       PLACES[0].id,
       expect.any(AbortSignal),
     );
+  });
+
+  it("shows a park policy without displaying closed compatibility rows", async () => {
+    const detail = makePlaceDetail({
+      place_type: "park",
+      regular_hours_available: true,
+      regular_hours_rule: "dawn_to_dusk",
+      regular_hours_observed_at: new Date().toISOString(),
+      regular_hours_state: "open",
+      regular_hours: Array.from({ length: 7 }, (_, day_of_week) => ({
+        day_of_week,
+        open_time: null,
+        close_time: null,
+        is_closed: true,
+        closes_next_day: false,
+      })),
+    });
+    await render(
+      <PlaceDetailScreen
+        placeId={detail.id}
+        loadPlaceDetail={async () => detail}
+        onBack={() => {}}
+      />,
+    );
+    expect(await screen.findByText("Dawn to dusk")).toBeOnTheScreen();
+    expect(screen.queryByText("Today")).not.toBeOnTheScreen();
+    expect(screen.queryByText("Monday")).not.toBeOnTheScreen();
+    expect(screen.queryByText("Closed")).not.toBeOnTheScreen();
   });
 
   it("restores list position when browser Back returns from details", async () => {
@@ -389,12 +424,16 @@ describe("place-list screen", () => {
     );
     await screen.findByText("Good to know");
 
-    await fireEvent.press(screen.getByRole("link", { name: "Open in Maps" }));
+    await fireEvent.press(
+      screen.getByRole("link", { name: /Open in (Apple|Google) Maps/ }),
+    );
     expect(
       await screen.findByText("Maps couldn't be opened. Try again."),
     ).toBeOnTheScreen();
 
-    await fireEvent.press(screen.getByRole("link", { name: "Open in Maps" }));
+    await fireEvent.press(
+      screen.getByRole("link", { name: /Open in (Apple|Google) Maps/ }),
+    );
     expect(
       screen.queryByText("Maps couldn't be opened. Try again."),
     ).not.toBeOnTheScreen();

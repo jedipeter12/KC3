@@ -43,6 +43,103 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-11-02 — Require both source review and MVP eligibility for public places
+
+**Status:** Accepted for the KC3-37 integration
+
+**Decision**
+
+Anonymous place reads require a reviewed Overture source publication, the
+independent `mvp_published` flag, and no pending hours eligibility review. The
+Overture publisher records provenance and canonical facts; it does not set MVP
+eligibility or clear a pending hours review.
+
+**Context**
+
+The KC3-37 source publication work and the newer third-space operator both
+introduce publication gates. The latter requires attended discovery and an
+evening-hours check before a new place can enter the MVP.
+
+**Alternatives considered**
+
+- Let the Overture source ledger alone make a place public.
+- Let `mvp_published` alone expose a place without reviewed source rights.
+
+**Reasoning**
+
+Both reviews answer separate questions. Requiring both retains the source-rights
+boundary and the accepted MVP eligibility and hours-change controls.
+
+**Consequences / follow-up**
+
+New Overture places remain private after source publication until the attended
+third-space review publishes them. A matched, already eligible place also waits
+for review if publication changes its hours. No actual workbook row or production
+place is approved by this decision.
+
+### 2026-11-02 — Represent park hours as a dawn-to-dusk policy
+
+**Status:** Accepted
+
+**Decision**
+
+Allow a verified park-only `dawn_to_dusk` hours rule with blank weekday cells.
+Keep seven closed storage rows for compatibility and calculate current sunrise,
+sunset, and the next transition from canonical coordinates on the server.
+
+**Context**
+
+Park access can follow a stable policy while clock times move with the season.
+
+**Alternatives considered**
+
+- Leave every such park Pending until a fixed weekly schedule is supplied.
+- Encode the policy as copied clock times, continuous opening, or a category
+  assumption.
+
+**Reasoning**
+
+An explicit rule distinguishes verified policy from an invented schedule.
+
+**Consequences / follow-up**
+
+The rule does not bypass MVP eligibility. Seasonal closures and exceptions still
+require attended review. The weekly schedule freshness behavior remains intact.
+
+### 2026-11-01 — Gate source provenance on attended Overture publication
+
+**Status:** Accepted
+
+**Decision**
+
+Record only staged, reviewed Overture identities after explicit municipality and
+duplicate confirmation. Preserve stable KC3 IDs and owned details on a reviewed
+match, and hide unreviewed legacy rows from anonymous reads. Retire the old
+Google write paths before client cutover.
+
+**Context**
+
+The workbook remains Pending. Existing provider-derived values and correction
+snapshots cannot establish independent provenance by equality alone.
+
+**Alternatives considered**
+
+- Promote existing active rows automatically by matching names or addresses.
+- Hide only the provider table while leaving the old public RPCs available.
+- Bulk replace IDs and copy owned details to new rows.
+
+**Reasoning**
+
+A private ledger and per-place transaction allow attended source review while
+protecting stable identities, KC3 details, and unresolved history.
+
+**Consequences / follow-up**
+
+The migration makes the public list empty before a reviewed source record is
+published. Source publication alone does not satisfy the independent MVP gate.
+Production deployment, legacy-history disposition, and directory cutover remain
+open.
+
 ### 2026-10-29 — Pause public visibility after hours change until attended eligibility review
 
 **Status:** Accepted
@@ -135,6 +232,39 @@ An attended source-agnostic intake/classification operator, source-aware
 Overture reconciliation, and any broader public filters are separate follow-up
 work. The KC3-37 rights and cutover gate remains open. Reassess legacy records
 against the fuller verification checklist before asserting their new eligibility.
+
+### 2026-10-03 — Refresh visible hours snapshots without client schedule inference
+
+**Status:** Accepted (Product Owner requested the hours refresh fix)
+
+**Decision**
+
+Refresh only visible list/detail snapshots each active minute, sooner at a
+reported transition or weekly freshness boundary, and on resume or return to
+the list. Suppress expired server states while a refresh is pending and preserve
+loaded content on a transient failure.
+
+**Context**
+
+A screen kept open across a transition could display an outdated current-hours
+claim. The narrow public summary does not include enough data for the client to
+calculate a new state.
+
+**Alternatives considered**
+
+- Refresh only on resume.
+- Calculate current hours from an expanded client schedule and timezone payload.
+
+**Reasoning**
+
+The existing anonymous RPCs remain the authority for effective hours. Bounded
+visible-screen reads retain that authority without a new dependency or schema.
+
+**Consequences / follow-up**
+
+Visible screens make bounded anonymous reads. Hidden screens stop polling.
+Automatic checks do not replace platform smoke checks or the paused attended
+accessibility gate.
 
 ### 2026-10-02 — Choose Overture as the starting directory source
 

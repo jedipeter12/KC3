@@ -125,6 +125,7 @@ test.each([
       observedOn: "2026-10-02",
       reuseBasis: "Business supplied",
       notes: "Permission confirmed",
+      ruleType: "weekly",
       periods: [],
     };
   expect(planOvertureReconciliation(b, s).entries[0]).toMatchObject({

@@ -9,14 +9,13 @@ select plan(32);
 select lives_ok(
   $$
     insert into public.places (
-      id, name, city, address, place_type, google_place_id
+      id, name, city, address, place_type
     ) values (
       '10000000-0000-0000-0000-000000000001',
       'Main Library',
       'Kansas City',
       '14 W 10th St',
-      'library',
-      'google-main-library'
+      'library'
     )
   $$,
   'a place can be created with the required canonical data'
@@ -81,9 +80,9 @@ select throws_ok(
     insert into public.places (name, city, address, place_type, google_place_id)
     values ('Duplicate Library', 'Kansas City', '2 Main St', 'library', 'google-main-library')
   $$,
-  '23505',
-  null,
-  'a non-null Google Place ID cannot identify two places'
+  '42501',
+  'Google content import is retired',
+  'a legacy Google Place ID cannot be introduced'
 );
 
 select lives_ok(
@@ -178,7 +177,7 @@ select throws_ok(
   'unknown food and beverage availability must use its explicit enum value rather than null'
 );
 
-select lives_ok(
+select throws_ok(
   $$
     insert into public.place_google_data (
       place_id, google_rating, google_user_rating_count
@@ -188,19 +187,21 @@ select lives_ok(
       125
     )
   $$,
-  'Google-derived data can be stored separately from KC3 details'
+  '42501',
+  'Google content import is retired',
+  'retired Google provider copies cannot be introduced'
 );
 
-select is(
-  (select google_user_rating_count from public.place_google_data where place_id = '10000000-0000-0000-0000-000000000001'),
-  125,
-  'Google rating counts are retained'
+select ok(
+  not exists(select 1 from public.place_google_data where place_id = '10000000-0000-0000-0000-000000000001'),
+  'failed provider write leaves no Google row'
 );
 
-select is(
-  (select google_rating from public.place_google_data where place_id = '10000000-0000-0000-0000-000000000001'),
-  4.7::numeric,
-  'Google rating precision is retained'
+select throws_ok(
+  $$update public.places set google_place_id = 'old-google-id'
+    where id = '10000000-0000-0000-0000-000000000001'$$,
+  '42501', 'Google content import is retired',
+  'existing canonical rows cannot reacquire a Google ID'
 );
 
 select throws_ok(
@@ -212,9 +213,9 @@ select throws_ok(
 
 select throws_ok(
   $$ insert into public.place_google_data (place_id) values ('20000000-0000-0000-0000-000000000001') $$,
-  '23503',
-  null,
-  'Google data cannot exist without a canonical place'
+  '42501',
+  'Google content import is retired',
+  'Google data cannot be restored even for a missing canonical place'
 );
 
 select throws_ok(
@@ -226,9 +227,9 @@ select throws_ok(
 
 select throws_ok(
   $$ insert into public.place_google_data (place_id) values ('10000000-0000-0000-0000-000000000001') $$,
-  '23505',
-  null,
-  'a place cannot have two Google data records'
+  '42501',
+  'Google content import is retired',
+  'Google data insert remains blocked for a place with KC3 details'
 );
 
 select lives_ok(
@@ -236,7 +237,7 @@ select lives_ok(
     insert into public.place_hours (place_id, day_of_week, open_time, close_time, source)
     values ('10000000-0000-0000-0000-000000000001', 1, '09:00', '17:00', 'kc3')
   $$,
-  'hours can reference the canonical place alongside both one-to-one records'
+  'KC3 hours can reference the canonical place alongside KC3 details'
 );
 
 select lives_ok(
@@ -251,7 +252,7 @@ select is(
     + (select count(*) from public.place_hours where place_id = '10000000-0000-0000-0000-000000000001')
   ),
   0::bigint,
-  'deleting a place cascades to details, Google data, and hours'
+  'deleting a place cascades to details and hours'
 );
 
 select * from finish();

@@ -29,6 +29,9 @@ five-field screen keeps working while KC3-31 adopts the expanded contract.
   from row update time and provider fetch time.
 - Same-day open intervals must close after they open. An overnight or 24-hour
   interval must explicitly set `closes_next_day`.
+- A reviewed publication may use the bounded `dawn_to_dusk` hours rule for a
+  park. It stores no fabricated weekly clock times; the server derives local
+  sunrise and sunset from the canonical coordinates for current-state checks.
 
 Provider ingestion still cannot write `place_details`, KC3 hours, or overrides.
 Google refreshes therefore cannot change KC3 suitability, amenity, drive-thru,
@@ -57,6 +60,13 @@ in the accepted IANA place timezone. Its public values are:
 - `regular_hours_next_transition_at`: the next real opening or closure instant,
   or null when unknown or continuously open; and
 - `regular_hours_observed_at`: the effective schedule observation time.
+
+The projection also returns `regular_hours_rule`, either `weekly` or
+`dawn_to_dusk`. For the latter, the detail schedule rows remain an internal
+compatibility placeholder; clients display the rule label and use the
+server-calculated current state and transition. Clients do not apply the weekly
+14-day schedule freshness cutoff to that policy or display the closed
+compatibility rows as today's hours.
 
 Exactly 14-day-old hours remain current. After 14 full days the weekly schedule
 remains available on detail, but current state and transition become `unknown`.

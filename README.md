@@ -16,7 +16,9 @@ Overland Park, and Olathe.
   must resolve sourcing, retention, attribution, and use permissions before
   deploying the Google-backed architecture or finalizing App Store disclosures.
   KC3-37 now uses the approved Overture starting-source direction. Spreadsheet
-  review and private import staging are prepared; launch cutover remains open. See
+  review, private staging, and a fixture-tested source-publication boundary are
+  prepared; no reviewed row has been published, and launch cutover remains open.
+  MVP visibility also requires the separate eligibility and hours-review gates. See
   [`docs/KC3_37_REMEDIATION_PLAN.md`](docs/KC3_37_REMEDIATION_PLAN.md).
   Overture coverage and source-quality research is recorded in
   [`docs/KC3_37_SOURCE_EVALUATION.md`](docs/KC3_37_SOURCE_EVALUATION.md).
@@ -39,7 +41,8 @@ verification; see
 
 The repository contains the Expo client scaffold, product and engineering
 documentation, the Supabase schema and public-read migrations, a local MVP seed,
-and a manual server-side Google Places ingestion CLI. Use Node.js 24.20.0 and npm
+and reviewed Overture staging/publication CLIs. The historical Google importer
+entry point is retired. Use Node.js 24.20.0 and npm
 11.19.0, then run `npm install` and `npm start`.
 Use `npm run web`, `npm run ios`, or `npm run android` for a specific supported
 target.

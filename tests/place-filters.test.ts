@@ -40,6 +40,23 @@ const PLACES: PublicPlaceSummary[] = [
 ];
 
 describe("place filters", () => {
+  it("excludes expired transitions and stale schedules from Open now", () => {
+    const now = new Date("2026-10-03T16:00:00Z");
+    const filters = { ...DEFAULT_PLACE_FILTERS, openNow: true };
+    const current = makePlaceSummary({
+      regular_hours_available: true,
+      regular_hours_state: "open",
+      regular_hours_observed_at: "2026-09-19T16:00:00Z",
+    });
+    const expired = {
+      ...current,
+      regular_hours_next_transition_at: now.toISOString(),
+    };
+    expect(filterPlaces([current, expired], filters, now)).toEqual([current]);
+    expect(
+      filterPlaces([current], filters, new Date(now.getTime() + 1)),
+    ).toEqual([]);
+  });
   it("normalizes name search and combines city/type constraints", () => {
     expect(normalizePlaceNameQuery("  CeNTrAl  ")).toBe("central");
     expect(

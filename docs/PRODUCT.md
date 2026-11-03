@@ -158,6 +158,16 @@ being hidden or inferred. Broader source corrections and parent/tenant modeling
 remain follow-up work; the client does not merge legitimate records or rewrite
 provider-backed identity. See [`KC3_33_AUDIT.md`](KC3_33_AUDIT.md).
 
+The visible list or detail now refreshes its anonymous public snapshot at
+reported hours transitions, immediately after the 14-day freshness boundary,
+and at most one minute apart while active. Returning to the app/Web tab or
+from detail to the list refreshes the visible snapshot. Background/hidden
+screens do not poll. Expired open/closed claims are suppressed until the server
+returns a usable state; expired or stale hours cannot satisfy Open now. Failed
+refreshes preserve discovery context and stored weekly schedules, with a
+sanitized retry action. These reads do not refresh provider data or verification
+evidence, and do not clear the outstanding release gates.
+
 ## Later Client Feature Candidates (Not Yet Approved)
 
 The following client-facing ideas were discussed as a plausible MVP shape. They
@@ -193,6 +203,9 @@ and separates data by ownership and purpose:
   Google rows use `source_observed_at` for the response that produced the stored
   schedule, while KC3 rows use it for their own curation observation. A Google
   refresh never changes `place_details.last_verified_at`.
+- Parks may use a verified `dawn_to_dusk` hours policy. KC3 calculates the
+  current sunrise/sunset boundary locally on the server; it does not turn a
+  category-wide assumption into a weekly schedule.
 - `place_overrides` stores non-destructive, effective-dated KC3 factual overrides
   while retaining provider values underneath.
 - `place_canonical_corrections` stores immutable evidence for attended changes
@@ -255,6 +268,16 @@ are allowed so split operating periods can be represented.
   Web, with touch, keyboard, large-text, and screen-reader behavior designed in.
 
 ## Business / Product Constraints
+
+- Reviewed-source publication: only attended Ready Overture identities with
+  confirmed city boundary and duplicate review may enter the public directory.
+  Unreviewed legacy identities are unavailable. KC3 suitability remains a
+  separate verification claim; missing independent hours stay unknown.
+- Source display: list and detail pages identify modified Overture Maps data and link to
+  contributor/license information. The external Maps action names its service;
+  KC3 sends only the reviewed name/address query and warns that external
+  listings may differ. This behavior is prepared for coordinated cutover, not
+  a claim that current local/production content is cleared.
 
 - Budget: Not documented.
 - Platform: React Native with Expo, initially targeting mobile and Expo Web.

@@ -16,6 +16,7 @@
     "ingest:google": "node --env-file-if-exists=.env.local --import tsx scripts/import-google-places.ts",
     "prepare:overture-review": "node --import tsx scripts/prepare-overture-review.ts",
     "import:overture-review": "node --env-file-if-exists=.env.local --import tsx scripts/import-overture-review.ts",
+    "publish:overture-review": "node --env-file-if-exists=.env.local --import tsx scripts/publish-overture-review.ts",
     "edit:place-canonical": "node --env-file-if-exists=.env.local --import tsx scripts/edit-place-canonical.ts",
     "edit:place-details": "node --env-file-if-exists=.env.local --import tsx scripts/edit-place-details.ts",
     "review:third-space": "node --env-file-if-exists=.env.local --import tsx scripts/review-third-space.ts",

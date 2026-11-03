@@ -2,6 +2,16 @@
 
 ## Purpose and boundary
 
+**KC3-37 prepared behavior:** after the publication migration, the operator
+searches active reviewed Overture publications and shows their Overture ID in
+place of Google context. The same KC3 UUID, narrow four-field edit, evidence,
+and optimistic concurrency rules remain. Historical correction rows that may
+contain Google snapshots are blocked from source publication pending field-level
+disposition. New corrections update field-level publication provenance in the
+same transaction as the immutable correction evidence. The Google-backed
+description below is historical until cutover;
+the curated target has not been migrated.
+
 `npm run edit:place-canonical` is an attended, internal workflow for correcting
 factual canonical values on an existing active, Google-backed KC3 place. It is
 intended for reviewed cases such as a provider name suffix, a malformed address,

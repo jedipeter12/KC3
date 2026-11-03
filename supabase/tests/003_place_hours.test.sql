@@ -18,7 +18,7 @@ values (
 select lives_ok(
   $$
     insert into public.place_hours (place_id, day_of_week, open_time, close_time, source)
-    values ('30000000-0000-0000-0000-000000000001', 0, '08:00', '16:00', 'google')
+    values ('30000000-0000-0000-0000-000000000001', 0, '08:00', '16:00', 'kc3')
   $$,
   'Sunday is accepted as weekday zero'
 );
