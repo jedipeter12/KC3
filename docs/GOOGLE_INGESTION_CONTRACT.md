@@ -1,5 +1,11 @@
 # Google Places Ingestion Contract
 
+**Historical contract:** KC3-37 retires this import path in
+`20261101000000_reviewed_overture_publication.sql`. The CLI fails before a
+provider request, database execute grants are removed, and new Google-owned
+content writes are rejected. Keep this document for audit of old data and
+migrations; use `OVERTURE_REVIEW.md` for the current publication path.
+
 **Status:** Accepted for KC3-24, persistence-verified by KC3-26, and live
 repeat-verified by KC3-28
 **Applies to:** the manual KC3-25 importer and later refresh workflows

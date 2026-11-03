@@ -2,6 +2,14 @@
 
 ## Purpose and boundary
 
+**KC3-37 prepared behavior:** after the publication migration, eligibility is
+an active reviewed Overture publication rather than a Google Place ID/provider
+row. Search results identify the Overture ID and preserve the existing KC3 UUID.
+The operator still edits only KC3-owned details and must not turn identity
+review into a suitability verification claim. The Google-backed description
+below records the pre-cutover workflow; it is no longer the intended source
+boundary. The curated target has not been migrated.
+
 `npm run edit:place-details` is an attended, internal workflow for finding an
 existing active, Google-backed KC3 place and creating or updating its KC3-owned
 `place_details` row. It is not a public or authenticated admin feature.

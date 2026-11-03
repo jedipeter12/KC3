@@ -78,6 +78,12 @@ export async function runPlaceDetailsEditor(
 }
 
 function formatSearchResult(place: OperatorPlace, index: number): string {
+  if (place.overtureId) {
+    return [
+      `[${index + 1}] ${oneLine(place.name)} — ${oneLine(place.address)} (${place.placeType})`,
+      `    KC3 ID: ${place.id}; reviewed Overture ID: ${place.overtureId}`,
+    ].join("\n");
+  }
   const providerName = place.googleName ?? "not supplied";
   const providerAddress = place.googleAddress ?? "not supplied";
   const providerStatus = place.googleBusinessStatus ?? "not supplied";
@@ -86,7 +92,7 @@ function formatSearchResult(place: OperatorPlace, index: number): string {
     `[${index + 1}] ${oneLine(place.name)} — ${oneLine(place.address)} (${place.placeType})`,
     `    KC3 ID: ${place.id}`,
     `    Google identity: ${oneLine(providerName)} — ${oneLine(providerAddress)}`,
-    `    Google Place ID: ${oneLine(place.googlePlaceId)}; status: ${oneLine(providerStatus)}; fetched: ${oneLine(providerFetched)}`,
+    `    Google Place ID: ${oneLine(place.googlePlaceId ?? "not supplied")}; status: ${oneLine(providerStatus)}; fetched: ${oneLine(providerFetched)}`,
   ].join("\n");
 }
 

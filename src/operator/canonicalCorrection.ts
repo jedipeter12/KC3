@@ -40,7 +40,8 @@ export type CanonicalCorrectionPlace = CanonicalPlaceValues &
     city: string;
     status: "active";
     placeUpdatedAt: string;
-    googlePlaceId: string;
+    googlePlaceId: string | null;
+    overtureId?: string;
     googleName: string | null;
     googleAddress: string | null;
     googlePrimaryType: string | null;
@@ -74,6 +75,7 @@ const correctionPlaceKeys = new Set([
   "status",
   "placeUpdatedAt",
   "googlePlaceId",
+  "overtureId",
   "googleName",
   "googleAddress",
   "googlePrimaryType",
@@ -148,7 +150,8 @@ export function isCanonicalCorrectionPlace(
     typeof place.city === "string" &&
     place.status === "active" &&
     typeof place.placeUpdatedAt === "string" &&
-    typeof place.googlePlaceId === "string" &&
+    isNullableString(place.googlePlaceId) &&
+    (place.overtureId === undefined || typeof place.overtureId === "string") &&
     isNullableString(place.googleName) &&
     isNullableString(place.googleAddress) &&
     isNullableString(place.googlePrimaryType) &&

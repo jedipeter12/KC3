@@ -56,13 +56,20 @@ YYYY-MM-DD and cannot be future/invalid. Identity review is never translated
 into KC3 suitability verification. Website/postcode are optional; absence stays
 null, not an invented value.
 
-Hours Ready requires a Ready place in the same batch, all seven explicit days,
-independent HTTPS source, observed date, reuse basis, and notes. Enter `Closed`,
-`24h`, `09:00-17:00`, semicolon-separated split periods, or `22:00-02:00+1` for an
-overnight close. Blank means unknown, not closed. Overlapping and ambiguous
-intervals fail, including across Saturday/Sunday. Pending/Exclude schedules are
-skipped and do not clear existing hours. The existing 14-day freshness rule has
-not changed; a monthly directory review does not keep hours current indefinitely.
+Hours Ready requires a Ready place in the same batch, independent HTTPS source,
+observed date, reuse basis, and notes. The `Hours rule` column is either
+`weekly` (all seven explicit days required) or `dawn_to_dusk` (parks only; leave
+the weekday cells blank). Enter `Closed`, `24h`, `09:00-17:00`, semicolon-separated
+split periods, or `22:00-02:00+1` for an overnight close. Blank means unknown, not
+closed. Overlapping and ambiguous intervals fail, including across
+Saturday/Sunday. Pending/Exclude schedules are skipped and do not clear existing
+hours. A dawn-to-dusk rule is evaluated from the published place coordinates at
+the current local sunrise and sunset, so its seasonal clock times are calculated
+by KC3 rather than copied into the workbook. The 14-day freshness rule still
+applies to fixed weekly schedules; a validated dawn-to-dusk policy is not made
+unknown merely because the sun's clock times change. Private JSON staging also
+rejects unsupported rule names and dawn-to-dusk rules on non-parks or with
+fabricated clock rows.
 
 Leave KC3 place ID empty unless a reviewed match is supplied. IDs are never
 automatically assigned by fuzzy matching or copied from Google contents into
@@ -162,3 +169,66 @@ It requires a complete permitted snapshot, reports explicit ID matches and
 conflicts, and never publishes or retires data. See
 [Overture Reconciliation](OVERTURE_RECONCILIATION.md). This does not complete
 spreadsheet review or authorize a Google-content export.
+
+## Reviewed publication path (implementation prepared 2026-11-01)
+
+`20261101000000_reviewed_overture_publication.sql` adds a private source
+publication ledger and a service-only, per-place transaction. Migration alone
+publishes no row. Anonymous list/detail RPCs require a source publication row,
+`mvp_published`, and no pending hours eligibility review.
+The source publisher does not set MVP eligibility or clear a pending hours
+review. New source-published places remain private until the attended
+third-space operator completes that separate review.
+The source ledger keeps the exact Overture source snapshot, identity evidence,
+field-level source basis, hours evidence when supplied, batch ID, and stable KC3 ID.
+The publication ledger also retains the operator's municipality/duplicate
+review notes. Category mapping, address precision, and regional timezone are labeled as KC3
+review/derivation rather than raw Overture facts. Anonymous attribution
+returns the source, contributor license identifiers, review date, and license URL.
+The list footer and detail page show Overture attribution and link to license
+details; the detail action names the external Maps service. The
+name/address query uses only the reviewed canonical identity after cutover. The
+client checks `kc3_publication_gate_ready()` before list or detail reads; if it
+runs against an older database or a full pre-gate restore, it shows an
+unavailable state instead of labeling old content as Overture.
+
+Prepare an `approvals.json` beside the exact `preview.json`:
+
+```json
+{
+  "batchId": "reviewed-batch-uuid",
+  "entries": [
+    {
+      "overtureId": "reviewed-overture-uuid",
+      "targetPlaceId": null,
+      "expectedUpdatedAt": null,
+      "municipalEligibilityConfirmed": true,
+      "duplicateReviewConfirmed": true,
+      "reviewNotes": "What independent review established the boundary and identity"
+    }
+  ]
+}
+```
+
+For a matched place, use the reviewed KC3 UUID and its current database
+`updated_at` ISO timestamp. The target must equal the workbook's reviewed
+mapping. Publication requires explicit municipality and duplicate confirmation;
+it refuses stale targets, prior publication, hidden-state reversal, move links,
+correction history, overrides, and a conflicting KC3 hours schedule. These
+cases remain for separate attended review. The transaction preserves existing
+KC3 detail rows and KC3 hours, updates the same KC3 UUID with reviewed facts,
+clears its Google ID/provider row/Google hours, and inserts provenance. A new
+identity receives a new UUID and no invented suitability or hours. The CLI
+defaults to a read-only preview:
+
+```sh
+npm run publish:overture-review -- preview.json approvals.json
+npm run publish:overture-review -- preview.json approvals.json --publish
+```
+
+The second command requires `PUBLISH <batch-id>` and confirms the exact staged
+batch before per-place writes. A failure may leave earlier places published;
+inspect the ledger and prepare a revised approval file for remaining rows. Do
+not use this command against the curated target until actual rows, protected
+values, history, and secondary-copy dispositions are reviewed. No current
+workbook row has been approved for publication.

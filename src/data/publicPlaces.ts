@@ -10,6 +10,7 @@ import type {
   PublicPlaceDetail,
   PublicPlaceSummary,
   PublicRegularHoursRow,
+  RegularHoursRule,
   RegularHoursState,
   WifiType,
   WorkSuitability,
@@ -22,6 +23,12 @@ const PLACE_TYPES: readonly PlaceType[] = [
   "library",
   "coworking",
   "park",
+  "bookstore",
+  "board_game_cafe",
+  "gaming_venue",
+  "community_center",
+  "hobby_space",
+  "community_venue",
 ];
 const ADDRESS_PRECISIONS: readonly AddressPrecision[] = [
   "street_address",
@@ -58,6 +65,10 @@ const REGULAR_HOURS_STATES: readonly RegularHoursState[] = [
   "closed",
   "unknown",
 ];
+const REGULAR_HOURS_RULES: readonly RegularHoursRule[] = [
+  "weekly",
+  "dawn_to_dusk",
+];
 const KC3_VERIFICATION_STATES: readonly Kc3VerificationState[] = [
   "unverified",
   "current",
@@ -77,6 +88,15 @@ export class PublicPlacesError extends Error {
     super(PUBLIC_PLACES_ERROR_MESSAGE);
     this.name = "PublicPlacesError";
   }
+}
+
+async function requirePublicationGate(signal?: AbortSignal): Promise<void> {
+  const { data, error } = await publicRequest(
+    (requestSignal) =>
+      supabase.rpc("kc3_publication_gate_ready").abortSignal(requestSignal),
+    signal,
+  );
+  if (error || data !== true) throw new PublicPlacesError();
 }
 
 function isPlaceType(value: unknown): value is PlaceType {
@@ -137,6 +157,7 @@ function toPublicPlaceSummary(value: unknown): PublicPlaceSummary {
     !isEnumValue(ADDRESS_PRECISIONS, place.address_precision) ||
     !isPlaceType(place.place_type) ||
     typeof place.regular_hours_available !== "boolean" ||
+    !isEnumValue(REGULAR_HOURS_RULES, place.regular_hours_rule) ||
     !isEnumValue(REGULAR_HOURS_STATES, place.regular_hours_state) ||
     !isNullableString(place.regular_hours_next_transition_at) ||
     !isNullableString(place.regular_hours_observed_at) ||
@@ -163,6 +184,7 @@ function toPublicPlaceSummary(value: unknown): PublicPlaceSummary {
     address_precision: place.address_precision,
     place_type: place.place_type,
     regular_hours_available: place.regular_hours_available,
+    regular_hours_rule: place.regular_hours_rule,
     regular_hours_state: place.regular_hours_state,
     regular_hours_next_transition_at: place.regular_hours_next_transition_at,
     regular_hours_observed_at: place.regular_hours_observed_at,
@@ -241,6 +263,7 @@ export async function listPublicPlaces(
   signal?: AbortSignal,
 ): Promise<PublicPlace[]> {
   try {
+    await requirePublicationGate(signal);
     const { data, error } = await publicRequest(
       (requestSignal) =>
         supabase.rpc("list_public_places").abortSignal(requestSignal),
@@ -265,6 +288,7 @@ export async function listPublicPlaceSummaries(
   signal?: AbortSignal,
 ): Promise<PublicPlaceSummary[]> {
   try {
+    await requirePublicationGate(signal);
     const { data, error } = await publicRequest(
       (requestSignal) =>
         supabase.rpc("list_public_place_summaries").abortSignal(requestSignal),
@@ -287,6 +311,7 @@ export async function getPublicPlaceDetail(
   signal?: AbortSignal,
 ): Promise<PublicPlaceDetail | null> {
   try {
+    await requirePublicationGate(signal);
     const { data, error } = await publicRequest(
       (requestSignal) =>
         supabase

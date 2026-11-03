@@ -64,6 +64,7 @@ export type HourPeriod = {
   isClosed: boolean;
   closesNextDay: boolean;
 };
+export type HoursRule = "weekly" | "dawn_to_dusk";
 export type ReviewedRecord = {
   overtureId: string;
   targetPlaceId: string | null;
@@ -82,7 +83,7 @@ export type ReviewedRecord = {
   };
   identityEvidence: Evidence;
   source: SourceRecord;
-  hours: (Evidence & { periods: HourPeriod[] }) | null;
+  hours: (Evidence & { ruleType: HoursRule; periods: HourPeriod[] }) | null;
 };
 export type ReviewBatch = {
   schemaVersion: 1;
@@ -118,6 +119,7 @@ export const placeHeaders = [
 ];
 export const hourHeaders = [
   "Hours status",
+  "Hours rule",
   "Name",
   "City",
   "Sunday",
@@ -284,6 +286,7 @@ export function draftRows(manifest: ReviewManifest) {
           h,
           [
             "Pending",
+            "weekly",
             r.name,
             r.city,
             "",
@@ -442,9 +445,27 @@ export function compileReview(
       today,
       false,
     );
-    const periods = hourHeaders
-      .slice(3, 10)
-      .flatMap((day, index) => parseDay(row[day], index));
+    const ruleType = parseHoursRule(row["Hours rule"]);
+    if (ruleType === "dawn_to_dusk") {
+      if (place.identity.placeType !== "park")
+        throw new Error("Dawn-to-dusk hours are only valid for parks.");
+      if (hourHeaders.slice(4, 11).some((day) => row[day]?.trim()))
+        throw new Error(
+          "Dawn-to-dusk hours use the rule and leave weekday cells blank.",
+        );
+    }
+    const periods =
+      ruleType === "dawn_to_dusk"
+        ? Array.from({ length: 7 }, (_, dayOfWeek) => ({
+            dayOfWeek,
+            openTime: null,
+            closeTime: null,
+            isClosed: true,
+            closesNextDay: false,
+          }))
+        : hourHeaders
+            .slice(4, 11)
+            .flatMap((day, index) => parseDay(row[day], index));
     const intervals = periods
       .filter((p) => !p.isClosed)
       .map((p) => ({
@@ -460,7 +481,7 @@ export function compileReview(
     ].sort((a, b) => a.start - b.start);
     if (repeated.some((p, i) => i > 0 && p.start < repeated[i - 1].end))
       throw new Error("Schedule overlaps across day/week boundaries.");
-    place.hours = { ...evidence, periods };
+    place.hours = { ...evidence, ruleType, periods };
   }
   reviewed.sort((a, b) => a.overtureId.localeCompare(b.overtureId));
   const manifestSha256 = digest(manifest);
@@ -587,18 +608,36 @@ export function decodeCsv(text: string, headers: string[]): ReviewRow[] {
   const actual = grid[headerIndex];
   // XLSX exports may include trailing empty columns from the notes area.
   while (actual.at(-1) === "") actual.pop();
-  if (
-    actual.length !== headers.length ||
-    actual.some((h, i) => h !== headers[i])
-  )
+  const legacyHoursHeaders =
+    headers[0] === "Hours status"
+      ? headers.filter((header) => header !== "Hours rule")
+      : null;
+  const isCurrentHeader =
+    actual.length === headers.length &&
+    actual.every((header, index) => header === headers[index]);
+  const isLegacyHoursHeader =
+    legacyHoursHeaders !== null &&
+    actual.length === legacyHoursHeaders.length &&
+    actual.every((header, index) => header === legacyHoursHeaders[index]);
+  if (!isCurrentHeader && !isLegacyHoursHeader)
     throw new Error("Review columns were changed or reordered.");
   return grid
     .slice(headerIndex + 1)
     .filter((r) => r.some((c) => c.trim()))
     .map((r) => {
-      while (r.length > headers.length && r.at(-1) === "") r.pop();
-      if (r.length !== headers.length)
+      while (r.at(-1) === "") r.pop();
+      const expectedLength = isLegacyHoursHeader
+        ? legacyHoursHeaders!.length
+        : headers.length;
+      if (r.length !== expectedLength)
         throw new Error("CSV row has an incorrect column count.");
+      if (isLegacyHoursHeader) {
+        return Object.fromEntries([
+          ["Hours status", r[0]],
+          ["Hours rule", "weekly"],
+          ...legacyHoursHeaders!.slice(1).map((h, i) => [h, r[i + 1]]),
+        ]);
+      }
       return Object.fromEntries(headers.map((h, i) => [h, r[i]]));
     });
 }
@@ -630,6 +669,12 @@ function makeEvidence(
       "Explain the independent source and permission basis in notes.",
     );
   return { sourceUrl, observedOn, reuseBasis, notes: evidenceNotes };
+}
+function parseHoursRule(value: string | undefined): HoursRule {
+  const rule = value?.trim() || "weekly";
+  if (rule !== "weekly" && rule !== "dawn_to_dusk")
+    throw new Error("Hours rule must be weekly or dawn_to_dusk.");
+  return rule;
 }
 function required(value: string | undefined, label: string): string {
   if (!value?.trim()) throw new Error(`Missing ${label}.`);

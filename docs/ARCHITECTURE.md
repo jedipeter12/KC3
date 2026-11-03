@@ -252,6 +252,10 @@ private discovery/intake table:
   own UUID, cascades on place deletion, uses Sunday `0` through Saturday `6`, and
   records its Google or KC3 source and source observation time. Multiple
   intervals for one place/day are intentionally allowed.
+- Reviewed park publications may additionally carry a `dawn_to_dusk` policy in
+  their hours evidence. The public reader calculates sunrise/sunset transitions
+  from canonical coordinates instead of presenting compatibility placeholder
+  rows as a fixed weekly schedule.
 - `place_overrides`: Zero-to-many KC3-owned, effective-dated factual overrides.
   Inclusive ranges for one place/type cannot overlap; JSON payloads are versioned
   at the application boundary. An internal invoker-rights function resolves an
@@ -374,6 +378,20 @@ implementation details, but the semantics in
 current day first without exposing or guessing the timezone. The legacy
 five-field RPC remains unchanged for compatibility.
 
+### Active-screen hours refresh
+
+The shared `useHoursRefresh` hook schedules anonymous summary/detail reads for
+the visible screen every minute, or sooner at a reported next transition or
+14-day schedule-expiry boundary. Native AppState and Web document visibility
+pause timers while inactive and trigger a read on resume. Returning from detail
+refreshes the cached list. Each screen coalesces refreshes, rejects late responses
+using its existing request IDs, and retains successful data on refresh failure.
+Neither filters nor navigation are reset by refresh. The presentation/filter
+helpers suppress expired server states rather than guessing the next state.
+PostgreSQL remains authoritative for timezone, interval, override, and freshness
+evaluation. No RPC shape, database grant, provider refresh, or storage changes
+are introduced.
+
 ## Authentication and Authorization
 
 Supabase Auth is the approved authentication service, but accounts are not
@@ -460,6 +478,25 @@ state.
 Relevant tests must be added or updated whenever behavior changes.
 
 ## Deployment / Release Architecture
+
+KC3-37's prepared publication boundary is migration
+`20261101000000_reviewed_overture_publication.sql`. A private
+`place_publications` row joins the stable KC3 UUID to the staged Overture ID,
+review batch, source snapshot, field-level source basis, identity evidence,
+publication review notes, and optional independent-hours
+evidence. Public RPC owners can read only active places with a publication row;
+the attribution RPC exposes a narrow source/license projection. The constrained
+publisher replaces canonical identity on a reviewed match without deleting KC3
+details or KC3 hours and atomically removes that match's Google ID, provider row,
+and Google hours. Subsequent independently evidenced canonical corrections
+atomically mark each changed field as KC3-corrected in the provenance ledger.
+It blocks correction-history, override, move, hidden-reversal,
+and hours conflicts for separate adjudication. The old Google write RPCs and
+ordinary Google-content inserts are retired. The client requires the
+`kc3_publication_gate_ready()` RPC before list/detail reads, so a pre-gate
+database cannot be rendered with Overture attribution. A full old database restore can
+remove this gate and must be audited before client reconnection. The curated
+dataset and production remain unchanged pending reviewed rows and rights checks.
 
 GitHub Actions runs application checks and disposable local Supabase database
 checks in separate Ubuntu jobs. See `DEVELOPMENT.md` for triggers, runtime pins,

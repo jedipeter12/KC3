@@ -17,6 +17,26 @@ jest.mock("../src/lib/supabase", () => ({
 const mockRpc = supabase.rpc as jest.Mock;
 const mockReply = jest.fn();
 
+function mockDataResponse(response: unknown) {
+  mockRpc.mockImplementation((functionName: string) => ({
+    abortSignal: () =>
+      Promise.resolve(
+        functionName === "kc3_publication_gate_ready"
+          ? { data: true, error: null }
+          : response,
+      ),
+  }));
+}
+
+function mockDataError(error: Error) {
+  mockRpc.mockImplementation((functionName: string) => ({
+    abortSignal: () =>
+      functionName === "kc3_publication_gate_ready"
+        ? Promise.resolve({ data: true, error: null })
+        : Promise.reject(error),
+  }));
+}
+
 const summaryFixture = {
   id: "00000000-0000-0000-0000-000000000001",
   name: "Fixture Place",
@@ -25,6 +45,7 @@ const summaryFixture = {
   address_precision: "street_address",
   place_type: "coffee_shop",
   regular_hours_available: true,
+  regular_hours_rule: "weekly",
   regular_hours_state: "open",
   regular_hours_next_transition_at: "2026-09-21T22:00:00+00:00",
   regular_hours_observed_at: "2026-09-21T12:00:00+00:00",
@@ -89,8 +110,20 @@ describe("public place data layer", () => {
     expect(transportSignal.aborted).toBe(true);
   });
 
-  it("calls the public RPC and preserves its ordering and exact projection", async () => {
+  it("hides legacy content when the publication migration is absent", async () => {
     mockReply.mockResolvedValue({
+      data: null,
+      error: { message: "missing publication gate" },
+    });
+    await expect(listPublicPlaceSummaries()).rejects.toMatchObject({
+      code: PUBLIC_PLACES_ERROR_CODE,
+    });
+    expect(mockRpc).toHaveBeenCalledTimes(1);
+    expect(mockRpc).not.toHaveBeenCalledWith("list_public_place_summaries");
+  });
+
+  it("calls the public RPC and preserves its ordering and exact projection", async () => {
+    mockDataResponse({
       data: [
         {
           id: "00000000-0000-0000-0000-000000000002",
@@ -127,19 +160,20 @@ describe("public place data layer", () => {
         place_type: "coffee_shop",
       },
     ]);
-    expect(mockRpc).toHaveBeenCalledTimes(1);
+    expect(mockRpc).toHaveBeenCalledTimes(2);
+    expect(mockRpc).toHaveBeenCalledWith("kc3_publication_gate_ready");
     expect(mockRpc).toHaveBeenCalledWith("list_public_places");
   });
 
   it("returns an empty array for a successful empty response", async () => {
-    mockReply.mockResolvedValue({ data: [], error: null });
+    mockDataResponse({ data: [], error: null });
 
     await expect(listPublicPlaces()).resolves.toEqual([]);
   });
 
   it("sanitizes provider errors", async () => {
     const providerDetails = "database credential and internal relation name";
-    mockReply.mockResolvedValue({
+    mockDataResponse({
       data: null,
       error: { message: providerDetails },
     });
@@ -161,7 +195,7 @@ describe("public place data layer", () => {
     ["a non-array response", {}],
     ["a malformed place", [{ id: "missing-approved-fields" }]],
   ])("sanitizes %s", async (_description, data) => {
-    mockReply.mockResolvedValue({ data, error: null });
+    mockDataResponse({ data, error: null });
 
     await expect(listPublicPlaces()).rejects.toMatchObject({
       code: PUBLIC_PLACES_ERROR_CODE,
@@ -171,7 +205,7 @@ describe("public place data layer", () => {
 
   it("sanitizes rejected provider requests", async () => {
     const providerDetails = "fetch failed for a private endpoint";
-    mockReply.mockRejectedValue(new Error(providerDetails));
+    mockDataError(new Error(providerDetails));
 
     const request = listPublicPlaces();
 
@@ -185,7 +219,7 @@ describe("public place data layer", () => {
   });
 
   it("validates and narrows the expanded summary projection", async () => {
-    mockReply.mockResolvedValue({
+    mockDataResponse({
       data: [{ ...summaryFixture, google_place_id: "must not escape" }],
       error: null,
     });
@@ -195,7 +229,7 @@ describe("public place data layer", () => {
   });
 
   it("loads a detail with normalized weekly rows", async () => {
-    mockReply.mockResolvedValue({
+    mockDataResponse({
       data: [
         {
           ...summaryFixture,
@@ -250,7 +284,7 @@ describe("public place data layer", () => {
   });
 
   it("returns null when a detail ID is unavailable", async () => {
-    mockReply.mockResolvedValue({ data: [], error: null });
+    mockDataResponse({ data: [], error: null });
 
     await expect(getPublicPlaceDetail("missing")).resolves.toBeNull();
   });
@@ -299,7 +333,7 @@ describe("public place data layer", () => {
       () => getPublicPlaceDetail(summaryFixture.id),
     ],
   ])("sanitizes %s", async (_description, data, request) => {
-    mockReply.mockResolvedValue({ data, error: null });
+    mockDataResponse({ data, error: null });
 
     await expect(request()).rejects.toMatchObject({
       code: PUBLIC_PLACES_ERROR_CODE,

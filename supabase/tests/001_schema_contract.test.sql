@@ -22,9 +22,10 @@ select set_eq(
     ('place_canonical_corrections'),
     ('overture_review_batches'),
     ('place_discoveries'),
-    ('place_hours_eligibility_reviews')
+    ('place_hours_eligibility_reviews'),
+    ('place_publications')
   $$,
-  'the approved public tables exist without additional public tables'
+  'the current public schema includes private reviewed-source tables'
 );
 
 select results_eq(

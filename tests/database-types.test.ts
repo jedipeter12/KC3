@@ -70,6 +70,7 @@ describe("public place database type", () => {
       phone_calls_allowed: null,
       place_type: "coffee_shop",
       regular_hours_available: false,
+      regular_hours_rule: "weekly",
       regular_hours_next_transition_at: null,
       regular_hours_observed_at: null,
       regular_hours_state: "unknown",

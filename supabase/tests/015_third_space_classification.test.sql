@@ -7,8 +7,8 @@ insert into public.places (id, name, city, address, place_type, mvp_published)
 values ('f0000000-0000-0000-0000-000000000001', 'Evening Bookstore',
   'Olathe', '1 Main St', 'bookstore', true);
 select is((select count(*)::integer from public.list_public_places()
-  where id = 'f0000000-0000-0000-0000-000000000001'), 1,
-  'explicitly curated bootstrap records keep the legacy public contract');
+  where id = 'f0000000-0000-0000-0000-000000000001'), 0,
+  'MVP publication alone does not bypass reviewed source publication');
 
 insert into public.place_details (place_id, work_suitability)
 values ('f0000000-0000-0000-0000-000000000001', 'good');
@@ -101,49 +101,32 @@ where place_id = 'f0000000-0000-0000-0000-000000000002';
 update public.places set mvp_published = true
 where id = 'f0000000-0000-0000-0000-000000000002';
 select is((select count(*)::integer from public.list_public_places()
-  where id = 'f0000000-0000-0000-0000-000000000002'), 1,
-  'an explicitly published verified evening place becomes public');
+  where id = 'f0000000-0000-0000-0000-000000000002'), 0,
+  'MVP approval alone does not bypass reviewed source publication');
 update public.place_discoveries set mvp_eligible = false
 where place_id = 'f0000000-0000-0000-0000-000000000002';
 select is((select count(*)::integer from public.list_public_places()
   where id = 'f0000000-0000-0000-0000-000000000002'), 0,
   'revoking eligibility unpublishes the place');
 
-select lives_ok($sql$ select public.kc3_import_google_place(jsonb_build_object(
-  'googlePlaceId', 'third-space-import-test', 'placeType', 'community_center',
-  'fetchedAt', '2026-10-28T12:00:00Z',
-  'provider', jsonb_build_object('name', 'Imported Community Center'),
-  'canonical', jsonb_build_object('name', 'Imported Community Center',
-    'city', 'Olathe', 'address', '3 Main St', 'latitude', 38.9,
-    'longitude', -94.8, 'timeZone', 'America/Chicago',
-    'status', 'active'))) $sql$,
-  'Google ingestion accepts an expanded category');
-select ok((select not mvp_published from public.places
-  where google_place_id = 'third-space-import-test'),
-  'new Google discovery remains private');
-select ok((select source = 'google_places' and verification_state = 'discovered'
-  and mvp_eligible is null from public.place_discoveries
-  where place_id = (select id from public.places
-    where google_place_id = 'third-space-import-test')),
-  'Google intake retains provenance without asserting verified facts');
-insert into public.place_details (place_id, casual_hangout_suitable,
-  social_community_suitable, supported_activities)
-select id, true, true, array['community_gathering']::public.activity_type[]
-from public.places where google_place_id = 'third-space-import-test';
-select lives_ok($sql$ select public.kc3_import_google_place(jsonb_build_object(
-  'googlePlaceId', 'third-space-import-test', 'placeType', 'community_center',
-  'fetchedAt', '2026-10-28T13:00:00Z',
-  'provider', jsonb_build_object('rating', 4.5),
-  'canonical', '{}'::jsonb)) $sql$,
-  'Google refresh succeeds without updating KC3 fields');
-select ok((select details.casual_hangout_suitable is true
-  and details.social_community_suitable is true
-  and details.supported_activities @> array['community_gathering']::public.activity_type[]
-  and not places.mvp_published
-  from public.place_details as details join public.places as places
-    on places.id = details.place_id
-  where places.google_place_id = 'third-space-import-test'),
-  'Google refresh preserves KC3 classification and publication state');
+select ok(not has_function_privilege('service_role',
+  'public.kc3_import_google_place(jsonb)', 'execute'),
+  'retired Google import cannot create an expanded-category place');
+select ok(not has_function_privilege('service_role',
+  'public.kc3_reconcile_google_place(jsonb)', 'execute'),
+  'retired Google reconciliation cannot refresh canonical fields');
+select throws_ok($$insert into public.places
+  (name,city,address,place_type,google_place_id)
+  values ('Blocked Community Center','Olathe','3 Main St','community_center',
+    'third-space-import-test')$$,
+  '42501', 'Google content import is retired',
+  'direct Google identity insert remains blocked for expanded categories');
+select is((select count(*)::integer from public.places
+  where google_place_id = 'third-space-import-test'), 0,
+  'retired import creates no canonical place');
+select is((select count(*)::integer from public.place_discoveries
+  where source = 'google_places' and lead_name = 'Blocked Community Center'), 0,
+  'retired import creates no discovery');
 
 select * from finish();
 rollback;

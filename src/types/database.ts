@@ -52,6 +52,7 @@ export type WifiType =
 export type WorkSuitability = "good" | "okay" | "poor" | "unknown";
 export type FoodBeverageLevel = "none" | "light" | "full" | "unknown";
 export type RegularHoursState = "open" | "closed" | "unknown";
+export type RegularHoursRule = "weekly" | "dawn_to_dusk";
 export type Kc3VerificationState = "unverified" | "current" | "stale";
 
 export type PublicRegularHoursRow = {
@@ -78,6 +79,7 @@ export type PublicPlaceSummary = {
   phone_calls_allowed: boolean | null;
   place_type: PlaceType;
   regular_hours_available: boolean;
+  regular_hours_rule: RegularHoursRule;
   regular_hours_next_transition_at: string | null;
   regular_hours_observed_at: string | null;
   regular_hours_state: RegularHoursState;
@@ -104,6 +106,22 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      kc3_publication_gate_ready: {
+        Args: never;
+        Returns: boolean;
+      };
+      get_public_place_attribution: {
+        Args: { target_place_id: string };
+        Returns: {
+          source: string;
+          sourceUrl: string;
+          licenseUrl: string;
+          licenses: string[];
+          fieldSources: Record<string, string>;
+          identityReviewedOn: string;
+          hoursSourceUrl: string | null;
+        } | null;
+      };
       list_public_places: {
         Args: never;
         Returns: {

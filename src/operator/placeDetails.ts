@@ -37,7 +37,8 @@ export type OperatorPlace = Readonly<{
   city: string;
   address: string;
   placeType: PlaceType;
-  googlePlaceId: string;
+  googlePlaceId: string | null;
+  overtureId?: string;
   googleName: string | null;
   googleAddress: string | null;
   googleBusinessStatus: string | null;
@@ -86,6 +87,7 @@ const operatorPlaceKeys = new Set([
   "address",
   "placeType",
   "googlePlaceId",
+  "overtureId",
   "googleName",
   "googleAddress",
   "googleBusinessStatus",
@@ -175,7 +177,8 @@ export function isOperatorPlace(value: unknown): value is OperatorPlace {
       "hobby_space",
       "community_venue",
     ].includes(place.placeType) &&
-    typeof place.googlePlaceId === "string" &&
+    isNullableString(place.googlePlaceId) &&
+    (place.overtureId === undefined || typeof place.overtureId === "string") &&
     isNullableString(place.googleName) &&
     isNullableString(place.googleAddress) &&
     isNullableString(place.googleBusinessStatus) &&

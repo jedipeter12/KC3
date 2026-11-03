@@ -153,6 +153,24 @@ build or deployment.
 
 ### Database Tests
 
+KC3-37 publication migration and tests `015`/`016` were run against a
+disposable `kc3_37_fixture` database. The fixture was created without copying
+curated rows; migrations were applied in order with existing cluster-global KC3
+roles reused. `015` checks the public gate, old Google RPC retirement, write
+guard, new synthetic publication, operator eligibility, and attribution. `016`
+simulates a pre-migration Google-backed row inside a rolled-back transaction and
+checks exact KC3 ID/detail/KC3-hours preservation plus provider-copy removal.
+Run `supabase/audits/kc3_37_publication_gate.sql` read-only after migration or
+restore. Do not run `supabase db reset` against the curated local database.
+Historical Google-backed database tests were moved to
+`supabase/legacy_tests/`, with their original SQL retained for audit. The active
+`001`-`005` tests cover current schema, canonical/detail constraints, KC3 hours,
+security/timestamps, and seed behavior. Active `014`-`016` cover staging,
+publication, stable IDs, attribution, protected data, and basic adapted operator
+writes. The prior expanded public/effective-hours and full operator write scenario suites still need
+current-source replacements before KC3-37 release closure; passing the focused
+fixture checks is not that broader signoff.
+
 The approved PostgreSQL data model is tested with pgTAP through the repository's
 Supabase CLI dependency. From the repository root:
 
@@ -205,6 +223,14 @@ React Native Testing Library component tests exercise summary cards, the default
 drive-thru-only exclusion, draft/apply filters, approved positive-filter
 semantics, list/detail navigation and state preservation, cached identity during
 detail failures, retry, announcements, and distinct empty/no-match/error states.
+`tests/place-hours-refresh.test.tsx` uses fake clocks and deferred requests to
+check opening/closing transitions, freshness expiry, refresh failure/retry,
+native/Web background and resume, request coalescing, timer/listener cleanup,
+visible-screen polling, and list context restoration. Presentation/filter tests
+also protect expired-state suppression and the exact 14-day boundary. These are
+anonymous public reads, not unattended provider-ingestion jobs. Device/browser
+lifecycle smoke checks remain separate from the automated evidence.
+
 Pure unit tests protect name-query normalization, AND semantics, exact unknown
 and positive matching, derived choices, and order preservation. Screen
 dependencies are injected only at the component boundary for focused testing;
@@ -252,27 +278,28 @@ key copy, hosted project, or privileged client credential is required. CLI outpu
 is never printed. Docker/CLI access failures produce prerequisite instructions.
 Run it from the repository root with permission to access Docker and localhost.
 
-The suite supports both the clean 15-place seed and a reviewed provider-backed
-local dataset. It checks every legacy row's exact raw five-field shape and
-approved city/type bounds, verifies the exact expanded summary/detail shapes,
-compares all three production data-layer operations, fetches every active
-record's detail, confirms unknown detail IDs remain hidden, exercises every
-record through normalized exact-name and applicable city/place-type discovery,
-and validates hours presentation and map-query construction. It also requires
-HTTP 401 / PostgreSQL `42501` for direct `places` reads. Missing
-migrations, an empty dataset, or API failures fail the suite; they are not
-silently skipped. Run `npm test` and `npm run lint:db` against a clean reset and
-again after importing. Database fixtures and seed assertions are scoped so the
-same suite supports provider-enriched local state. `test:app` remains independent
-of Docker and excludes the `*.smoke.ts` integration files.
+The clean 15-place seed is intentionally unpublished under KC3-37. The default
+suite verifies empty anonymous list/summary results, hidden seed details, and
+denied direct table reads. Against an explicitly reviewed, published local
+dataset, set `KC3_EXPECT_PUBLISHED_DATASET=1` to require nonempty results. That
+mode checks every returned legacy row's exact raw five-field shape and approved
+city/type bounds, verifies expanded summary/detail shapes, compares all three
+production data-layer operations, fetches every public record's detail,
+exercises normalized name and city/type discovery, and validates hours and map
+presentation. The database pgTAP suite covers publication with synthetic
+fixtures without making the seed public. API errors always fail. Run `npm test`
+and `npm run lint:db` against a clean reset and again after publication.
+`test:app` remains independent of Docker and excludes the `*.smoke.ts` files.
 
-Set `KC3_EXPECT_PROVIDER_DATASET=1` for the post-import run. This additionally
-requires more than 100 public rows and all six approved place types, preventing a
-clean seed from being mistaken for the real-dataset smoke:
+Set `KC3_EXPECT_PUBLISHED_DATASET=1` for the post-publication run:
 
 ```sh
-KC3_EXPECT_PROVIDER_DATASET=1 npm run test:integration
+KC3_EXPECT_PUBLISHED_DATASET=1 npm run test:integration
 ```
+
+The historical `KC3_EXPECT_PROVIDER_DATASET=1` mode still requires more than
+100 public rows and all six approved place types. It is only meaningful for a
+separately cleared, published dataset.
 
 See [`ACCESSIBILITY_REVIEW.md`](ACCESSIBILITY_REVIEW.md) for the KC3-21 manual
 viewport/keyboard results, accessibility fixes, and outstanding native,
@@ -773,9 +800,10 @@ Each implementation ticket should direct the developer to:
   only for a clear, documented reason.
 - Database access: Keep Data API grants and RLS policies in versioned migrations
   and add role-focused database tests in the same change that opens access.
-- Public place reads: Unauthenticated clients may execute only
-  `public.list_public_places()`. Do not query the base tables from client code or
-  broaden the returned fields without an approved migration and matching tests.
+- Public place reads: Unauthenticated clients use only the approved list,
+  summary, detail, publication-gate, and narrow attribution RPCs. Do not query
+  base tables from client code or broaden returned fields without a migration
+  and matching tests.
 - Client database types: Keep the client-visible `Database` type limited to the
   approved RPC contract. Regenerate or update it whenever an approved migration
   changes that contract.
@@ -783,6 +811,12 @@ Each implementation ticket should direct the developer to:
   database credential in an Expo, Expo Web, or other client bundle.
 
 ## Deployment / Release Process
+
+The KC3-37 publication SQL and CLI are prepared but have not been deployed or
+run on the curated target. The old `ingest:google` entry point now fails before
+provider access. A coordinated client/database rollout must apply the gate
+before opening clients, verify exact protected values and attribution, and
+follow `KC3_37_REMEDIATION_PLAN.md` for secondary-copy and rollback review.
 
 No deployment or release process exists yet. Document exact, verified steps after
 hosting and release tooling are selected.

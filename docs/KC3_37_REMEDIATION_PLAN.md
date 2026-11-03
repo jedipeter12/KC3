@@ -171,3 +171,96 @@ No migration was applied to the curated dataset, staging import performed,
 database reset/purge, or deployment executed. Workbook verification, application
 tests, typecheck/lint, database contract tests, and Expo exports are documented in
 [Overture Review](OVERTURE_REVIEW.md). Production rights clearance is not claimed.
+
+## 2026-11-01 implementation and disposition checkpoint
+
+The reviewed publication migration and CLI are prepared on the current branch.
+Disposable fixture transactions prove the reviewed source ledger and public
+source gate; a matched legacy row keeps its exact KC3 UUID, details, and KC3 hours
+while its Google ID, provider row, and Google hours are removed. Old Google RPC
+execute grants and new Google-content writes are blocked; the historical CLI
+fails before requesting Google. Existing unreviewed rows remain private behind
+the public RLS gate. MVP visibility also requires independent eligibility
+publication and no pending hours review. Client list/detail reads require a
+migration-ready RPC and fail closed on a pre-gate database. No reviewed production
+row, curated local row, or hosted
+target was published or modified. The source ledger and client attribution path
+are implemented, but actual release clearance remains open.
+
+The clean disposable schema, bootstrap seed, active database tests `001`-`005`
+and `014`-`016`, 118 Jest tests, TypeScript, ESLint, formatting, and Expo
+Web/iOS/Android export were exercised on this branch. Historical Google-backed
+database tests are retained under `supabase/legacy_tests/` and excluded from the
+current gate; expanded public/effective-hours and comprehensive operator write coverage
+still require replacement tests before release.
+
+### Local and historical copy inventory
+
+The 2026-11-01 read-only local audit still reports 88 places (73 Google-linked),
+73 provider rows, 399 Google hours rows on 57 places, 15 detail shells, and 3
+canonical-correction rows. The last three retain provider-context snapshots and
+must be reviewed before their place can be matched. The source table, canonical
+facts, hours, correction history, operator read models, seed, and any stored
+override payload are the database surfaces. The current `place_overrides` count
+is zero. Tracked source has no dump, backup, or CSV export. The old importer
+code remains for historical tests but its entry point and database rights are
+retired. The bootstrap seed contains 15 stable factual rows and detail shells;
+the publication gate keeps any restored seed row private until independently
+reviewed.
+
+Local secondary surfaces found by filename inventory: the `supabase_db_KC3`
+Docker volume; `supabase_db_KC3ThirdSpaceValidation` and
+`supabase_db_KC3_37_Synthetic_Rehearsal` volumes; databases named `postgres`
+and `kc3_third_space_operator_test` in the running KC3 cluster, plus a temporary
+`kc3_37_fixture` used for this work. Aggregate-only inspection of
+`kc3_third_space_operator_test` found zero places, provider rows, and Google
+hours. The fixture held only synthetic/seed test rows and was dropped after
+verification. Other volumes were
+identified by name but not opened.
+Ignored `.expo/dev/logs/export.log` files in the current and
+three NOTES worktrees; synthetic rehearsal SQL/snapshot files in NOTES and
+`/private/tmp/kc3-37-synthetic-input/snapshot.json`. Names alone do not prove
+contents or deletion status. The workbook/manifest are licensed Overture
+artifacts, not a Google export; the ignored `outputs/01a0ff66-…/` package also
+contains Places/Hours CSVs, workbook data, inspection output, license text, and
+NOTICE material. `outputs/background-readiness/` contains a historical code
+patch that mentions Google schema names; it has not been classified as a
+provider-content export. A name-only all-history Git search found a synthetic
+rehearsal snapshot SQL file and no tracked dump/backup/CSV/XLSX history path.
+Hosted databases, logs, object storage, backups,
+recordings, user device caches, and provider/account retention settings remain
+uninspected; no hosted inventory or purge is claimed.
+
+### Reviewable migration and rollback order
+
+1. Inventory each actual target and secondary copy read-only, with access-owner
+   evidence and retention policy. Obtain the applicable agreement for any
+   Google-derived internal export or deletion action. Review the 3 historical
+   correction rows field by field; preserve genuinely independent evidence,
+   redact unsupported snapshots only under an approved disposition. Do not
+   silently delete KC3-owned corrections.
+2. Review workbook rows and KC3 matches. Record exact before snapshots of IDs,
+   details, KC3 hours, overrides, hidden/move decisions, and correction evidence
+   in a secured, approved location. Compare normalized field values and source
+   rights, not mere equality with Google. Explicitly decide what to do with
+   unmatched legacy places; the publication gate hides them by default.
+3. Apply staging and publication migrations together with the compatible
+   client/operator build in a disposable target first. Use `approvals.json` and
+   the dry run, then publish only reviewed rows. Re-run exact protected-value
+   comparisons and `supabase/audits/kc3_37_publication_gate.sql`. The three
+   published-Google counts and all old-RPC execute flags must be zero/false.
+   Verify web/native attribution, external Maps labels, and anonymous RPCs.
+4. For rollout, freeze old import/restore jobs, back up only under an approved
+   storage/retention basis, deploy the gate before exposing clients, and repeat
+   the post-restore audit on every target. A full pre-gate database restore can
+   remove policies and triggers, so do not reconnect clients until migrations
+   and audit are reapplied. Do not roll back to the Google-backed public RPCs.
+   If a publication is wrong, stop new publication, hide the affected place
+   through an audited correction/migration while preserving KC3 details, then
+   republish a reviewed fix. Per-place transactions are atomic; a multi-row CLI
+   run can stop after earlier commits, which the ledger makes reviewable.
+5. Retire remaining private Google rows/hours, unsupported canonical facts and
+   correction snapshots, then separately dispose of confirmed secondary copies
+   under the approved retention plan. Recheck counts and permissions before
+   KC3-37 or KC3-39 closure. Production deployment and deletion are not part of
+   this branch work.

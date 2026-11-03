@@ -38,7 +38,15 @@ starting source with spreadsheet review and independently maintained hours.
   Reconciled directory cutover, Google/history/secondary-copy retirement,
   source/attribution/navigation display, and adapted operator eligibility remain
   open after the review. No research threshold is a publication rule.
-  KC3-39 and final content-rights/privacy declarations remain gated.
+  A private reviewed-source ledger, per-place publisher, Google write retirement,
+  public source gate, operator source eligibility, and attribution copy are now
+  fixture tested. The review contract also supports verified park-only
+  `dawn_to_dusk` hours with server-calculated transitions. This source gate is
+  combined with the separate MVP publication and hours-review gates. No actual
+  workbook row has been published. Exact target reconciliation, correction-history
+  disposition, secondary-copy retirement, expanded scenario coverage, native
+  verification, and production clearance remain open. KC3-39 and final
+  content-rights/privacy declarations remain gated.
 - [ ] KC3-34: Complete user-attended VoiceOver and TalkBack verification for the
   KC3 place discovery/detail experience, implement and recheck any resulting
   fixes, and record spoken evidence for the KC3-21/KC3-23 closeout gate.

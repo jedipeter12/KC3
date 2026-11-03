@@ -5,7 +5,7 @@ import path from "node:path";
 const prerequisites =
   "KC3 integration prerequisites: start Docker Desktop, run npm exec -- supabase start, " +
   "then npm exec -- supabase db reset --local against the disposable local database. " +
-  "See docs/DEVELOPMENT.md. The clean seed and a reviewed provider-backed local dataset are both supported.";
+  "See docs/DEVELOPMENT.md. The clean unpublished seed and a reviewed published local dataset are both supported.";
 
 let supabase: typeof import("../../src/lib/supabase").supabase;
 let listPublicPlaces: typeof import("../../src/data/publicPlaces").listPublicPlaces;
@@ -18,6 +18,9 @@ let getHoursStatus: typeof import("../../src/features/places/placePresentation")
 let formatHoursRows: typeof import("../../src/features/places/placePresentation").formatHoursRows;
 let buildMapsUrl: typeof import("../../src/features/places/placePresentation").buildMapsUrl;
 
+const requirePublishedDataset =
+  process.env.KC3_EXPECT_PUBLISHED_DATASET === "1" ||
+  process.env.KC3_EXPECT_PROVIDER_DATASET === "1";
 const requireProviderDataset = process.env.KC3_EXPECT_PROVIDER_DATASET === "1";
 
 beforeAll(() => {
@@ -62,7 +65,7 @@ beforeAll(() => {
   >("../../src/features/places/placePresentation"));
 });
 
-it("returns active MVP-city places with exactly the five serialized fields", async () => {
+it("returns only published MVP-city places with exactly the five serialized fields", async () => {
   const { data, error, status } = await supabase
     .rpc("list_public_places")
     .abortSignal(AbortSignal.timeout(5000));
@@ -71,7 +74,8 @@ it("returns active MVP-city places with exactly the five serialized fields", asy
       `Local public RPC failed (HTTP ${status}). ${prerequisites}`,
     );
   }
-  expect(data.length).toBeGreaterThan(0);
+  if (requirePublishedDataset) expect(data.length).toBeGreaterThan(0);
+  else expect(data).toEqual([]);
   for (const place of data) {
     // Check the raw RPC result before the data layer can strip extra fields.
     expect(Object.keys(place).sort()).toEqual([
@@ -109,42 +113,48 @@ it("loads the same live RPC result through the production data layer", async () 
     .rpc("list_public_places")
     .abortSignal(AbortSignal.timeout(5000));
   expect(error).toBeNull();
-  expect(data?.length).toBeGreaterThan(0);
+  if (requirePublishedDataset) expect(data?.length).toBeGreaterThan(0);
+  else expect(data).toEqual([]);
   await expect(listPublicPlaces()).resolves.toEqual(data);
 });
 
 it("applies production search and city/type filters to the live RPC dataset", async () => {
   const places = await listPublicPlaceSummaries();
+  const options = getPlaceFilterOptions(places);
+  if (!requirePublishedDataset) {
+    expect(places).toEqual([]);
+    expect(options).toEqual({ cities: [], placeTypes: [] });
+    return;
+  }
+  expect(places.length).toBeGreaterThan(0);
+  const selected = places[0]!;
 
   expect(
     filterPlaces(places, {
       ...DEFAULT_PLACE_FILTERS,
       city: null,
-      nameQuery: "  bLaCk DoG  ",
+      nameQuery: `  ${selected.name.toLocaleUpperCase()}  `,
       placeType: null,
-    }).map((place) => place.name),
-  ).toContain("Black Dog Coffeehouse");
+    }),
+  ).toContainEqual(selected);
 
-  const olatheParks = filterPlaces(places, {
+  const sameCityAndType = filterPlaces(places, {
     ...DEFAULT_PLACE_FILTERS,
-    city: "Olathe",
+    city: selected.city,
     nameQuery: "",
-    placeType: "park",
+    placeType: selected.place_type,
   });
-  expect(olatheParks.length).toBeGreaterThan(0);
+  expect(sameCityAndType).toContainEqual(selected);
   expect(
-    olatheParks.every(
-      (place) => place.city === "Olathe" && place.place_type === "park",
+    sameCityAndType.every(
+      (place) =>
+        place.city === selected.city &&
+        place.place_type === selected.place_type,
     ),
   ).toBe(true);
 
-  const options = getPlaceFilterOptions(places);
-  expect(options.cities).toEqual(
-    expect.arrayContaining(["Lenexa", "Overland Park", "Olathe"]),
-  );
-  expect(options.placeTypes).toEqual(
-    expect.arrayContaining(["coffee_shop", "library", "park"]),
-  );
+  expect(options.cities).toContain(selected.city);
+  expect(options.placeTypes).toContain(selected.place_type);
   if (requireProviderDataset) {
     expect(options.placeTypes).toEqual(
       expect.arrayContaining([
@@ -222,7 +232,8 @@ it("returns the exact expanded anonymous summary contract", async () => {
     );
   }
 
-  expect(data.length).toBeGreaterThan(0);
+  if (requirePublishedDataset) expect(data.length).toBeGreaterThan(0);
+  else expect(data).toEqual([]);
   for (const place of data) {
     expect(Object.keys(place).sort()).toEqual([
       "address",
@@ -242,6 +253,7 @@ it("returns the exact expanded anonymous summary contract", async () => {
       "regular_hours_available",
       "regular_hours_next_transition_at",
       "regular_hours_observed_at",
+      "regular_hours_rule",
       "regular_hours_state",
       "wifi",
       "work_suitability",
@@ -256,6 +268,13 @@ it("returns the exact expanded anonymous summary contract", async () => {
 
 it("exercises every active summary through discovery and place details", async () => {
   const summaries = await listPublicPlaceSummaries();
+  if (!requirePublishedDataset) {
+    expect(summaries).toEqual([]);
+    await expect(
+      getPublicPlaceDetail("6b633300-0000-4000-8000-000000000001"),
+    ).resolves.toBeNull();
+    return;
+  }
   expect(summaries.length).toBeGreaterThan(0);
 
   const details = await Promise.all(
@@ -329,6 +348,7 @@ it("exercises every active summary through discovery and place details", async (
     "regular_hours_available",
     "regular_hours_next_transition_at",
     "regular_hours_observed_at",
+    "regular_hours_rule",
     "regular_hours_state",
     "seating_notes",
     "wifi",

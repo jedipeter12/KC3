@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ScaledText as Text } from "../../components/ScaledText";
+import { useHoursRefresh } from "./useHoursRefresh";
 import {
   getPublicPlaceDetail,
   PUBLIC_PLACE_DETAILS_ERROR_MESSAGE,
@@ -41,6 +42,8 @@ type DetailState =
   | { status: "loaded"; place: PublicPlaceDetail }
   | { status: "missing" }
   | { status: "error" };
+
+const EMPTY_PLACES: readonly PublicPlaceSummary[] = [];
 
 function openWithLinking(url: string): Promise<unknown> {
   return Linking.openURL(url);
@@ -111,6 +114,38 @@ export function PlaceDetailScreen({
   const headingRef = useRef<ComponentRef<typeof Text>>(null);
   const requestIdRef = useRef(0);
   const requestControllerRef = useRef<AbortController | null>(null);
+  const refreshInFlightRef = useRef(false);
+  const [refreshError, setRefreshError] = useState(false);
+
+  const refreshDetail = useCallback(async () => {
+    if (refreshInFlightRef.current) return;
+    refreshInFlightRef.current = true;
+    requestControllerRef.current?.abort();
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+    const requestId = ++requestIdRef.current;
+    try {
+      const place = await loadPlaceDetail(placeId, controller.signal);
+      if (requestId === requestIdRef.current && !controller.signal.aborted) {
+        setState(place ? { status: "loaded", place } : { status: "missing" });
+        setRefreshError(false);
+      }
+    } catch {
+      if (requestId === requestIdRef.current && !controller.signal.aborted)
+        setRefreshError(true);
+    } finally {
+      refreshInFlightRef.current = false;
+    }
+  }, [loadPlaceDetail, placeId]);
+  const refreshPlaces = useMemo(
+    () => (state.status === "loaded" ? [state.place] : EMPTY_PLACES),
+    [state],
+  );
+  const now = useHoursRefresh(
+    refreshPlaces,
+    refreshDetail,
+    state.status === "loaded",
+  );
 
   const requestDetail = useCallback(() => {
     requestControllerRef.current?.abort();
@@ -130,6 +165,7 @@ export function PlaceDetailScreen({
                 ? { status: "loaded", place: result }
                 : { status: "missing" },
             );
+            setRefreshError(false);
           }
         },
         () => {
@@ -161,18 +197,18 @@ export function PlaceDetailScreen({
     return () => clearTimeout(timeout);
   }, [placeId]);
 
+  const loadingAnnouncement =
+    state.status === "loading"
+      ? "Loading place details…"
+      : state.status === "error"
+        ? `Place details are unavailable. ${PUBLIC_PLACE_DETAILS_ERROR_MESSAGE}`
+        : state.status === "missing"
+          ? "Place unavailable"
+          : `${state.place.name} details loaded`;
   useEffect(() => {
-    if (Platform.OS !== "ios") return;
-    const message =
-      state.status === "loading"
-        ? "Loading place details…"
-        : state.status === "error"
-          ? `Place details are unavailable. ${PUBLIC_PLACE_DETAILS_ERROR_MESSAGE}`
-          : state.status === "missing"
-            ? "Place unavailable"
-            : `${state.place.name} details loaded`;
-    AccessibilityInfo.announceForAccessibility(message);
-  }, [state]);
+    if (Platform.OS === "ios")
+      AccessibilityInfo.announceForAccessibility(loadingAnnouncement);
+  }, [loadingAnnouncement]);
 
   const visiblePlace = state.status === "loaded" ? state.place : cachedSummary;
   const weeklyRows = useMemo(() => {
@@ -199,6 +235,7 @@ export function PlaceDetailScreen({
       setMapsError(true);
     }
   };
+  const mapsProvider = Platform.OS === "ios" ? "Apple Maps" : "Google Maps";
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -214,6 +251,23 @@ export function PlaceDetailScreen({
           <Text style={styles.backText}>‹ Places</Text>
         </Pressable>
         <ScrollView contentContainerStyle={styles.content}>
+          {state.status === "loaded" && refreshError ? (
+            <View
+              accessibilityLiveRegion="polite"
+              {...(Platform.OS === "web" ? { role: "alert" as const } : {})}
+            >
+              <Text style={styles.note}>
+                {PUBLIC_PLACE_DETAILS_ERROR_MESSAGE}
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => void refreshDetail()}
+                style={styles.primaryButton}
+              >
+                <Text style={styles.primaryButtonText}>Try again</Text>
+              </Pressable>
+            </View>
+          ) : null}
           {visiblePlace ? (
             <View style={styles.identity}>
               <Text
@@ -233,7 +287,7 @@ export function PlaceDetailScreen({
               ) : null}
               <Text style={styles.address}>{visiblePlace.address}</Text>
               <Text style={styles.hoursState}>
-                {getHoursStatus(visiblePlace)}
+                {getHoursStatus(visiblePlace, now)}
               </Text>
               {visiblePlace.drive_thru_only === true ? (
                 <Text style={styles.warning}>
@@ -248,7 +302,9 @@ export function PlaceDetailScreen({
                   pressed && styles.pressed,
                 ]}
               >
-                <Text style={styles.mapsButtonText}>Open in Maps</Text>
+                <Text style={styles.mapsButtonText}>
+                  Open in {mapsProvider}
+                </Text>
               </Pressable>
               {mapsError ? (
                 <Text
@@ -376,7 +432,8 @@ export function PlaceDetailScreen({
                 >
                   Regular hours
                 </Text>
-                {state.place.place_local_day_of_week !== null &&
+                {state.place.regular_hours_rule === "weekly" &&
+                state.place.place_local_day_of_week !== null &&
                 state.place.regular_hours_available ? (
                   <View style={styles.todayBox}>
                     <Text style={styles.detailLabel}>Today</Text>
@@ -390,7 +447,9 @@ export function PlaceDetailScreen({
                     </Text>
                   </View>
                 ) : null}
-                {state.place.regular_hours_available ? (
+                {state.place.regular_hours_rule === "dawn_to_dusk" ? (
+                  <Text style={styles.detailValue}>Dawn to dusk</Text>
+                ) : state.place.regular_hours_available ? (
                   weeklyRows.map((row) => (
                     <DetailValue
                       key={row.day}
@@ -424,6 +483,27 @@ export function PlaceDetailScreen({
                 )}
                 <Text style={styles.note}>
                   Regular hours can change on holidays or for special events.
+                </Text>
+                <Text style={styles.note}>
+                  Place identity is reviewed and adapted from Overture Maps data
+                  and contributors. KC3 checks suitability and any listed hours
+                  separately.
+                </Text>
+                <Pressable
+                  accessibilityRole="link"
+                  onPress={() =>
+                    void openExternalUrl(
+                      "https://docs.overturemaps.org/attribution/",
+                    )
+                  }
+                >
+                  <Text style={styles.note}>
+                    Overture licenses and attribution
+                  </Text>
+                </Pressable>
+                <Text style={styles.note}>
+                  Open in {mapsProvider} sends this place name and address to an
+                  external map service. Its listing may differ from KC3.
                 </Text>
               </View>
             </>

@@ -119,8 +119,8 @@ select ok(not public.kc3_hours_review_pending('f1000000-0000-0000-0000-000000000
 reset role;
 set local role anon;
 select is((select count(*)::integer from public.list_public_places()
-  where id='f1000000-0000-0000-0000-000000000001'),1,
-  'published reviewed place is visible');
+  where id='f1000000-0000-0000-0000-000000000001'),0,
+  'MVP approval does not bypass reviewed source publication');
 reset role;
 set local role kc3_third_space_operator;
 
@@ -169,15 +169,15 @@ create temp table stale_hours_payload as select pg_temp.review_payload(
 reset role;
 insert into public.place_hours(place_id,day_of_week,open_time,close_time,is_closed,
   source,source_observed_at) values
-  ('f1000000-0000-0000-0000-000000000001',6,'12:00','21:00',false,'google',now());
+  ('f1000000-0000-0000-0000-000000000001',6,'12:00','21:00',false,'kc3',now());
 set local role kc3_third_space_operator;
 select ok((select casual_hangout_suitable is false and supported_activities='{}'::public.activity_type[]
   from public.place_details where place_id='f1000000-0000-0000-0000-000000000001'),
-  'provider hours write preserves KC3 classifications');
+  'new hours write preserves KC3 classifications');
 select ok((select mvp_published is false from public.places
   where id='f1000000-0000-0000-0000-000000000001') and
   public.kc3_hours_review_pending('f1000000-0000-0000-0000-000000000001'),
-  'provider hours write only marks review; it does not decide publication');
+  'new hours write only marks review; it does not decide publication');
 select throws_ok($sql$select public.kc3_save_third_space_review(
   'f2000000-0000-0000-0000-000000000001',(select payload from stale_hours_payload))$sql$,
   '40001','hours changed after selection','stale hours revision blocks review save');

@@ -1,5 +1,10 @@
 # Seed Data
 
+KC3-37 keeps this bootstrap seed for local identity fixtures. Its rows are not
+reviewed Overture publications; after the publication migration the anonymous
+RPCs exclude them until an attended review maps each one to a licensed source.
+Restoring or rerunning the seed cannot re-enable public visibility by itself.
+
 ## Purpose
 
 `supabase/seed.sql` supplies realistic local records for database and early client

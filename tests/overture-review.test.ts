@@ -127,6 +127,33 @@ test("requires every day and distinct hours provenance", () => {
   ).toThrow("Ready identity");
 });
 
+test("accepts a verified dawn-to-dusk rule only for parks", () => {
+  const r = ready();
+  r.manifest.records[0].placeType = "park";
+  r.places[0]["Place type"] = "park";
+  const h = r.hours[0];
+  Object.assign(h, {
+    "Hours status": "Ready",
+    "Hours rule": "dawn_to_dusk",
+    "Hours source URL": "https://example.org/park-hours",
+    "Hours observed on": "2026-10-01",
+    "Hours reuse basis": "Permitted source",
+    "Hours notes": "Municipal park policy confirms dawn-to-dusk access.",
+  });
+  const batch = compileReview(r.manifest, r.places, r.hours, "2026-10-02");
+  expect(batch.records[0].hours?.ruleType).toBe("dawn_to_dusk");
+  expect(batch.records[0].hours?.periods).toHaveLength(7);
+  expect(
+    batch.records[0].hours?.periods.every((period) => period.isClosed),
+  ).toBe(true);
+  h["Hours rule"] = "dawn_to_dusk";
+  r.manifest.records[0].placeType = "coffee_shop";
+  r.places[0]["Place type"] = "coffee_shop";
+  expect(() =>
+    compileReview(r.manifest, r.places, r.hours, "2026-10-02"),
+  ).toThrow("only valid for parks");
+});
+
 test("matches sorted hours by source ID and rejects case variants of the same KC3 target", () => {
   const manifest = fixture();
   const secondId = "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb";

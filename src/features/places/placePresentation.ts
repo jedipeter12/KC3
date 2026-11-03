@@ -88,20 +88,43 @@ export function getHoursStatus(
   now = new Date(),
 ): string {
   if (!place.regular_hours_available) return "Hours unavailable";
-  if (isHoursStale(place.regular_hours_observed_at, now)) {
+  if (
+    place.regular_hours_rule === "weekly" &&
+    isHoursStale(place.regular_hours_observed_at, now)
+  ) {
     return `Hours may have changed · Last checked ${formatDate(place.regular_hours_observed_at!)}`;
   }
-  if (place.regular_hours_state === "open") {
+  const currentState = getCurrentHoursState(place, now);
+  if (currentState === "open") {
     return place.regular_hours_next_transition_at
       ? `Open · until ${formatTransition(place.regular_hours_next_transition_at)}`
-      : "Open 24 hours";
+      : place.regular_hours_rule === "dawn_to_dusk"
+        ? "Open now"
+        : "Open 24 hours";
   }
-  if (place.regular_hours_state === "closed") {
+  if (currentState === "closed") {
     return place.regular_hours_next_transition_at
       ? `Closed · opens ${formatTransition(place.regular_hours_next_transition_at)}`
       : "Closed";
   }
   return "Current hours status unavailable";
+}
+
+/** Never extend a server-calculated state beyond its next reported transition. */
+export function getCurrentHoursState(
+  place: PublicPlaceSummary,
+  now = new Date(),
+): PublicPlaceSummary["regular_hours_state"] {
+  if (
+    !place.regular_hours_available ||
+    (place.regular_hours_rule === "weekly" &&
+      isHoursStale(place.regular_hours_observed_at, now)) ||
+    (place.regular_hours_next_transition_at !== null &&
+      Date.parse(place.regular_hours_next_transition_at) <= now.getTime())
+  ) {
+    return "unknown";
+  }
+  return place.regular_hours_state;
 }
 
 export function getCompactKc3Summary(place: PublicPlaceSummary): string[] {

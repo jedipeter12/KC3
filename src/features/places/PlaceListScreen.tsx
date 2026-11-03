@@ -13,6 +13,7 @@ import {
   BackHandler,
   findNodeHandle,
   FlatList,
+  Linking,
   Modal,
   Platform,
   Pressable,
@@ -42,6 +43,7 @@ import type {
   PublicPlaceSummary,
 } from "../../types/database";
 import { PlaceDetailScreen } from "./PlaceDetailScreen";
+import { useHoursRefresh } from "./useHoursRefresh";
 import {
   DEFAULT_PLACE_FILTERS,
   filterPlaces,
@@ -233,6 +235,7 @@ function parseDetailPath(): string | null {
 
 type PlaceCardProps = Readonly<{
   focused: boolean;
+  now: Date;
   onBlur: () => void;
   onFocus: () => void;
   onPress: () => void;
@@ -257,13 +260,14 @@ export function focusFilterModalEntry(
 
 function PlaceCard({
   focused,
+  now,
   onBlur,
   onFocus,
   onPress,
   place,
   setRef,
 }: PlaceCardProps) {
-  const hoursStatus = getHoursStatus(place);
+  const hoursStatus = getHoursStatus(place, now);
   const compactSummary = getCompactKc3Summary(place);
   const accessibleName = [
     place.name,
@@ -364,15 +368,42 @@ export function PlaceListScreen({
   const restorePendingRef = useRef(false);
   const requestIdRef = useRef(0);
   const requestControllerRef = useRef<AbortController | null>(null);
+  const refreshInFlightRef = useRef(false);
+  const [refreshError, setRefreshError] = useState(false);
 
   const loadedPlaces = state.status === "loaded" ? state.places : EMPTY_PLACES;
+  const refreshPlaces = useCallback(async () => {
+    if (refreshInFlightRef.current) return;
+    refreshInFlightRef.current = true;
+    requestControllerRef.current?.abort();
+    const controller = new AbortController();
+    requestControllerRef.current = controller;
+    const requestId = ++requestIdRef.current;
+    try {
+      const places = await loadPlaces(controller.signal);
+      if (requestId === requestIdRef.current && !controller.signal.aborted) {
+        setState({ status: "loaded", places });
+        setRefreshError(false);
+      }
+    } catch {
+      if (requestId === requestIdRef.current && !controller.signal.aborted)
+        setRefreshError(true);
+    } finally {
+      refreshInFlightRef.current = false;
+    }
+  }, [loadPlaces]);
+  const now = useHoursRefresh(
+    loadedPlaces,
+    refreshPlaces,
+    state.status === "loaded" && selectedPlaceId === null,
+  );
   const filterOptions = useMemo(
     () => getPlaceFilterOptions(loadedPlaces),
     [loadedPlaces],
   );
   const visiblePlaces = useMemo(
-    () => filterPlaces(loadedPlaces, filters),
-    [filters, loadedPlaces],
+    () => filterPlaces(loadedPlaces, filters, now),
+    [filters, loadedPlaces, now],
   );
   const hasActiveFilters = hasNonDefaultPlaceFilters(filters);
   const originCardIndex = originCardId
@@ -393,6 +424,7 @@ export function PlaceListScreen({
             !controller.signal.aborted
           ) {
             setState({ status: "loaded", places: result });
+            setRefreshError(false);
           }
         },
         () => {
@@ -410,25 +442,26 @@ export function PlaceListScreen({
     };
   }, [requestPlaces]);
 
+  const loadingAnnouncement =
+    state.status === "loading"
+      ? "Finding places…"
+      : state.status === "error"
+        ? `Places are unavailable. ${PUBLIC_PLACES_ERROR_MESSAGE}`
+        : state.places.length === 0
+          ? "No places yet"
+          : `${state.places.length} places loaded`;
   useEffect(() => {
-    if (Platform.OS !== "ios") return;
-    const message =
-      state.status === "loading"
-        ? "Finding places…"
-        : state.status === "error"
-          ? `Places are unavailable. ${PUBLIC_PLACES_ERROR_MESSAGE}`
-          : state.places.length === 0
-            ? "No places yet"
-            : `${state.places.length} places loaded`;
-    AccessibilityInfo.announceForAccessibility(message);
-  }, [state]);
+    if (Platform.OS === "ios")
+      AccessibilityInfo.announceForAccessibility(loadingAnnouncement);
+  }, [loadingAnnouncement]);
 
+  const hasPlaces = loadedPlaces.length > 0;
   useEffect(() => {
-    if (state.status !== "loaded" || state.places.length === 0) return;
+    if (!hasPlaces) return;
     const message = `${visiblePlaces.length} ${visiblePlaces.length === 1 ? "place" : "places"}`;
     if (Platform.OS === "ios")
       AccessibilityInfo.announceForAccessibility(message);
-  }, [filters, state, visiblePlaces.length]);
+  }, [filters, hasPlaces, visiblePlaces.length]);
 
   useEffect(() => {
     if (
@@ -752,6 +785,24 @@ export function PlaceListScreen({
           <Text style={styles.subtitle}>Find your next third place.</Text>
         </View>
 
+        {state.status === "loaded" && refreshError ? (
+          <View
+            accessibilityLiveRegion="polite"
+            {...(Platform.OS === "web" ? { role: "alert" as const } : {})}
+          >
+            <Text style={styles.stateMessage}>
+              {PUBLIC_PLACES_ERROR_MESSAGE}
+            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => void refreshPlaces()}
+              style={styles.retryButton}
+            >
+              <Text style={styles.retryButtonText}>Try again</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
         {state.status === "loading" ? (
           <View accessibilityLiveRegion="polite" style={styles.stateContainer}>
             <ActivityIndicator color="#176b55" size="large" />
@@ -850,6 +901,22 @@ export function PlaceListScreen({
                 </View>
               }
               ListHeaderComponent={discoveryHeader}
+              ListFooterComponent={
+                <Pressable
+                  accessibilityRole="link"
+                  onPress={() =>
+                    void Linking.openURL(
+                      "https://docs.overturemaps.org/attribution/",
+                    ).catch(() => undefined)
+                  }
+                  style={styles.sourceFooter}
+                >
+                  <Text style={styles.sourceFooterText}>
+                    Place data adapted from Overture Maps and contributors ·
+                    Licenses and attribution
+                  </Text>
+                </Pressable>
+              }
               onContentSizeChange={completeListRestoration}
               onScroll={(event) => {
                 scrollOffsetRef.current = event.nativeEvent.contentOffset.y;
@@ -858,6 +925,7 @@ export function PlaceListScreen({
               renderItem={({ item }) => (
                 <PlaceCard
                   focused={focusedCardId === item.id}
+                  now={now}
                   onBlur={() => setFocusedCardId(null)}
                   onFocus={() => setFocusedCardId(item.id)}
                   onPress={() => openDetail(item.id)}
@@ -922,6 +990,16 @@ const styles = StyleSheet.create({
     letterSpacing: -1,
   },
   subtitle: { marginTop: 4, color: "#3e5b53", fontSize: 17 },
+  sourceFooter: {
+    minHeight: 44,
+    justifyContent: "center",
+    paddingVertical: 12,
+  },
+  sourceFooterText: {
+    color: "#176b55",
+    fontSize: 13,
+    textDecorationLine: "underline",
+  },
   resultsLayout: { flex: 1 },
   wideResultsLayout: { flexDirection: "row", gap: 24 },
   filterRail: {
