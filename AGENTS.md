@@ -25,6 +25,27 @@ These instructions apply to any AI coding agent working in this repository.
 - Explain significant tradeoffs when introducing architectural changes.
 - When a requested change appears to require violating an architectural constraint, stop and explain the conflict rather than changing the architecture.
 
+## AI Development Workflow
+
+- Work from a scoped ticket with **Goal**, **Context**, and **Validation**. The
+  Goal states the outcome and explicit, testable acceptance criteria; Context
+  links the approved requirements, relevant repository decisions, constraints,
+  and dependencies; Validation names the checks and evidence needed to show each
+  criterion is met.
+- Existing KC3 Notion tickets remain valid. Use their current properties and page
+  content to supply this information; add missing detail to the ticket when
+  needed. `docs/ROADMAP.md` remains the source of truth for scope, priority, and
+  status.
+- Before handing off work, record verification evidence for each acceptance
+  criterion: the check performed, its result, and a link or location for output
+  when available. Identify checks that were not run and the reason.
+- Review the final diff for code quality and for opportunities to simplify it.
+  Resolve findings or document why a proposed change was not made. Include both
+  review outcomes in the handoff or pull request.
+- Obtain explicit human approval before merging a pull request, applying a
+  production database migration, or deploying. An AI review or passing checks
+  do not constitute that approval.
+
 
 # AGENTS.md
 
