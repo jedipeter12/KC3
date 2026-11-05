@@ -761,6 +761,33 @@ before review; no branch-protection settings were changed.
   completed, deferred, or reprioritized.
 - Autonomous multi-agent orchestration is not required for the initial workflow.
 
+### Standard AI Ticket Format
+
+Use these headings in a new implementation ticket or in the body of an existing
+ticket. Keep existing Notion properties, identifiers, links, and history; they do
+not need to be renamed or migrated. Existing fields may hold the same information
+as long as the three parts are easy to find.
+
+```text
+Goal
+- Desired outcome and in-scope change.
+- Acceptance criteria: explicit, observable conditions for completion.
+
+Context
+- Approved product requirements and relevant repository docs/decisions.
+- Constraints, dependencies, and known behavior to preserve.
+
+Validation
+- Checks or manual scenarios that will verify each acceptance criterion.
+- Evidence to retain: command and result, CI/PR link, or manual observation.
+```
+
+Keep criteria proportionate to the ticket. When work changes behavior, name the
+expected outcome and relevant regression case rather than only listing an
+implementation step. If a ticket lacks an approved requirement or a testable
+completion condition, clarify it before changing behavior. Notion tracks the
+execution detail; repository documentation still governs approved scope.
+
 ### Project Tracking
 
 `docs/ROADMAP.md` remains the source of truth for KC3 priorities, scope, and
@@ -786,6 +813,28 @@ Each implementation ticket should direct the developer to:
 5. Run the relevant tests and build checks.
 6. Update affected documentation.
 7. Report changed files, checks run, and remaining risks or follow-up work.
+
+For AI-assisted work, use the ticket's acceptance criteria as the handoff
+checklist. Record evidence next to each criterion or link to a PR comment or
+verification document that does so. Include the exact command and pass/fail
+result for automated checks; for manual checks, record the scenario, environment,
+observed result, and any remaining limit. Explain skipped checks and open items
+without marking their criteria complete.
+
+After implementation and validation, make two explicit reviews of the final
+diff:
+
+1. **Code quality:** Check correctness, security and data boundaries, error
+   handling, tests, and consistency with repository conventions.
+2. **Simplification:** Look for unnecessary code, duplication, dependencies,
+   abstractions, or changes outside the ticket's scope.
+
+Fix material findings and rerun affected checks, or record the finding and reason
+for deferral. Summarize both review outcomes, verification evidence, and residual
+risks in the PR so a human can assess the change. The Product Owner or another
+authorized human must explicitly approve the merge, any production database
+migration, and any deployment before that action occurs. Passing CI and AI review
+do not authorize these actions.
 
 ## Development Conventions
 
