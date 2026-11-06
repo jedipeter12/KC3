@@ -57,6 +57,8 @@ the public environment configuration required to run the client.
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — important decisions and why they were made
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — completed, current, and planned work
 - [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) — local development, testing, deployment, and conventions
+- [`docs/AI_OPERATIONS_STANDARD.md`](docs/AI_OPERATIONS_STANDARD.md) — reusable AI task briefs, permissions, verification, approval, and handoffs
+- [`docs/SOFTWARE_DEVELOPMENT_STANDARD.md`](docs/SOFTWARE_DEVELOPMENT_STANDARD.md) — KC3 branches, CI, reviews, release records, and bug response
 - [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md) — current defensive security assessment and pre-launch requirements
 - [`docs/TESTING_REVIEW.md`](docs/TESTING_REVIEW.md) — database coverage review, remaining gaps, and decisions required
 - [`docs/SEED_DATA.md`](docs/SEED_DATA.md) — local seed behavior, data provenance, and maintenance rules
