@@ -20,6 +20,10 @@ starting source with spreadsheet review and independently maintained hours.
 
 ## In Progress
 
+- [ ] Pilot the reusable AI Operations Standard on several real KC3 tickets,
+  recording criterion evidence, fresh-context review findings, and owner approval
+  decisions. Verify whether GitHub can enforce both existing CI jobs as required
+  checks; do not claim merge enforcement until a failing-check attempt is blocked.
 - [ ] KC3-37: Sourcing/remediation preparation started 2026-10-02. Ticket and
   audit reviewed; aggregate read-only local inventory executed; phased plan in
   `docs/KC3_37_REMEDIATION_PLAN.md`. Overture was selected by the Product Owner.
@@ -99,6 +103,10 @@ starting source with spreadsheet review and independently maintained hours.
 
 ## Completed
 
+- [x] 2026-11-05: Drafted a portable two-layer AI Operations Standard and KC3 software
+  adapter with task permissions, independent review, handoff, release decision,
+  and bug-response records. Added a PR evidence template. No hosting, monitoring
+  subscription, production access, or automated orchestration was added.
 - [x] 2026-10-29 attended third-space operator: private source-agnostic
   discovery review, canonical review start with explicit provenance, nullable
   KC3 classification editing, optimistic concurrency, and an hours-change

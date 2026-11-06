@@ -27,6 +27,10 @@ These instructions apply to any AI coding agent working in this repository.
 
 ## AI Development Workflow
 
+- Follow [`docs/AI_OPERATIONS_STANDARD.md`](docs/AI_OPERATIONS_STANDARD.md)
+  for the portable brief, permissions, verification, approval, and handoff rules.
+  Apply [`docs/SOFTWARE_DEVELOPMENT_STANDARD.md`](docs/SOFTWARE_DEVELOPMENT_STANDARD.md)
+  for KC3 branches, reviews, releases, and bug reports.
 - Work from a scoped ticket with **Goal**, **Context**, and **Validation**. The
   Goal states the outcome and explicit, testable acceptance criteria; Context
   links the approved requirements, relevant repository decisions, constraints,
@@ -42,6 +46,9 @@ These instructions apply to any AI coding agent working in this repository.
 - Review the final diff for code quality and for opportunities to simplify it.
   Resolve findings or document why a proposed change was not made. Include both
   review outcomes in the handoff or pull request.
+- For material changes, ask a verifier who did not implement the change to review
+  the final diff and criterion evidence from a fresh context. Record findings
+  and their disposition; this review does not replace human approval.
 - Obtain explicit human approval before merging a pull request, applying a
   production database migration, or deploying. An AI review or passing checks
   do not constitute that approval.

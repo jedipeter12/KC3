@@ -43,6 +43,46 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-11-05 — Use a portable two-layer AI operations workflow
+
+**Status:** Accepted for documentation and pilot; production controls remain
+separate release work
+
+**Decision**
+
+Use one Goal / Context / Validation brief with bounded permissions, criterion
+evidence, fresh-context review for material work, explicit human approval for
+consequential actions, and a durable handoff across company domains. KC3 adds a
+software adapter for its existing branches, CI, PRs, release decisions, and bug
+response. Pilot the workflow before adding automation.
+
+**Context**
+
+The repository already has a supervised delivery flow and strong verification
+CI. The holding company needs practices that can also guide content, marketing,
+finance, and specialist agents without tying them to one AI provider. KC3 still
+lacks a production release process and monitoring.
+
+**Alternatives considered**
+
+- Keep the workflow solely in KC3 coding instructions and ticket conventions.
+- Add a second provider, review subscription, or agent orchestrator now.
+- Make parallel agents the default for every task.
+
+**Reasoning**
+
+Plain-text briefs and evidence travel between projects and providers. A separate
+fresh-context review improves scrutiny without new infrastructure. Existing CI,
+GitHub, and project records cover the current software needs. Consequential
+actions remain with the human owner.
+
+**Consequences / follow-up work**
+
+Pilot the templates on real tasks and refine them from evidence. Verify GitHub
+merge enforcement separately. KC3-37 rights, KC3-34 accessibility, production
+environment/recovery, and release monitoring gates remain open. Parallel agents
+remain optional for independent work; no orchestration is selected.
+
 ### 2026-11-02 — Require both source review and MVP eligibility for public places
 
 **Status:** Accepted for the KC3-37 integration

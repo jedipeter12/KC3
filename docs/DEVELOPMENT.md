@@ -750,6 +750,11 @@ before review; no branch-protection settings were changed.
 
 ## Roles and Delivery Workflow
 
+The portable brief, permissions, verification, and handoff contract is in
+[`AI_OPERATIONS_STANDARD.md`](AI_OPERATIONS_STANDARD.md). KC3 applies the
+[`SOFTWARE_DEVELOPMENT_STANDARD.md`](SOFTWARE_DEVELOPMENT_STANDARD.md) to branches,
+CI, independent review, release decisions, and bug response.
+
 - The user is the Product Owner and approves product behavior and scope.
 - ChatGPT may act as PM, architect, and technical translator to turn product intent
   into repository documentation and scoped tickets.
@@ -836,6 +841,12 @@ authorized human must explicitly approve the merge, any production database
 migration, and any deployment before that action occurs. Passing CI and AI review
 do not authorize these actions.
 
+For a material change, request a reviewer who did not implement it to inspect the
+final diff and criterion evidence from a fresh context. Record findings and
+dispositions in the PR. The same provider may be used; a second subscription or
+automated agent coordinator is not required. Use the repository PR template for
+the evidence and approval record.
+
 ## Development Conventions
 
 - Language: Write new application logic in TypeScript. JavaScript may remain where
@@ -868,7 +879,9 @@ before opening clients, verify exact protected values and attribution, and
 follow `KC3_37_REMEDIATION_PLAN.md` for secondary-copy and rollback review.
 
 No deployment or release process exists yet. Document exact, verified steps after
-hosting and release tooling are selected.
+hosting and release tooling are selected. The release decision record and bug
+response design in [`SOFTWARE_DEVELOPMENT_STANDARD.md`](SOFTWARE_DEVELOPMENT_STANDARD.md)
+can be filled in during that work; they do not clear the existing launch gates.
 
 ## Troubleshooting
 
