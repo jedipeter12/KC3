@@ -191,8 +191,32 @@ The clean disposable schema, bootstrap seed, active database tests `001`-`005`
 and `014`-`016`, 118 Jest tests, TypeScript, ESLint, formatting, and Expo
 Web/iOS/Android export were exercised on this branch. Historical Google-backed
 database tests are retained under `supabase/legacy_tests/` and excluded from the
-current gate; expanded public/effective-hours and comprehensive operator write coverage
-still require replacement tests before release.
+current gate. Synthetic operator replacement suite `019` now covers post-cutover
+eligibility, protected writes, and correction evidence; expanded public and
+effective-hours scenarios still require replacement tests before release.
+
+### Post-cutover operator regression coverage (2026-11-08)
+
+`supabase/tests/019_post_cutover_operators.test.sql` uses only synthetic
+reviewed publications and an unpublished legacy row inside a transaction that
+rolls back. It verifies both operator searches select active reviewed identities,
+including duplicate-looking results, while excluding unpublished and hidden
+places. It exercises detail creation and update, explicit unknown and
+verification values, stale versions, malformed payloads, and preservation of
+third-space classifications, identity, publication evidence, and hours. It also
+checks canonical correction eligibility, stale versions, HTTPS and nonblank
+evidence, exact before/after history, field provenance, and the narrow database
+privileges of each operator. Injected audit-insert and provenance-update
+failures prove canonical facts, provenance, and evidence roll back together.
+The existing runner tests, expanded with reviewed Overture selection cases,
+cover the final confirmation and cancellation prompts without a write.
+
+Remaining attended scenarios include a real reviewed-row selection in each
+city, duplicate identity review against the eventual curated dataset, live
+service-role API execution after deployment, and final Web/native verification.
+The historical Google-backed operator tests remain under `supabase/legacy_tests/`
+for audit; they are not publication-eligible fixtures. This coverage does not
+publish any actual workbook row or clear the outstanding KC3-37 release gates.
 
 ### Local and historical copy inventory
 

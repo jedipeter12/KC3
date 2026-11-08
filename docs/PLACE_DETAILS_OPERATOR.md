@@ -10,6 +10,14 @@ review into a suitability verification claim. The Google-backed description
 below records the pre-cutover workflow; it is no longer the intended source
 boundary. The curated target has not been migrated.
 
+The synthetic post-cutover regression in
+`supabase/tests/019_post_cutover_operators.test.sql` verifies reviewed-active
+search, unpublished/hidden rejection, complete detail creation and update,
+stale edit rejection, and preservation of third-space classification, canonical
+facts, publication evidence, and hours.
+The runner test verifies Overture ID display and final cancellation. Attended
+selection against the eventual curated dataset remains open.
+
 `npm run edit:place-details` is an attended, internal workflow for finding an
 existing active, Google-backed KC3 place and creating or updating its KC3-owned
 `place_details` row. It is not a public or authenticated admin feature.
