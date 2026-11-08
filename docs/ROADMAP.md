@@ -48,13 +48,18 @@ starting source with spreadsheet review and independently maintained hours.
   `dawn_to_dusk` hours with server-calculated transitions. This source gate is
   combined with the separate MVP publication and hours-review gates. No actual
   workbook row has been published. Exact target reconciliation, correction-history
-  disposition, secondary-copy retirement, expanded scenario coverage, native
+  disposition, secondary-copy retirement, native
   verification, and production clearance remain open. KC3-39 and final
   content-rights/privacy declarations remain gated.
   Post-cutover operator regression coverage now exercises reviewed-publication
   eligibility, protected writes, stale edits, correction evidence, and
   cancellation. Attended checks on the eventual curated dataset and live
   service-role API remain open; see the remediation plan.
+  Post-cutover pgTAP and
+  anonymous HTTP fixture coverage now exercises every public RPC, stale weekly
+  hours, authorization, and Google exclusion. Internal fixture checks cover
+  unknown hours and dawn-to-dusk transitions while the separate MVP gate keeps
+  those fixtures private.
 - [ ] KC3-34: Complete user-attended VoiceOver and TalkBack verification for the
   KC3 place discovery/detail experience, implement and recheck any resulting
   fixes, and record spoken evidence for the KC3-21/KC3-23 closeout gate.
