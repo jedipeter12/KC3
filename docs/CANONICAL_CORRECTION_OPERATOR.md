@@ -12,6 +12,14 @@ same transaction as the immutable correction evidence. The Google-backed
 description below is historical until cutover;
 the curated target has not been migrated.
 
+The synthetic post-cutover regression in
+`supabase/tests/019_post_cutover_operators.test.sql` verifies reviewed-active
+search, unpublished/hidden rejection, stale edits, HTTPS and notes requirements,
+exact immutable evidence, field provenance, and rollback when evidence insert
+or provenance update fails. The runner test verifies Overture ID display and
+final cancellation.
+Attended correction against the eventual curated dataset remains open.
+
 `npm run edit:place-canonical` is an attended, internal workflow for correcting
 factual canonical values on an existing active, Google-backed KC3 place. It is
 intended for reviewed cases such as a provider name suffix, a malformed address,

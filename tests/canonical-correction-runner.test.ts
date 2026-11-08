@@ -79,6 +79,40 @@ async function run(
 }
 
 describe("KC3 canonical correction operator workflow", () => {
+  it("shows reviewed Overture identity and cancels without writing", async () => {
+    const reviewed = place({
+      overtureId: "31000000-0000-4000-8000-000000000001",
+      googlePlaceId: null,
+      googleName: null,
+      googleAddress: null,
+      googlePrimaryType: null,
+      googleTypes: [],
+      googleBusinessStatus: null,
+      googleFetchedAt: null,
+    });
+    const result = await run(
+      [
+        "1",
+        "Corrected name",
+        "",
+        "",
+        "",
+        "https://example.org/synthetic-source",
+        "",
+        "Synthetic evidence confirms name",
+        "no",
+      ],
+      [reviewed],
+    );
+
+    expect(result.result).toBe("cancelled");
+    expect(result.output.join("\n")).toContain(
+      `reviewed Overture ID: ${reviewed.overtureId}`,
+    );
+    expect(result.output.join("\n")).not.toContain("Google identity:");
+    expect(result.saved).toHaveLength(0);
+  });
+
   it("selects a duplicate-looking record and saves a sourced complete correction", async () => {
     const places = [
       place(),

@@ -1,5 +1,18 @@
 # Test Coverage and Reliability Review
 
+## Post-Cutover Operator Coverage (2026-11-08)
+
+`019_post_cutover_operators.test.sql` adds rolled-back synthetic publications
+and an unpublished legacy fixture. It checks active reviewed-only selection for
+both operator RPCs, stale edits, detail and third-space field ownership,
+correction evidence, provenance, and rollback when evidence insertion or
+provenance update fails. The place-details and canonical-correction runner
+tests also check Overture ID display and final
+confirmation cancellation. Historical Google-backed operator assertions remain
+under `supabase/legacy_tests/`. Attended checks on the eventual curated dataset
+and a live service-role API path remain open. This suite does not establish
+publication or launch clearance.
+
 **Review date:** 2026-08-23; updated 2026-09-29 for the canonical-correction
 operator, 2026-09-24 for the full real-dataset experience audit, 2026-09-22 for the expanded anonymous summary/detail contract,
 2026-09-20 for repeat refresh/integration

@@ -56,6 +56,30 @@ function harness(answers: string[], places: OperatorPlace[]) {
 }
 
 describe("KC3 place-detail operator workflow", () => {
+  it("shows reviewed Overture identity and still requires final confirmation", async () => {
+    const reviewed = place({
+      overtureId: "31000000-0000-4000-8000-000000000001",
+      googlePlaceId: null,
+      googleName: null,
+      googleAddress: null,
+      googleBusinessStatus: null,
+      googleFetchedAt: null,
+    });
+    const { io, output, repository, saved } = harness(
+      ["1", "Reviewed tables", "", "", "", "", "", "", "", "", "no", "no"],
+      [reviewed],
+    );
+
+    await expect(
+      runPlaceDetailsEditor("Shared", "Lenexa", repository, io),
+    ).resolves.toBe("cancelled");
+    expect(output.join("\n")).toContain(
+      `reviewed Overture ID: ${reviewed.overtureId}`,
+    );
+    expect(output.join("\n")).not.toContain("Google identity:");
+    expect(saved).toHaveLength(0);
+  });
+
   it("selects between duplicate-looking provider-backed places and creates verified details", async () => {
     const places = [
       place(),

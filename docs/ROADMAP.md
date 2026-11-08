@@ -51,6 +51,10 @@ starting source with spreadsheet review and independently maintained hours.
   disposition, secondary-copy retirement, expanded scenario coverage, native
   verification, and production clearance remain open. KC3-39 and final
   content-rights/privacy declarations remain gated.
+  Post-cutover operator regression coverage now exercises reviewed-publication
+  eligibility, protected writes, stale edits, correction evidence, and
+  cancellation. Attended checks on the eventual curated dataset and live
+  service-role API remain open; see the remediation plan.
 - [ ] KC3-34: Complete user-attended VoiceOver and TalkBack verification for the
   KC3 place discovery/detail experience, implement and recheck any resulting
   fixes, and record spoken evidence for the KC3-21/KC3-23 closeout gate.
