@@ -66,6 +66,7 @@ jobs:
       - run: npm test
       - run: npm run lint:db
       - run: npm run test:integration
+      - run: npm run test:integration:published
       - name: Stop disposable local Supabase
         if: always()
         run: npm exec --no -- supabase stop --no-backup

@@ -167,9 +167,15 @@ Historical Google-backed database tests were moved to
 `001`-`005` tests cover current schema, canonical/detail constraints, KC3 hours,
 security/timestamps, and seed behavior. Active `014`-`016` cover staging,
 publication, stable IDs, attribution, protected data, and basic adapted operator
-writes. The prior expanded public/effective-hours and full operator write scenario suites still need
-current-source replacements before KC3-37 release closure; passing the focused
-fixture checks is not that broader signoff.
+writes. `017` covers the reviewed dawn-to-dusk rule. `018` adds 32 rolled-back
+post-cutover public RPC assertions for list, summary, detail, attribution,
+effective hours, denial, and Google-content exclusion using synthetic reviewed
+fixtures. It also verifies the separate MVP eligibility and hours-review gates:
+unknown-hours and dawn-only fixtures remain private, while approved fresh and
+stale weekly fixtures appear in anonymous results. The full adapted operator
+write scenario suites still need
+current-source replacements before KC3-37 release closure; fixture checks do not
+establish launch clearance.
 
 The approved PostgreSQL data model is tested with pgTAP through the repository's
 Supabase CLI dependency. From the repository root:
@@ -290,6 +296,16 @@ presentation. The database pgTAP suite covers publication with synthetic
 fixtures without making the seed public. API errors always fail. Run `npm test`
 and `npm run lint:db` against a clean reset and again after publication.
 `test:app` remains independent of Docker and excludes the `*.smoke.ts` files.
+
+Run `npm run test:integration:published` for the post-cutover fixture HTTP suite.
+It requires the same local CLI and Docker access. It stages and publishes five
+unique synthetic Overture records, creates one unreviewed sentinel, exercises
+anonymous list/summary/detail/attribution and denial paths for the two
+MVP-approved weekly fixtures, checks private unknown/dawn fixtures and their
+internal hours calculations, then removes only those records and its review
+batch. It does not publish seed or workbook data.
+Run it after the ordinary integration suite; CI runs both. A failed cleanup is
+a test failure and should be investigated before rerunning.
 
 Set `KC3_EXPECT_PUBLISHED_DATASET=1` for the post-publication run:
 

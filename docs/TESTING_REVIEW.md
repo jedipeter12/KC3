@@ -13,6 +13,33 @@ under `supabase/legacy_tests/`. Attended checks on the eventual curated dataset
 and a live service-role API path remain open. This suite does not establish
 publication or launch clearance.
 
+## Current KC3-37 Post-Cutover Coverage (2026-11-08)
+
+`018_public_rpc_post_cutover.test.sql` adds 32 rolled-back assertions using
+staged and published synthetic Overture rows. It verifies the five-field list,
+exact summary/detail/attribution projections, the reviewed-source and MVP
+publication gates, stale public weekly hours, private unknown hours,
+deterministic local weekly transitions, private dawn-to-dusk opening/closing,
+anonymous table and effective-hours denial, and absence of an unreviewed Google
+sentinel from public results. The current MVP gate requires verified eligibility
+and an interval through 8 p.m., so unknown-hours and dawn-only fixtures cannot
+be exposed anonymously.
+
+`npm run test:integration:published` uses the real local HTTP Data API with an
+anonymous client. It commits unique synthetic reviewed fixtures, checks live
+list/summary/detail/attribution for approved fixtures, stale public hours,
+private unknown and dawn-only denial, internal solar transitions, and direct
+table denial, then removes its exact fixture rows and batch.
+The ordinary `npm run test:integration` continues to check the clean unpublished
+seed. Both runs are CI gates. The Google-era coverage described below remains
+in `supabase/legacy_tests/`; its old assertion counts and provider-specific
+expectations are historical.
+
+Remaining KC3-37 gaps: no real reviewed workbook row has been published;
+attended operator checks against the curated dataset, a live service-role API
+path, actual dataset-wide provenance, private-copy retirement, and native
+experience remain open. Fixture RPC checks do not establish launch clearance.
+
 **Review date:** 2026-08-23; updated 2026-09-29 for the canonical-correction
 operator, 2026-09-24 for the full real-dataset experience audit, 2026-09-22 for the expanded anonymous summary/detail contract,
 2026-09-20 for repeat refresh/integration
