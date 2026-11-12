@@ -291,6 +291,36 @@ describe("public place data layer", () => {
 
   it.each([
     [
+      "an invalid next transition",
+      [{ ...summaryFixture, regular_hours_next_transition_at: "not a date" }],
+      listPublicPlaceSummaries,
+    ],
+    [
+      "an impossible next transition date",
+      [
+        {
+          ...summaryFixture,
+          regular_hours_next_transition_at: "2026-02-30T00:00:00Z",
+        },
+      ],
+      listPublicPlaceSummaries,
+    ],
+    [
+      "a date-only next transition",
+      [{ ...summaryFixture, regular_hours_next_transition_at: "2026-11-11" }],
+      listPublicPlaceSummaries,
+    ],
+    [
+      "an invalid observed timestamp",
+      [{ ...summaryFixture, regular_hours_observed_at: "not a date" }],
+      listPublicPlaceSummaries,
+    ],
+    [
+      "an impossible verification date",
+      [{ ...summaryFixture, kc3_last_verified_at: "2026-02-30" }],
+      listPublicPlaceSummaries,
+    ],
+    [
       "an invalid drive-thru combination",
       [
         {

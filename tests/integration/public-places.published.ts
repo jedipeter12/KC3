@@ -1,10 +1,9 @@
 /// <reference types="node" />
 import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "../../src/types/database";
+import { getLocalTestProject, type LocalTestProject } from "./local-project";
 
 // The fixture is committed only to the loopback Supabase database and is removed
 // after this suite. The test client itself always uses the anonymous key.
@@ -18,6 +17,7 @@ const ids = {
   legacy: randomUUID(),
 };
 let client: SupabaseClient<Database>;
+let localProject: LocalTestProject;
 let fixtureCommitted = false;
 let hiddenPlaceId: string;
 let unknownPlaceId: string;
@@ -53,15 +53,12 @@ const detailFields = [
 ].sort();
 
 function localSql(sql: string): string {
-  const config = readFileSync(path.resolve("supabase/config.toml"), "utf8");
-  if (!/^project_id = "KC3"$/m.test(config))
-    throw new Error("Run from the KC3 checkout");
   return execFileSync(
     "docker",
     [
       "exec",
       "-i",
-      "supabase_db_KC3",
+      localProject.dbContainer,
       "psql",
       "-X",
       "-U",
@@ -143,27 +140,14 @@ function reviewedRecord(
 }
 
 beforeAll(() => {
-  let status: { API_URL?: string; ANON_KEY?: string };
   try {
-    status = JSON.parse(
-      execFileSync(
-        path.resolve("node_modules/.bin/supabase"),
-        ["status", "-o", "json"],
-        { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 15000 },
-      ),
-    );
-    const url = new URL(status.API_URL ?? "");
-    if (
-      !["127.0.0.1", "localhost", "[::1]"].includes(url.hostname) ||
-      !status.ANON_KEY
-    )
-      throw new Error("Nonlocal endpoint");
+    localProject = getLocalTestProject();
   } catch {
     throw new Error(
       "Start disposable local Supabase before the published RPC integration suite",
     );
   }
-  client = createClient<Database>(status.API_URL!, status.ANON_KEY!, {
+  client = createClient<Database>(localProject.apiUrl, localProject.anonKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
