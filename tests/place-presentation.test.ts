@@ -1,6 +1,8 @@
 import {
   buildMapsUrl,
+  formatDate,
   formatHoursRows,
+  formatTransition,
   getCompactKc3Summary,
   getHoursStatus,
   getCurrentHoursState,
@@ -8,6 +10,14 @@ import {
 import { makePlaceSummary } from "./place-fixtures";
 
 describe("place presentation", () => {
+  it("renders calendar dates and transitions in the place's timezone", () => {
+    expect(formatDate("2026-11-10", "en-US")).toBe("Nov 10, 2026");
+    expect(formatDate("2026-11-11T03:00:00Z", "en-US")).toBe("Nov 10, 2026");
+    expect(formatTransition("2026-11-11T14:00:00Z", "en-US")).toBe(
+      "Wed 8:00 AM",
+    );
+  });
+
   it.each(["open", "closed"] as const)(
     "does not extend a cached %s claim beyond its reported transition",
     (state) => {

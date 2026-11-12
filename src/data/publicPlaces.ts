@@ -107,6 +107,34 @@ function isNullableString(value: unknown): value is string | null {
   return value === null || typeof value === "string";
 }
 
+function isNullableTimestamp(value: unknown): value is string | null {
+  if (value === null) return true;
+  if (typeof value !== "string") return false;
+  const match = value.match(
+    /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:\d{2})$/,
+  );
+  if (!match) return false;
+  const [, calendarDate, hour, minute, second] = match;
+  return (
+    isNullableCalendarDate(calendarDate) &&
+    Number(hour) <= 23 &&
+    Number(minute) <= 59 &&
+    Number(second) <= 59 &&
+    Number.isFinite(Date.parse(value))
+  );
+}
+
+function isNullableCalendarDate(value: unknown): value is string | null {
+  if (value === null) return true;
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value))
+    return false;
+  const parsed = new Date(`${value}T12:00:00Z`);
+  return (
+    !Number.isNaN(parsed.getTime()) &&
+    parsed.toISOString().slice(0, 10) === value
+  );
+}
+
 function isNullableBoolean(value: unknown): value is boolean | null {
   return value === null || typeof value === "boolean";
 }
@@ -159,8 +187,8 @@ function toPublicPlaceSummary(value: unknown): PublicPlaceSummary {
     typeof place.regular_hours_available !== "boolean" ||
     !isEnumValue(REGULAR_HOURS_RULES, place.regular_hours_rule) ||
     !isEnumValue(REGULAR_HOURS_STATES, place.regular_hours_state) ||
-    !isNullableString(place.regular_hours_next_transition_at) ||
-    !isNullableString(place.regular_hours_observed_at) ||
+    !isNullableTimestamp(place.regular_hours_next_transition_at) ||
+    !isNullableTimestamp(place.regular_hours_observed_at) ||
     !isEnumValue(OUTLET_LEVELS, place.outlets) ||
     !isEnumValue(WIFI_TYPES, place.wifi) ||
     !isEnumValue(WORK_SUITABILITIES, place.work_suitability) ||
@@ -169,7 +197,7 @@ function toPublicPlaceSummary(value: unknown): PublicPlaceSummary {
     !isNullableBoolean(place.bathroom_available) ||
     !isNullableBoolean(place.drive_thru_available) ||
     !isNullableBoolean(place.drive_thru_only) ||
-    !isNullableString(place.kc3_last_verified_at) ||
+    !isNullableCalendarDate(place.kc3_last_verified_at) ||
     !isEnumValue(KC3_VERIFICATION_STATES, place.kc3_verification_state) ||
     (place.drive_thru_only === true && place.drive_thru_available !== true)
   ) {
