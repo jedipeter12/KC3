@@ -51,6 +51,15 @@ starting source with spreadsheet review and independently maintained hours.
   disposition, secondary-copy retirement, native
   verification, and production clearance remain open. KC3-39 and final
   content-rights/privacy declarations remain gated.
+  On 2026-11-11 the 266 unsupported Ready markings were removed in a new
+  review copy: 445 Places are Pending, 17 Exclude, and zero Ready. The Product
+  Owner selected one source ID for each of 17 Dutch Bros/Scooter's label pairs,
+  kept the two Lenexa Public Market merchants separate, approved three
+  same-site seed ID links, and reserved Downtown Olathe's link pending review.
+  Exact IDs and remaining evidence limits are in
+  `docs/KC3_37_READY_EVIDENCE_AUDIT_2026-11-11.md` and
+  `docs/KC3_37_OVERTURE_IDENTITY_DECISIONS_2026-11-11.json`. No staging or
+  publication occurred.
   Post-cutover operator regression coverage now exercises reviewed-publication
   eligibility, protected writes, stale edits, correction evidence, and
   cancellation. Attended checks on the eventual curated dataset and live

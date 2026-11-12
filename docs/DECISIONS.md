@@ -43,6 +43,58 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-11-11 — Select franchise source identities and preserve three seed IDs
+
+**Status:** Accepted (Product Owner instruction; row verification pending)
+
+**Decision**
+
+For four Dutch Bros and thirteen Scooter's same-address label pairs, select
+the explicitly named Overture row as the candidate source identity and hold
+the alternate address/intersection label as a duplicate candidate. Keep
+Cardboard Corner Cafe and Mr. D's Coffee at Lenexa Public Market separate.
+Exclude the 17 initially identified ineligible rows from the initial candidate
+set. Match Sar-Ko-Par P64, Oak Park Library P328, and Homer's P314 to existing
+KC3 seed IDs `05`, `08`, and `09`, respectively. Keep the city's 8801 Greenway
+Ln as the intended Sar-Ko-Par address, use the library's Bluejacket St for Oak
+Park while holding Spanish-label P239, and keep Homer's as `coffee_shop`.
+Reserve Downtown Olathe P168 as the likely seed ID `11` match, but leave its
+workbook ID blank pending attended identity/lifecycle review.
+
+**Context**
+
+The cited November 2 verification CSV is unavailable, so none of 266 prior
+Ready markings establishes row verification. Overture contains duplicate
+franchise labels and source-field conflicts with city/operator evidence. The
+existing seed records have stable KC3 IDs and KC3-owned data.
+
+**Alternatives considered**
+
+- Treat both franchise labels as separate places or merge the two distinct
+  market merchants because they share an address.
+- Create new KC3 IDs for the three confirmed same-site seed matches, or map
+  Downtown Olathe before its lifecycle review.
+- Copy the conflicting Overture address/type into canonical fields without
+  sourced correction and reuse review.
+
+**Reasoning**
+
+The named franchise rows represent the preferred source identity for each
+physical shop; the alternate labels do not establish additional shops. The
+market map identifies two distinct tenants. Preserving the accepted same-site
+KC3 IDs protects existing KC3-owned values, while keeping conflicting source
+facts and the unreviewed Downtown match Pending prevents unsupported promotion.
+
+**Consequences / follow-up**
+
+The decision review workbook records 17 chosen franchise rows, 17 duplicate
+holds, three Pending KC3 ID mappings, and one unmapped Downtown reservation.
+It has zero Ready rows; no staging, canonical correction, publication, or
+database write follows from this decision. Obtain row-specific current-status,
+municipal, coordinate, source-permission, and field-correction evidence before
+any Ready marking. Recheck exact target state and protected data before an
+attended publication. See `KC3_37_READY_EVIDENCE_AUDIT_2026-11-11.md`.
+
 ### 2026-11-05 — Use a portable two-layer AI operations workflow
 
 **Status:** Accepted for documentation and pilot; production controls remain
