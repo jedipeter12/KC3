@@ -1,0 +1,504 @@
+{
+  "schemaVersion": 1,
+  "decisionDate": "2026-11-11",
+  "scope": "Identity selection only; no row is Ready or approved for staging/publication.",
+  "sourceAttribution": "Contains modified Overture Maps Places data from release 2026-09-23.1. KC3 selected a regional/category subset and added owner decisions; see docs/licenses/overture/ for license and notice text.",
+  "workbookSha256": "94df86a101473e1067ca53ddcc5e1854992abd6987be8084bf85ea4eb015fd2d",
+  "previousWorkbookSha256": "74b92b75511193c16b54b331833b2488cf5fc6bec103d7eae66130c281d3d5b3",
+  "sourceManifestSha256": "6284201476b3549aff4f33643f1c8cb3f9750df4451032623aace8612bfb18c4",
+  "selectedSourcePairs": [
+    {
+      "heldAlias": {
+        "row": 2,
+        "overtureId": "526125a6-a915-43b8-b08e-b32f4e8373d0",
+        "name": "101",
+        "city": "Lenexa",
+        "address": "18181 W 101st St"
+      },
+      "selected": {
+        "row": 25,
+        "overtureId": "eaf4fdce-66ba-4903-a2e3-b17f34d5eb34",
+        "name": "Dutch Bros. Coffee",
+        "city": "Lenexa",
+        "address": "18181 W 101st St"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 82,
+        "overtureId": "be56b350-f6b1-4513-9f15-c5f8d2b3d177",
+        "name": "135th",
+        "city": "Olathe",
+        "address": "14075 W 135th St"
+      },
+      "selected": {
+        "row": 110,
+        "overtureId": "f589765b-1b28-4056-aad0-f76dec256fa7",
+        "name": "Dutch Bros. Coffee",
+        "city": "Olathe",
+        "address": "14075 W 135th St"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 147,
+        "overtureId": "67321b59-aa3e-4e2d-8a2d-f5b99050cac2",
+        "name": "Lone Elm",
+        "city": "Olathe",
+        "address": "11220 S Lone Elm Rd"
+      },
+      "selected": {
+        "row": 108,
+        "overtureId": "6a2dd70d-d875-49f5-b317-2cc7e3a6ce88",
+        "name": "Dutch Bros. Coffee",
+        "city": "Olathe",
+        "address": "11220 S Lone Elm Rd"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 148,
+        "overtureId": "326e8190-622d-4dca-b1fc-02aa72d60124",
+        "name": "Mahaffie",
+        "city": "Olathe",
+        "address": "15170 Mahaffie St"
+      },
+      "selected": {
+        "row": 109,
+        "overtureId": "ac280733-8ecc-4402-9ff2-2d56bc8c4b17",
+        "name": "Dutch Bros. Coffee",
+        "city": "Olathe",
+        "address": "15170 Mahaffie St"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 3,
+        "overtureId": "6dc2f128-f35b-45e5-9e53-c421063fb426",
+        "name": "77th & Quivira",
+        "city": "Lenexa",
+        "address": "7741 Quivira Rd"
+      },
+      "selected": {
+        "row": 66,
+        "overtureId": "a65502b0-3452-444b-8eb4-edcb83445c7c",
+        "name": "Scooter's Coffee",
+        "city": "Lenexa",
+        "address": "7741 Quivira Rd"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 80,
+        "overtureId": "7f72f63f-a97e-4362-b051-5e8f254c69e6",
+        "name": "105th & S Ridgeview Rd",
+        "city": "Olathe",
+        "address": "10588 S Ridgeview Rd"
+      },
+      "selected": {
+        "row": 184,
+        "overtureId": "0d87265a-0ffe-4f29-bc96-f88c19291f70",
+        "name": "Scooter's Coffee",
+        "city": "Olathe",
+        "address": "10588 S Ridgeview Rd"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 83,
+        "overtureId": "7717bb0d-2825-4c79-a9ad-476c8413e1ac",
+        "name": "135th & Mur-Len",
+        "city": "Olathe",
+        "address": "2027 E Santa Fe St"
+      },
+      "selected": {
+        "row": 185,
+        "overtureId": "2b75710d-0d80-4720-a825-e58a13a11ca8",
+        "name": "Scooter's Coffee",
+        "city": "Olathe",
+        "address": "2027 E Santa Fe St"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 139,
+        "overtureId": "dfbc595b-af81-49e9-83ee-ed92ccbfc375",
+        "name": "K7 & Santa Fe",
+        "city": "Olathe",
+        "address": "154 S Parker St"
+      },
+      "selected": {
+        "row": 186,
+        "overtureId": "bff6664b-0343-470b-bc9e-d61c42c40b03",
+        "name": "Scooter's Coffee",
+        "city": "Olathe",
+        "address": "154 S Parker St"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 215,
+        "overtureId": "2aa8ecc5-c76d-4047-bec9-32a2663d7d3d",
+        "name": "103rd & Metcalf",
+        "city": "Overland Park",
+        "address": "10301 Metcalf Ave"
+      },
+      "selected": {
+        "row": 410,
+        "overtureId": "ce8b0e86-0134-4c12-b5d7-a2daf5a0cc64",
+        "name": "Scooter's Coffee",
+        "city": "Overland Park",
+        "address": "10301 Metcalf Ave"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 216,
+        "overtureId": "d1e86e97-f825-47d1-82b0-8690d3ae8e98",
+        "name": "107th & Roe",
+        "city": "Overland Park",
+        "address": "10650 Roe Ave"
+      },
+      "selected": {
+        "row": 401,
+        "overtureId": "243cb32f-e126-407c-9a53-480e01be35db",
+        "name": "Scooter's Coffee",
+        "city": "Overland Park",
+        "address": "10650 Roe Ave"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 218,
+        "overtureId": "4ed74772-8ee8-4cff-a4c7-3e9fa67d6268",
+        "name": "135th & Grandview",
+        "city": "Overland Park",
+        "address": "8973 W 135th St"
+      },
+      "selected": {
+        "row": 404,
+        "overtureId": "5f3638ae-af10-486a-9da2-1076f8420c73",
+        "name": "Scooter's Coffee",
+        "city": "Overland Park",
+        "address": "8973 W 135th St"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 221,
+        "overtureId": "e4f0f65f-b08f-4e10-a380-1c4f5c11b994",
+        "name": "159th & Metcalf",
+        "city": "Overland Park",
+        "address": "15885 Metcalf Ave"
+      },
+      "selected": {
+        "row": 408,
+        "overtureId": "be4806ac-ba81-44c5-9ef3-49f8ac750e8e",
+        "name": "Scooter's Coffee",
+        "city": "Overland Park",
+        "address": "15885 Metcalf Ave"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 222,
+        "overtureId": "e05593cc-aabb-40c7-b875-a107437fccd6",
+        "name": "165th & Lowell",
+        "city": "Overland Park",
+        "address": "7840 W 165th St"
+      },
+      "selected": {
+        "row": 407,
+        "overtureId": "bb7f4943-29b9-4a32-8adf-40353b55a968",
+        "name": "Scooter's Coffee",
+        "city": "Overland Park",
+        "address": "7840 W 165th St"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 225,
+        "overtureId": "a151527e-71c3-44ce-b01e-1d2c36641882",
+        "name": "7621 Shawnee Mission Pkwy",
+        "city": "Overland Park",
+        "address": "7621 Shawnee Mission Pkwy"
+      },
+      "selected": {
+        "row": 403,
+        "overtureId": "5c357e2e-6d03-4616-8414-5d37ab59c91a",
+        "name": "Scooter's Coffee",
+        "city": "Overland Park",
+        "address": "7621 Shawnee Mission Pkwy"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 226,
+        "overtureId": "4d845122-b1b2-4c28-9581-f7f90c5d9890",
+        "name": "87th & Grant",
+        "city": "Overland Park",
+        "address": "9455 W 87th St"
+      },
+      "selected": {
+        "row": 405,
+        "overtureId": "9036d027-bb2a-4b80-804f-485f805ec726",
+        "name": "Scooter's Coffee",
+        "city": "Overland Park",
+        "address": "9455 W 87th St"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 227,
+        "overtureId": "d3b06577-d2fb-4e5c-bcd0-f0ccff171f4c",
+        "name": "95th & Antioch",
+        "city": "Overland Park",
+        "address": "8830 W 95th St"
+      },
+      "selected": {
+        "row": 406,
+        "overtureId": "b20bb29d-647c-49e7-9677-466d486934e2",
+        "name": "Scooter's Coffee",
+        "city": "Overland Park",
+        "address": "8830 W 95th St"
+      }
+    },
+    {
+      "heldAlias": {
+        "row": 272,
+        "overtureId": "291cd965-320e-4f19-860c-7c120a64bd47",
+        "name": "College Blvd",
+        "city": "Overland Park",
+        "address": "12140 College Blvd"
+      },
+      "selected": {
+        "row": 402,
+        "overtureId": "4a32b106-6920-48c6-830c-0ec71883db19",
+        "name": "Scooter's Coffee",
+        "city": "Overland Park",
+        "address": "12140 College Blvd"
+      }
+    }
+  ],
+  "excludedInitialCandidates": [
+    {
+      "row": 39,
+      "overtureId": "51aadaa0-f985-4e99-962d-eba70493387b",
+      "name": "Lackman Library - Johnson County Library",
+      "city": "Lenexa",
+      "address": "15345 W 87th Street Pkwy"
+    },
+    {
+      "row": 53,
+      "overtureId": "6e83f71c-f44a-44f3-814f-b1276c5ebe2c",
+      "name": "Oak Park Village",
+      "city": "Lenexa",
+      "address": "9670 Halsey St"
+    },
+    {
+      "row": 58,
+      "overtureId": "d73d123a-5784-4dbb-b3c7-c743e4c83109",
+      "name": "Performance Contracting Inc",
+      "city": "Lenexa",
+      "address": "14705 W 112th St"
+    },
+    {
+      "row": 116,
+      "overtureId": "be29891e-f175-4974-a6c7-77319022c37c",
+      "name": "Friends of the Olathe Public Library",
+      "city": "Olathe",
+      "address": "201 E Park St"
+    },
+    {
+      "row": 132,
+      "overtureId": "2a9d3ec8-07fa-4331-a418-8b0f9e00e20f",
+      "name": "Indian Creek Elementary School Library USD #233",
+      "city": "Olathe",
+      "address": "15800 Indian Creek Pkwy"
+    },
+    {
+      "row": 165,
+      "overtureId": "be606a7f-4360-4220-91e7-629bb19145f0",
+      "name": "Olathe N Senior High School Library",
+      "city": "Olathe",
+      "address": "600 E Prairie St"
+    },
+    {
+      "row": 167,
+      "overtureId": "ddd35e64-df0d-4190-a295-5a765191f611",
+      "name": "Olathe Public Library",
+      "city": "Olathe",
+      "address": "12990 S Black Bob Rd"
+    },
+    {
+      "row": 169,
+      "overtureId": "c0749397-384b-40e5-b8f2-380a0a56ea8e",
+      "name": "Olathe Public Library Indian Creek Parking Lot",
+      "city": "Olathe",
+      "address": "13511 S Mur-Len Rd"
+    },
+    {
+      "row": 170,
+      "overtureId": "4ba66aed-80c4-4459-a98a-572664a9d2e6",
+      "name": "Olathe S High School Library USD #233",
+      "city": "Olathe",
+      "address": "1640 E 151st St"
+    },
+    {
+      "row": 177,
+      "overtureId": "cb3a8ba7-0676-41eb-8b10-ec5b0cdc9599",
+      "name": "Prairie Trail Junior/Sr Hgh School",
+      "city": "Olathe",
+      "address": "21600 W 107th St"
+    },
+    {
+      "row": 182,
+      "overtureId": "41bc0161-1e0d-4383-8c9c-4d73fc0852c7",
+      "name": "Santa Fe Trail Jr High School Library",
+      "city": "Olathe",
+      "address": "1100 N Ridgeview Rd"
+    },
+    {
+      "row": 243,
+      "overtureId": "51293ab3-2032-4619-aeaf-abca7b2e7550",
+      "name": "Blue Valley USD #229",
+      "city": "Overland Park",
+      "address": "15020 Metcalf Ave"
+    },
+    {
+      "row": 384,
+      "overtureId": "683e1f49-3ff0-4a43-b226-007296d7bca0",
+      "name": "Prairie Star Elementary School",
+      "city": "Overland Park",
+      "address": "3800 W 143rd St"
+    },
+    {
+      "row": 398,
+      "overtureId": "533294dc-d57a-4499-a64f-b234b99e7924",
+      "name": "Santa Fe Commons Park",
+      "city": "Overland Park",
+      "address": "8045 Santa Fe Dr"
+    },
+    {
+      "row": 400,
+      "overtureId": "0c286b77-1bf1-4b91-b69d-185f35758b0d",
+      "name": "Scooter's Coffee",
+      "city": "Overland Park",
+      "address": "9100 W 74th St"
+    },
+    {
+      "row": 414,
+      "overtureId": "156dd1b6-54f4-45c0-94af-4f8e5dd7712c",
+      "name": "Shawnee Medical - Harvest Kitchen",
+      "city": "Overland Park",
+      "address": "9100 W 74th St"
+    },
+    {
+      "row": 416,
+      "overtureId": "f9b8630e-f2f8-407e-bb70-fb7f83182232",
+      "name": "Shawnee Mission Public School",
+      "city": "Overland Park",
+      "address": "4401 W 103rd St"
+    }
+  ],
+  "separateLenexaPublicMarketMerchants": [
+    {
+      "row": 18,
+      "overtureId": "0d805004-f134-45fc-8c31-c529a7b61957",
+      "name": "Cardboard Corner Cafe at Lenexa Public Market",
+      "city": "Lenexa",
+      "address": "8750 Penrose Ln"
+    },
+    {
+      "row": 50,
+      "overtureId": "7871af25-c3dd-417d-bac4-f207f3f362cb",
+      "name": "Mr. D's Coffee",
+      "city": "Lenexa",
+      "address": "8750 Penrose Ln"
+    }
+  ],
+  "approvedSeedMatches": [
+    {
+      "row": 64,
+      "overtureId": "84f58b43-b623-4874-aafe-c568a41ee635",
+      "name": "Sar-Ko-Par Trails Park",
+      "city": "Lenexa",
+      "address": "14915 W 87th St Pkwy",
+      "kc3PlaceId": "6b633300-0000-4000-8000-000000000005"
+    },
+    {
+      "row": 328,
+      "overtureId": "a4245fba-4298-43c0-8c6a-9ec2288f8ab2",
+      "name": "Johnson County Library - Oak Park",
+      "city": "Overland Park",
+      "address": "9500 Bluejacket Dr",
+      "kc3PlaceId": "6b633300-0000-4000-8000-000000000008"
+    },
+    {
+      "row": 314,
+      "overtureId": "67a256cb-2a8a-4c36-9c93-64e54912a426",
+      "name": "Homer's Coffee House",
+      "city": "Overland Park",
+      "address": "7126 W 80th St",
+      "kc3PlaceId": "6b633300-0000-4000-8000-000000000009"
+    }
+  ],
+  "reservedUnmappedSeedMatch": {
+    "row": 168,
+    "overtureId": "fa184d2b-24d6-448b-b6c7-dd50c86a3958",
+    "name": "Olathe Public Library",
+    "city": "Olathe",
+    "address": "260 E Santa Fe St",
+    "proposedKc3PlaceId": "6b633300-0000-4000-8000-000000000011"
+  },
+  "heldOakParkAlias": {
+    "row": 239,
+    "overtureId": "18fdba32-f5f1-4f68-8814-f80777e3153b",
+    "name": "Biblioteca de Johnson County",
+    "city": "Overland Park",
+    "address": "9500 Bluejacket Dr",
+    "selectedRow": 328
+  },
+  "workbookDelta": {
+    "rule": "For all 266 prior Ready Places, set status Pending except the 17 excludedInitialCandidates (Exclude); clear Identity reviewed on. Leave the other 196 Places Pending and all 462 Hours rows unchanged.",
+    "changedCellCounts": {
+      "A": 266,
+      "M": 266,
+      "P": 3,
+      "R": 266,
+      "T": 267
+    },
+    "changedPlacesRows": 267,
+    "excludedNote": "Excluded from the initial candidate set by Product Owner on 2026-11-11. Prior Ready claim unsupported; see KC3-37 Ready evidence audit.",
+    "otherPriorReadyNote": "Prior Ready claim unsupported: cited 2026-11-02 verification CSV unavailable. Row-specific review required.",
+    "selectedPairNoteTemplate": "Product Owner 2026-11-11: selected this Overture ID over alternate-label P{aliasRow} for the same physical store. Identity remains Pending until full row-specific verification.",
+    "heldAliasNoteTemplate": "Product Owner 2026-11-11: hold as alternate label for P{selectedRow}; do not publish as a separate place. Current-operation, coordinate, city-boundary, and reuse review remain open.",
+    "specialNoteAppend": {
+      "64": "Product Owner 2026-11-11: approved same-site KC3 ID 05; retain city-supported 8801 Greenway Ln as the intended canonical address. Overture's 14915 W 87th St Pkwy remains uncorrected in this Pending row; source permission, coordinates, and field correction require review before Ready.",
+      "168": "Product Owner 2026-11-11: reserve existing KC3 ID 11 as the proposed same-site match, but leave KC3 place ID blank and row Pending until attended identity and lifecycle review.",
+      "239": "Product Owner 2026-11-11: hold as alternate-language duplicate of Oak Park Library P328; do not publish as a separate branch.",
+      "314": "Product Owner 2026-11-11: approved same-site KC3 ID 09 and intended canonical coffee_shop type. Overture cafe type remains uncorrected in this Pending row; source permission and field correction require review before Ready.",
+      "328": "Product Owner 2026-11-11: approved same-site KC3 ID 08; intended canonical address uses 9500 Bluejacket St. Overture's Dr suffix remains uncorrected in this Pending row; source permission and field correction require review before Ready. Hold P239 as the alternate-language duplicate."
+    },
+    "unchangedSourceFactColumns": [
+      "Name",
+      "City",
+      "Place type",
+      "Address",
+      "Postcode",
+      "Website",
+      "Latitude",
+      "Longitude",
+      "Address precision",
+      "Time zone",
+      "Initial verification flags",
+      "Provider operating status",
+      "Existence confidence",
+      "Identity source URL",
+      "Identity reuse basis",
+      "Place status",
+      "Overture ID"
+    ],
+    "hoursIdentical": true
+  }
+}
