@@ -784,7 +784,7 @@ calls for them, as mapped in `AGENTS.md`. This avoids loading the entire docs
 tree for a small edit. A user-supplied task brief still governs the task; the
 repository rules do not grant production or publication authority.
 
-The entry file is 66 lines. A focused edit can start with that file and its
+The entry file is under 70 lines. A focused edit can start with that file and its
 target code, leaving the five general documents (over 1,900 lines combined)
 for tasks that need them. This is a context-load estimate, not measured token or
 time savings; task-specific documents still load when relevant. Repeated setup
@@ -817,12 +817,13 @@ secret protection as separate defenses. Existing CI still runs complete
 typecheck, lint, formatting, Jest, exports, and disposable database checks.
 The hook intentionally avoids full tests and Docker startup on every commit.
 
-For database work, identify the target and confirm it is a disposable project
-before any `supabase db reset --local`, seed, fixture, migration, or operator
-write. The `--local` flag alone does not prove that the local project is
-disposable. Follow the relevant KC3-37 review and rehearsal documents. Do not
-reset the curated `KC3` local project; never treat an agent hook or passing CI
-as permission for production migration or publication. CI's database job creates
+For database work, identify the exact target before any command. Use a confirmed
+disposable project for `supabase db reset --local`, seed loading, and test
+fixtures; the `--local` flag alone does not prove disposability. Do not reset the
+curated `KC3` local project. Curated operator writes and migrations follow their
+specific attended procedures, target review, and approval gates; see the relevant
+KC3-37 and operator documents. Never treat an agent hook or passing CI as
+permission for production migration or publication. CI's database job creates
 its own disposable stack. No repo-local hook can reliably intercept every shell
 or database client, so target review remains mandatory.
 

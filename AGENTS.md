@@ -36,11 +36,12 @@ dependency only with a clear reason.
   architectural rewrite without explicit approval.
 - Never commit credentials or place privileged keys in `EXPO_PUBLIC_` variables
   or client code. Use local environment files or platform secret management.
-- Treat local Supabase targets as potentially curated. Before any reset, seed,
-  fixture, migration, or write, identify the exact target and use a confirmed
-  disposable project. Never reset the curated KC3 database. Production migrations,
-  publication, deployment, and PR merges require explicit human approval;
-  passing checks or an AI review do not grant it.
+- Treat local Supabase targets as potentially curated. Identify the exact target
+  before any database command. Run resets, seeds, and test fixtures only in a
+  confirmed disposable project; never reset the curated KC3 database. Curated
+  writes and migrations must follow their documented attended procedures and
+  approval gates. Production migrations, publication, deployment, and PR merges
+  require explicit human approval; passing checks or an AI review do not grant it.
 - KC3-37 Ready decisions, source publication, and protected data require their
   documented attended review. Do not infer approval from a passing test.
 
