@@ -180,10 +180,12 @@ establish launch clearance.
 The approved PostgreSQL data model is tested with pgTAP through the repository's
 Supabase CLI dependency. From the repository root:
 
-1. Start the local Supabase services with `npm exec -- supabase start`.
-2. Rebuild the local database from migrations with
-   `npm exec -- supabase db reset`.
-3. Run the database tests with `npm test`.
+1. Confirm the target is a newly created, disposable local project with its own
+   project ID and ports; never use the curated `KC3` project for a reset.
+2. Start the disposable Supabase services with `npm exec -- supabase start`.
+3. Rebuild that disposable database from migrations with
+   `npm exec -- supabase db reset --local`.
+4. Run the database tests with `npm test`.
 
 Database reset automatically runs `supabase/seed.sql` after migrations. The seed
 is transactional and safe to run again against the same database. It adds missing
@@ -764,6 +766,66 @@ before review; no branch-protection settings were changed.
 - Do not push, merge, or otherwise modify remote state unless the specific task
   authorizes it.
 
+### Coding agents and local safeguards
+
+`AGENTS.md` is KC3's sole shared standing instruction file. [Codex](https://developers.openai.com/cookbook/examples/codex/iterating-development-workflows-with-codex)
+reads it as repository guidance. [Cursor Agent](https://docs.cursor.com/context/rules-for-ai)
+supports root `AGENTS.md`; [Claude Code](https://code.claude.com/docs/en/memory)
+(v2.1.277 or later) reads it when no project `CLAUDE.md` or
+`CLAUDE.local.md` takes precedence. Older Claude Code versions can use a local
+`CLAUDE.md` containing `@AGENTS.md`, or upgrade. No `.cursor/rules`, Claude
+subagents, or duplicate instruction file is needed for KC3's current workflow.
+Confirm a tool's loaded files in that tool when debugging instruction behavior.
+
+Only `AGENTS.md` loads as project guidance at session start in this setup.
+`README.md`, product and feature contracts, architecture/decisions, roadmap,
+development procedures, and the two AI standards are read when their task type
+calls for them, as mapped in `AGENTS.md`. This avoids loading the entire docs
+tree for a small edit. A user-supplied task brief still governs the task; the
+repository rules do not grant production or publication authority.
+
+The entry file is 66 lines. A focused edit can start with that file and its
+target code, leaving the five general documents (over 1,900 lines combined)
+for tasks that need them. This is a context-load estimate, not measured token or
+time savings; task-specific documents still load when relevant. Repeated setup
+instructions also become one link to `AGENTS.md` plus a scoped task brief.
+
+Feature work uses the relevant product/feature contract and behavior tests;
+debugging uses a reproduction and regression test; code review uses the review
+prompts in `SOFTWARE_DEVELOPMENT_STANDARD.md`; database/security review uses
+architecture, the relevant migration/authorization tests, and
+`SECURITY_REVIEW.md`. These are task selections rather than separate agent
+personas. Reusable role files or orchestration would duplicate current guidance
+without a demonstrated gap.
+
+The optional repository pre-commit hook checks the **staged snapshot** for
+protected credential filenames, high-confidence token/private-key patterns,
+Prettier formatting, and ESLint findings on staged code. It uses existing Node,
+Prettier, and ESLint dependencies, with no network or database access. To enable
+it once per clone or worktree, run:
+
+```sh
+git config --local core.hooksPath .githooks
+```
+
+Run `npm run check:staged` directly to inspect staged changes without enabling
+the hook. CI runs `npm run test:agent-safeguards` and `npm run check:secrets` on
+tracked files even if local hooks are disabled. The scanner reports paths and
+line numbers, never matching values. It targets known credential forms and
+cannot prove a repository is secret-free; review diffs and use GitHub's available
+secret protection as separate defenses. Existing CI still runs complete
+typecheck, lint, formatting, Jest, exports, and disposable database checks.
+The hook intentionally avoids full tests and Docker startup on every commit.
+
+For database work, identify the target and confirm it is a disposable project
+before any `supabase db reset --local`, seed, fixture, migration, or operator
+write. The `--local` flag alone does not prove that the local project is
+disposable. Follow the relevant KC3-37 review and rehearsal documents. Do not
+reset the curated `KC3` local project; never treat an agent hook or passing CI
+as permission for production migration or publication. CI's database job creates
+its own disposable stack. No repo-local hook can reliably intercept every shell
+or database client, so target review remains mandatory.
+
 ## Roles and Delivery Workflow
 
 The portable brief, permissions, verification, and handoff contract is in
@@ -774,7 +836,7 @@ CI, independent review, release decisions, and bug response.
 - The user is the Product Owner and approves product behavior and scope.
 - ChatGPT may act as PM, architect, and technical translator to turn product intent
   into repository documentation and scoped tickets.
-- Codex acts as developer for approved tickets: read repository guidance, make the
+- Coding agents act as developers for approved tickets: read repository guidance, make the
   smallest in-scope change, run appropriate checks, and report results.
 - Use this flow:
   `idea or decision → repository documentation → scoped Codex ticket → implementation and tests → Product Owner review`.
@@ -827,7 +889,8 @@ tokens belong in the repository.
 
 Each implementation ticket should direct the developer to:
 
-1. Read `AGENTS.md`, `README.md`, and the relevant files in `docs/`.
+1. Read `AGENTS.md`; use its task-based map to select `README.md` and relevant
+   files in `docs/` when needed.
 2. Confirm the requested behavior is approved and scoped.
 3. Avoid unrelated changes and preserve existing behavior.
 4. Add or update tests when behavior changes.

@@ -1,0 +1,3 @@
+#!/bin/sh
+# Checks the staged snapshot; no database or network commands run here.
+exec node scripts/check-agent-safeguards.cjs --staged

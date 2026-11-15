@@ -36,6 +36,8 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run format:check
+      - run: npm run test:agent-safeguards
+      - run: npm run check:secrets
       - run: npm run test:app
       - name: Export Web, iOS, and Android
         run: npm run export

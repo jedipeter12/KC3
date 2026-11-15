@@ -1,110 +1,66 @@
-# AI Agent Instructions
+# KC3 coding agent instructions
 
-These instructions apply to any AI coding agent working in this repository.
+This is the shared entry point for Codex, Claude Code, Cursor, and other coding
+agents. The repository is the source of truth. Follow the user's scoped request;
+do not infer product requirements from a task title.
 
-## Before Making Changes
+## Start with the task
 
-1. Read `README.md`.
-2. Read the relevant files in `docs/`.
-3. Inspect the existing code before proposing architecture changes.
-4. Check `docs/DECISIONS.md` before reversing or replacing an existing decision.
-5. Check `docs/ROADMAP.md` to understand the current project state.
+1. Read this file and inspect the files you expect to change. Read `README.md`
+   for repository orientation when the task spans unfamiliar areas.
+2. Read only the documents needed for the task:
+   - Product behavior or scope: `docs/PRODUCT.md` and the relevant feature
+     contract. Confirm approval before changing behavior.
+   - Architecture, dependencies, API, or data model: `docs/ARCHITECTURE.md` and
+     `docs/DECISIONS.md` before proposing a replacement.
+   - Priorities, project status, or ticket closure: `docs/ROADMAP.md`.
+   - Setup, checks, CI, or local database work: `docs/DEVELOPMENT.md`.
+   - KC3-37 source, review, or publication work: the relevant KC3-37 document
+     linked from `README.md`; preserve its attended review gates.
+3. For material implementation or handoff work, use the brief, evidence, review,
+   and approval rules in `docs/AI_OPERATIONS_STANDARD.md` and the KC3 change path
+   in `docs/SOFTWARE_DEVELOPMENT_STANDARD.md`. A small, reversible edit needs
+   only the applicable rules here and focused validation.
 
-## General Rules
+If a requirement, authority, or architectural constraint conflicts with the
+request, stop the affected change and explain the conflict. Prefer the smallest
+change that preserves existing behavior and follows local patterns. Add a
+dependency only with a clear reason.
 
-- Treat the repository as the source of truth.
-- Do not invent requirements that are not supported by `docs/PRODUCT.md` or explicit user instructions.
-- Prefer the smallest change that satisfies the requirement.
-- Preserve existing working behavior unless the task explicitly changes it.
-- Follow existing conventions before introducing new patterns or dependencies.
-- Do not add dependencies without a clear reason.
-- Do not commit secrets, API keys, passwords, tokens, certificates, or private credentials.
-- Use environment variables or the platform's secret-management mechanism for sensitive values.
-- Add or update tests when behavior changes.
-- Run relevant tests and build checks before considering work complete.
-- Explain significant tradeoffs when introducing architectural changes.
-- When a requested change appears to require violating an architectural constraint, stop and explain the conflict rather than changing the architecture.
+## Boundaries and approval
 
-## AI Development Workflow
+- TypeScript is the primary application language; React Native, Expo, Supabase,
+  PostgreSQL, and Supabase Auth are the approved stack. Tooling may use the
+  repository's existing JavaScript convention. Do not introduce another
+  application language, replace the stack, or perform a framework migration or
+  architectural rewrite without explicit approval.
+- Never commit credentials or place privileged keys in `EXPO_PUBLIC_` variables
+  or client code. Use local environment files or platform secret management.
+- Treat local Supabase targets as potentially curated. Before any reset, seed,
+  fixture, migration, or write, identify the exact target and use a confirmed
+  disposable project. Never reset the curated KC3 database. Production migrations,
+  publication, deployment, and PR merges require explicit human approval;
+  passing checks or an AI review do not grant it.
+- KC3-37 Ready decisions, source publication, and protected data require their
+  documented attended review. Do not infer approval from a passing test.
 
-- Follow [`docs/AI_OPERATIONS_STANDARD.md`](docs/AI_OPERATIONS_STANDARD.md)
-  for the portable brief, permissions, verification, approval, and handoff rules.
-  Apply [`docs/SOFTWARE_DEVELOPMENT_STANDARD.md`](docs/SOFTWARE_DEVELOPMENT_STANDARD.md)
-  for KC3 branches, reviews, releases, and bug reports.
-- Work from a scoped ticket with **Goal**, **Context**, and **Validation**. The
-  Goal states the outcome and explicit, testable acceptance criteria; Context
-  links the approved requirements, relevant repository decisions, constraints,
-  and dependencies; Validation names the checks and evidence needed to show each
-  criterion is met.
-- Existing KC3 Notion tickets remain valid. Use their current properties and page
-  content to supply this information; add missing detail to the ticket when
-  needed. `docs/ROADMAP.md` remains the source of truth for scope, priority, and
-  status.
-- Before handing off work, record verification evidence for each acceptance
-  criterion: the check performed, its result, and a link or location for output
-  when available. Identify checks that were not run and the reason.
-- Review the final diff for code quality and for opportunities to simplify it.
-  Resolve findings or document why a proposed change was not made. Include both
-  review outcomes in the handoff or pull request.
-- For material changes, ask a verifier who did not implement the change to review
-  the final diff and criterion evidence from a fresh context. Record findings
-  and their disposition; this review does not replace human approval.
-- Obtain explicit human approval before merging a pull request, applying a
-  production database migration, or deploying. An AI review or passing checks
-  do not constitute that approval.
+## Validate and hand off
 
-
-# AGENTS.md
-
-## Technology Constraints
-
-- Primary language: TypeScript
-- Frontend: React Native
-- Framework: Expo
-- Backend: Supabase
-- Database: PostgreSQL via Supabase
-- Authentication: Supabase Auth
-
-### Hard constraints
-
-- Do not introduce another programming language without explicit approval.
-- Do not replace React Native, Expo, Supabase, or PostgreSQL without explicit approval.
-- Do not perform framework migrations or architectural rewrites unless specifically instructed.
-- Prefer existing project dependencies and patterns over introducing new libraries.
-
-## Documentation Maintenance
-
-When work changes the project, update the repository documentation in the same change when appropriate.
-
-Update:
-
-- `docs/PRODUCT.md` when product behavior, scope, users, or requirements change.
-- `docs/ARCHITECTURE.md` when system structure, data models, APIs, major dependencies, or infrastructure change.
-- `docs/DECISIONS.md` when a meaningful product or technical decision is made.
-- `docs/ROADMAP.md` when work is completed, started, deferred, or reprioritized.
-- `docs/DEVELOPMENT.md` when setup, testing, deployment, tooling, or development conventions change.
-
-Do not leave important project knowledge solely in the AI conversation.
-
-## Decision Logging
-
-For significant decisions, add an entry to `docs/DECISIONS.md` containing:
-
-- Date
-- Decision
-- Context
-- Alternatives considered
-- Reasoning
-- Consequences / follow-up work
-
-Minor implementation details do not require decision entries.
-
-## Completion Standard
-
-Before declaring a task complete:
-
-1. Confirm the project builds or runs when applicable.
-2. Run relevant tests.
-3. Check for obvious regressions.
-4. Update affected documentation.
-5. Summarize what changed, what was tested, and any remaining risks or follow-up work.
+- Add or update tests when behavior changes. For TypeScript or client changes,
+  run relevant Jest tests, typecheck, lint, formatting, and an Expo export when
+  the build path changes. For SQL, permissions, or RPC changes, also run pgTAP,
+  database lint, and relevant integration checks against a **confirmed
+  disposable** local Supabase project. Documentation-only changes need link and
+  diff review; use the fast staged guard if it is installed. CI runs the full
+  application and disposable database jobs on PRs. See `docs/DEVELOPMENT.md`
+  for exact commands and prerequisites.
+- Before claiming completion, inspect the final diff for correctness, security,
+  regressions, and simpler options. Record exact checks, results, skipped checks,
+  review findings, and remaining risks in the PR or handoff. Material changes
+  need a reviewer who did not implement them, per the standards above.
+- Update `docs/PRODUCT.md` for approved behavior/scope changes,
+  `docs/ARCHITECTURE.md` for system or data changes, `docs/DECISIONS.md` for
+  meaningful decisions, `docs/ROADMAP.md` for status, and `docs/DEVELOPMENT.md`
+  for workflow/tooling changes. A decision entry records date, decision, context,
+  alternatives, reasoning, and consequences. Do not leave durable knowledge only
+  in chat.
