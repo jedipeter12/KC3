@@ -107,20 +107,30 @@ async function main(mode) {
     const blob =
       mode === "--staged" ? git(["show", `:${file}`]) : readFileSync(file);
     const content = blob.toString("utf8");
-    findings.push(...secretFindings(file, content));
+    const secretIssues = secretFindings(file, content);
+    findings.push(...secretIssues);
+    // Do not pass a credential to tools whose diagnostics can include source text.
+    if (secretIssues.length) continue;
     if (!prettier || content.includes("\0") || !isFormattedCode(file)) continue;
-    const options = { ...(await prettier.resolveConfig(file)), filepath: file };
-    if (!(await prettier.check(content, options)))
-      findings.push(`${file}: staged content needs Prettier formatting`);
-    if (isLintedCode(file)) {
-      const results = await eslint.lintText(content, { filePath: file });
-      for (const result of results) {
-        for (const message of result.messages) {
-          findings.push(
-            `${file}:${message.line}:${message.column}: ESLint ${message.message}`,
-          );
+    try {
+      const options = {
+        ...(await prettier.resolveConfig(file)),
+        filepath: file,
+      };
+      if (!(await prettier.check(content, options)))
+        findings.push(`${file}: staged content needs Prettier formatting`);
+      if (isLintedCode(file)) {
+        const results = await eslint.lintText(content, { filePath: file });
+        for (const result of results) {
+          for (const message of result.messages) {
+            findings.push(
+              `${file}:${message.line}:${message.column}: ESLint ${message.ruleId ?? "parse error"}`,
+            );
+          }
         }
       }
+    } catch {
+      findings.push(`${file}: staged formatting or lint check failed`);
     }
   }
   if (findings.length) {
@@ -134,8 +144,10 @@ async function main(mode) {
 }
 
 if (require.main === module)
-  main(process.argv[2]).catch((error) => {
-    process.stderr.write(`Agent safeguard check failed: ${error.message}\n`);
+  main(process.argv[2]).catch(() => {
+    process.stderr.write(
+      "Agent safeguard check failed; inspect staged files and tool configuration.\n",
+    );
     process.exitCode = 1;
   });
 

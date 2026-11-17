@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
 const { Buffer } = require("node:buffer");
 const { execFileSync } = require("node:child_process");
-const { mkdtempSync, rmSync, writeFileSync } = require("node:fs");
+const { mkdirSync, mkdtempSync, rmSync, writeFileSync } = require("node:fs");
 const { tmpdir } = require("node:os");
 const { join } = require("node:path");
 const test = require("node:test");
@@ -67,4 +67,37 @@ test("staged checks read the index, not later worktree edits", (t) => {
   git("add", "notes.txt");
   writeFileSync(file, `sb_secret_${"a".repeat(25)}\n`);
   assert.doesNotThrow(run);
+});
+
+test("staged diagnostics do not echo source text containing credentials", (t) => {
+  const dir = mkdtempSync(join(tmpdir(), "kc3-agent-guard-"));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const git = (...args) => execFileSync("git", args, { cwd: dir });
+  const run = () =>
+    execFileSync(
+      process.execPath,
+      [require.resolve("../scripts/check-agent-safeguards.cjs"), "--staged"],
+      { cwd: dir, stdio: "pipe" },
+    );
+  git("init", "-q");
+  mkdirSync(join(dir, "src"));
+  const token = `sb_secret_${"a".repeat(25)}`;
+  const file = join(dir, "src", "bad.ts");
+  writeFileSync(file, `const value = "${token}";\nconst = ;\n`);
+  git("add", "src/bad.ts");
+  assert.throws(run, (error) => {
+    const output = error.stderr.toString();
+    return output.includes("potential secret") && !output.includes(token);
+  });
+
+  const marker = "private-value-do-not-echo";
+  writeFileSync(file, `const value = "${marker}";\nconst = ;\n`);
+  git("add", "src/bad.ts");
+  assert.throws(run, (error) => {
+    const output = error.stderr.toString();
+    return (
+      output.includes("formatting or lint check failed") &&
+      !output.includes(marker)
+    );
+  });
 });
