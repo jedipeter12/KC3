@@ -111,6 +111,7 @@ export function PlaceDetailScreen({
 }: PlaceDetailScreenProps) {
   const [state, setState] = useState<DetailState>({ status: "loading" });
   const [mapsError, setMapsError] = useState(false);
+  const [attributionError, setAttributionError] = useState(false);
   const headingRef = useRef<ComponentRef<typeof Text>>(null);
   const requestIdRef = useRef(0);
   const requestControllerRef = useRef<AbortController | null>(null);
@@ -236,6 +237,14 @@ export function PlaceDetailScreen({
     }
   };
   const mapsProvider = Platform.OS === "ios" ? "Apple Maps" : "Google Maps";
+  const openAttribution = async () => {
+    setAttributionError(false);
+    try {
+      await openExternalUrl("https://docs.overturemaps.org/attribution/");
+    } catch {
+      setAttributionError(true);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -491,16 +500,23 @@ export function PlaceDetailScreen({
                 </Text>
                 <Pressable
                   accessibilityRole="link"
-                  onPress={() =>
-                    void openExternalUrl(
-                      "https://docs.overturemaps.org/attribution/",
-                    )
-                  }
+                  onPress={() => void openAttribution()}
                 >
                   <Text style={styles.note}>
                     Overture licenses and attribution
                   </Text>
                 </Pressable>
+                {attributionError ? (
+                  <Text
+                    accessibilityLiveRegion="assertive"
+                    {...(Platform.OS === "web"
+                      ? { role: "alert" as const }
+                      : {})}
+                    style={styles.warning}
+                  >
+                    {"Attribution couldn't be opened. Try again."}
+                  </Text>
+                ) : null}
                 <Text style={styles.note}>
                   Open in {mapsProvider} sends this place name and address to an
                   external map service. Its listing may differ from KC3.

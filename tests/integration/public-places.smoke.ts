@@ -1,6 +1,5 @@
 /// <reference types="node" />
-import { execFileSync } from "node:child_process";
-import path from "node:path";
+import { getLocalTestProject } from "./local-project";
 
 const prerequisites =
   "KC3 integration prerequisites: start Docker Desktop, run npm exec -- supabase start, " +
@@ -24,31 +23,16 @@ const requirePublishedDataset =
 const requireProviderDataset = process.env.KC3_EXPECT_PROVIDER_DATASET === "1";
 
 beforeAll(() => {
-  let status: { API_URL?: string; ANON_KEY?: string };
+  let project: ReturnType<typeof getLocalTestProject>;
   try {
-    status = JSON.parse(
-      execFileSync(
-        path.resolve("node_modules/.bin/supabase"),
-        ["status", "-o", "json"],
-        { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 15000 },
-      ),
-    );
-    const url = new URL(status.API_URL ?? "");
-    if (
-      !["127.0.0.1", "localhost", "[::1]"].includes(url.hostname) ||
-      !["http:", "https:"].includes(url.protocol) ||
-      !status.ANON_KEY
-    ) {
-      throw new Error("Invalid local configuration");
-    }
+    project = getLocalTestProject();
   } catch {
-    // CLI output can contain privileged credentials; never include it in errors.
     throw new Error(prerequisites);
   }
 
   // Ignore ambient Expo configuration. Only the local anonymous key is used.
-  process.env.EXPO_PUBLIC_SUPABASE_URL = status.API_URL;
-  process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY = status.ANON_KEY;
+  process.env.EXPO_PUBLIC_SUPABASE_URL = project.apiUrl;
+  process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY = project.anonKey;
   ({ supabase } = jest.requireActual<typeof import("../../src/lib/supabase")>(
     "../../src/lib/supabase",
   ));

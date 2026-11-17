@@ -440,6 +440,37 @@ describe("place-list screen", () => {
     expect(openExternalUrl).toHaveBeenCalledTimes(2);
   });
 
+  it("shows a recoverable error when the attribution link fails", async () => {
+    const openExternalUrl = jest
+      .fn()
+      .mockRejectedValueOnce(new Error("private link failure"))
+      .mockResolvedValueOnce(undefined);
+    await render(
+      <PlaceDetailScreen
+        loadPlaceDetail={async () => makePlaceDetail(PLACES[0])}
+        onBack={() => {}}
+        openExternalUrl={openExternalUrl}
+        placeId={PLACES[0].id}
+      />,
+    );
+    const attribution = await screen.findByRole("link", {
+      name: "Overture licenses and attribution",
+    });
+    await fireEvent.press(attribution);
+    expect(
+      await screen.findByText("Attribution couldn't be opened. Try again."),
+    ).toBeOnTheScreen();
+    expect(screen.queryByText("private link failure")).not.toBeOnTheScreen();
+    await fireEvent.press(attribution);
+    expect(
+      screen.queryByText("Attribution couldn't be opened. Try again."),
+    ).not.toBeOnTheScreen();
+    expect(openExternalUrl).toHaveBeenCalledTimes(2);
+    expect(openExternalUrl).toHaveBeenCalledWith(
+      "https://docs.overturemaps.org/attribution/",
+    );
+  });
+
   it("announces list request states on iOS", async () => {
     jest.replaceProperty(Platform, "OS", "ios");
     const announce = jest

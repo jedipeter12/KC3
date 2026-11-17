@@ -288,3 +288,17 @@ uninspected; no hosted inventory or purge is claimed.
    under the approved retention plan. Recheck counts and permissions before
    KC3-37 or KC3-39 closure. Production deployment and deletion are not part of
    this branch work.
+
+### 2026-11-11 evidence follow-up
+
+A 2026-11-10 read-only check found no correction rows in the running local KC3
+database, so the three historical correction snapshots could not be classified
+from that target.
+The [correction-history review](KC3_37_CORRECTION_HISTORY_REVIEW.md) records
+field-level proposals and the evidence still needed before any history change.
+Two detached PostgreSQL volumes remain uncounted; their project labels and
+unclean cluster states are known, but their contents are not. The
+[detached-volume audit proposal](KC3_37_DETACHED_VOLUME_AUDIT_PROPOSAL.md)
+defines a bounded aggregate-only recovery-copy method and its stop conditions.
+No such copy has been authorized or made. Neither observation closes the
+secondary-copy or production rights gate.

@@ -58,13 +58,19 @@ export const DAY_LABELS = [
 ] as const;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+// The public directory currently covers only Kansas City metro places.
+const PLACE_TIME_ZONE = "America/Chicago";
 
 export function formatDate(value: string, locale?: string): string {
+  // PostgreSQL dates are calendar values, not UTC instants. Parsing one with
+  // Date alone shifts it to the previous day on devices west of UTC.
+  const calendarDate = /^\d{4}-\d{2}-\d{2}$/.test(value);
   return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
-  }).format(new Date(value));
+    timeZone: calendarDate ? "UTC" : PLACE_TIME_ZONE,
+  }).format(new Date(calendarDate ? `${value}T12:00:00Z` : value));
 }
 
 export function formatTransition(value: string, locale?: string): string {
@@ -72,6 +78,7 @@ export function formatTransition(value: string, locale?: string): string {
     weekday: "short",
     hour: "numeric",
     minute: "2-digit",
+    timeZone: PLACE_TIME_ZONE,
   }).format(new Date(value));
 }
 

@@ -285,6 +285,17 @@ requires a loopback endpoint, and overrides ambient Expo configuration. No manua
 key copy, hosted project, or privileged client credential is required. CLI output
 is never printed. Docker/CLI access failures produce prerequisite instructions.
 Run it from the repository root with permission to access Docker and localhost.
+For KC3-37 checks that must leave the curated local `KC3` project untouched,
+prepare a separate Supabase workdir under `/private/tmp` (macOS) or `/tmp`
+(Linux) with a `KC3_37_*` project ID and distinct ports on a shared host. Set
+`KC3_TEST_SUPABASE_WORKDIR` to that workdir for both integration commands. The
+suites validate the local project and loopback API, and the published-fixture
+suite writes and removes only its
+synthetic records in the selected project. The published-fixture suite requires
+this variable and fails before writing if it is missing or does not resolve to
+a `KC3_37_*` project under those temporary roots. CI creates its own
+`KC3_37_CI` workdir on an isolated runner. Do not use this variable to point at
+a hosted or curated target.
 
 The clean 15-place seed is intentionally unpublished under KC3-37. The default
 suite verifies empty anonymous list/summary results, hidden seed details, and

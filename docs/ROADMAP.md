@@ -60,6 +60,15 @@ starting source with spreadsheet review and independently maintained hours.
   `docs/KC3_37_READY_EVIDENCE_AUDIT_2026-11-11.md` and
   `docs/KC3_37_OVERTURE_IDENTITY_DECISIONS_2026-11-11.json`. No staging or
   publication occurred.
+  A read-only correction-history review found no rows in the now-reset running
+  KC3 database; original snapshots still need access and field-level review.
+  Two detached PostgreSQL volumes remain uncounted. The bounded audit procedure
+  in `docs/KC3_37_DETACHED_VOLUME_AUDIT_PROPOSAL.md` awaits a data-owner decision;
+  no copy or recovery has occurred. Neither finding clears the rights gate.
+  Client checks now reject malformed public dates/timestamps, format Kansas
+  City transition times consistently, and recover from attribution-link errors.
+  A disposable local project also supports the full database and anonymous HTTP
+  suites without resetting curated KC3 data; native rechecks remain open.
   Post-cutover operator regression coverage now exercises reviewed-publication
   eligibility, protected writes, stale edits, correction evidence, and
   cancellation. Attended checks on the eventual curated dataset and live
