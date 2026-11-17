@@ -76,6 +76,11 @@ the public environment configuration required to run the client.
 - [`docs/KC3_36_PROVIDER_CONTENT_AUDIT.md`](docs/KC3_36_PROVIDER_CONTENT_AUDIT.md) — board KC3-36 rights audit, field dispositions, launch blockers, and KC3-37 remediation handoff; distinct from the historical correction numbering
 - [`AGENTS.md`](AGENTS.md) — standing instructions for AI coding agents
 
+Agent sessions start with `AGENTS.md`; it points to the documents and checks
+needed for each task. Local staged-file safeguards are optional, while the PR
+CI checks run automatically. See [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)
+for hook setup and tool compatibility.
+
 ## Repository Structure
 
 ```text

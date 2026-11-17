@@ -43,6 +43,50 @@ What does this decision make easier, harder, required, or intentionally unavaila
 
 Add new decisions below this line, newest first.
 
+### 2026-11-15 — Keep agent guidance shared and add bounded commit checks
+
+**Status:** Accepted for this repository workflow; the broader AI Operations
+Standard pilot remains in progress
+
+**Decision**
+
+Keep `AGENTS.md` as the one automatically loaded repository instruction file and
+route detailed documents by task. Add an optional, fast staged-file hook for
+formatting, lint, and high-confidence credential checks. Run the credential
+check in existing PR CI as well. Do not add a second agent framework or a
+database command interception hook.
+
+**Context**
+
+The approved standards, PR template, and full application/database CI already
+exist. Repeatedly loading the whole documentation tree costs agent context.
+Local hooks may be absent or bypassed; database commands can target curated
+local data even when they use `--local`. The Product Owner explicitly requested
+repository-level safeguards during the workflow pilot.
+
+**Alternatives considered**
+
+- Copy instructions into Claude and Cursor configuration files and add role agents.
+- Run full Jest, Expo export, and Supabase startup on every commit.
+- Install a new secret-scanning or hook-management dependency.
+
+**Reasoning**
+
+Current Codex, Cursor, and Claude Code can consume root `AGENTS.md`. The focused
+hook is quick and checks the staged snapshot; CI covers skipped hooks. Existing
+CI already performs the expensive verification. Credential pattern checks are
+useful defense in depth, while destructive database target review cannot be
+reliably delegated to a repository Git hook.
+
+**Consequences / follow-up work**
+
+Each clone or worktree must opt into the local hook. CI checks tracked files
+without that setup. The scanner is limited to known patterns and does not replace
+human diff review or platform secret protection. Database target confirmation,
+KC3-37 attended review, independent verification for material changes, and
+explicit human approval for merge, migration, publication, and deployment remain.
+Pilot the broader standard and verify branch-rule enforcement separately.
+
 ### 2026-11-11 — Select franchise source identities and preserve three seed IDs
 
 **Status:** Accepted (Product Owner instruction; row verification pending)
