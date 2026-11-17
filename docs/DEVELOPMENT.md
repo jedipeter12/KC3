@@ -288,7 +288,9 @@ prepare a separate Supabase workdir under `/private/tmp` with a `KC3_37_*`
 project ID and distinct ports. Set `KC3_TEST_SUPABASE_WORKDIR` to that workdir
 for both integration commands. The suites validate the local project and
 loopback API, and the published-fixture suite writes and removes only its
-synthetic records in the selected project. Do not use this variable to point at
+synthetic records in the selected project. The published-fixture suite requires
+this variable and fails before writing if it is missing or does not resolve to
+a `KC3_37_*` project under `/private/tmp`. Do not use this variable to point at
 a hosted or curated target.
 
 The clean 15-place seed is intentionally unpublished under KC3-37. The default

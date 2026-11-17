@@ -20,6 +20,10 @@ evidence. The names do **not** prove that either volume contains only synthetic
 data. Assume a copy could contain real Google-derived facts and correction
 history. The original volumes remain untouched and detached.
 
+On 2026-11-16, a read-only Docker check again found both named volumes and no
+container referencing either. Their contents and current control-file states
+were not inspected; the preflight below remains required before any copy.
+
 This authorization would permit creating a temporary physical copy of each
 volume and allowing PostgreSQL crash recovery **on the copy only**. That is a
 copy of potentially provider-derived content even though the report contains

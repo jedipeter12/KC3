@@ -141,10 +141,10 @@ function reviewedRecord(
 
 beforeAll(() => {
   try {
-    localProject = getLocalTestProject();
+    localProject = getLocalTestProject(true);
   } catch {
     throw new Error(
-      "Start disposable local Supabase before the published RPC integration suite",
+      "Set KC3_TEST_SUPABASE_WORKDIR to a running disposable local Supabase project before the published RPC integration suite",
     );
   }
   client = createClient<Database>(localProject.apiUrl, localProject.anonKey, {

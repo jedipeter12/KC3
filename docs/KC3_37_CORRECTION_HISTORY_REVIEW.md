@@ -35,6 +35,8 @@ These are independent *factual sources*. The correction row has one URL and
 notes for a whole edit, not field-level provenance. Current page content does
 not prove what appeared there on the stored observation date, that the operator
 used it for every unchanged field, or that its reuse terms have been cleared.
+The three municipal facts were rechecked on 2026-11-16; no historical correction
+row or source-use permission was reverified.
 
 ## Proposed field-level disposition
 

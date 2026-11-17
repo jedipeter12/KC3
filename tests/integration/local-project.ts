@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
 import path from "node:path";
 
 export type LocalTestProject = {
@@ -9,10 +9,12 @@ export type LocalTestProject = {
 };
 
 /** Resolve only the checkout's local stack or an explicitly selected scratch KC3-37 stack. */
-export function getLocalTestProject(): LocalTestProject {
+export function getLocalTestProject(requireScratch = false): LocalTestProject {
   try {
     const scratchWorkdir = process.env.KC3_TEST_SUPABASE_WORKDIR;
-    const workdir = scratchWorkdir ?? process.cwd();
+    if (requireScratch && !scratchWorkdir)
+      throw new Error("Scratch project required");
+    const workdir = realpathSync(scratchWorkdir ?? process.cwd());
     const config = readFileSync(
       path.resolve(workdir, "supabase/config.toml"),
       "utf8",
@@ -26,7 +28,7 @@ export function getLocalTestProject(): LocalTestProject {
       !projectId ||
       (scratchWorkdir
         ? !/^KC3_37_[A-Za-z0-9_]+$/.test(projectId) ||
-          !path.resolve(workdir).startsWith("/private/tmp/")
+          !workdir.startsWith("/private/tmp/")
         : projectId !== "KC3")
     ) {
       throw new Error("Unexpected local project");
