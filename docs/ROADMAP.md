@@ -130,6 +130,10 @@ starting source with spreadsheet review and independently maintained hours.
 
 ## Completed
 
+- [x] 2026-11-15: Kept one compact `AGENTS.md` entry point, routed detailed
+  standards on demand, and added staged-file formatting/lint and credential
+  checks with CI coverage. Human review and database target checks remain
+  required; the AI Operations Standard pilot continues separately.
 - [x] 2026-11-05: Drafted a portable two-layer AI Operations Standard and KC3 software
   adapter with task permissions, independent review, handoff, release decision,
   and bug-response records. Added a PR evidence template. No hosting, monitoring
