@@ -49,6 +49,8 @@ jobs:
     name: Database checks
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+    env:
+      KC3_TEST_SUPABASE_WORKDIR: /tmp/kc3-37-ci
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -60,15 +62,20 @@ jobs:
       - name: Pin npm
         run: npm install --global npm@11.19.0
       - run: npm ci
+      - name: Prepare disposable Supabase project
+        run: |
+          mkdir -p "$KC3_TEST_SUPABASE_WORKDIR"
+          cp -R supabase "$KC3_TEST_SUPABASE_WORKDIR/supabase"
+          sed -i 's/project_id = "KC3"/project_id = "KC3_37_CI"/' "$KC3_TEST_SUPABASE_WORKDIR/supabase/config.toml"
       - name: Start disposable local Supabase
         # Suppress the CLI credential summary; retain progress/errors on stderr.
-        run: npm exec -- supabase start > /dev/null
+        run: npm exec -- supabase start --workdir "$KC3_TEST_SUPABASE_WORKDIR" > /dev/null
       - name: Reset local database and seed
-        run: npm exec -- supabase db reset --local
-      - run: npm test
-      - run: npm run lint:db
+        run: npm exec -- supabase db reset --local --workdir "$KC3_TEST_SUPABASE_WORKDIR"
+      - run: npm exec -- supabase test db --local --workdir "$KC3_TEST_SUPABASE_WORKDIR"
+      - run: npm exec -- supabase db lint --local --schema public --level warning --fail-on warning --workdir "$KC3_TEST_SUPABASE_WORKDIR"
       - run: npm run test:integration
       - run: npm run test:integration:published
       - name: Stop disposable local Supabase
         if: always()
-        run: npm exec --no -- supabase stop --no-backup
+        run: npm exec --no -- supabase stop --project-id KC3_37_CI --workdir "$KC3_TEST_SUPABASE_WORKDIR" --no-backup

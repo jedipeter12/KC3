@@ -28,7 +28,7 @@ export function getLocalTestProject(requireScratch = false): LocalTestProject {
       !projectId ||
       (scratchWorkdir
         ? !/^KC3_37_[A-Za-z0-9_]+$/.test(projectId) ||
-          !workdir.startsWith("/private/tmp/")
+          (!workdir.startsWith("/private/tmp/") && !workdir.startsWith("/tmp/"))
         : projectId !== "KC3")
     ) {
       throw new Error("Unexpected local project");
