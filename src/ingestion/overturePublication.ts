@@ -10,12 +10,14 @@ export type PublicationApproval = {
 };
 
 export function publicationTarget(supabaseUrl: string): string {
-  const url = new URL(supabaseUrl);
-  if (url.search || url.hash)
+  if (supabaseUrl.includes("?") || supabaseUrl.includes("#"))
     throw new Error(
       "Publication target URL cannot contain a query or fragment.",
     );
-  return `${url.origin}${url.pathname.replace(/\/$/, "")}`;
+  const url = new URL(supabaseUrl);
+  if (url.username || url.password)
+    throw new Error("Publication target URL cannot contain credentials.");
+  return `${url.origin}${url.pathname}`;
 }
 
 export function publicationConfirmation(
