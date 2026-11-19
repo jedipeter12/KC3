@@ -23,6 +23,9 @@ Overland Park, and Olathe.
   Overture coverage and source-quality research is recorded in
   [`docs/KC3_37_SOURCE_EVALUATION.md`](docs/KC3_37_SOURCE_EVALUATION.md).
   Review/import instructions: [`docs/OVERTURE_REVIEW.md`](docs/OVERTURE_REVIEW.md).
+  The [Pending duplicate evidence](docs/KC3_37_PENDING_DUPLICATE_EVIDENCE_2026-11-18.md)
+  and [cutover evidence runbook](docs/KC3_37_CUTOVER_EVIDENCE_RUNBOOK.md)
+  record additional review inputs and recovery gates without authorizing publication.
 - Latest tooling milestone: the attended KC3 place-detail CLI safely searches
   provider-backed records and maintains only KC3-owned suitability and
   verification data behind explicit validation, review, and confirmation. A
