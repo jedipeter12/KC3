@@ -5,6 +5,7 @@ import { getOperatorDatabaseConfig } from "../src/config/operatorDatabase";
 import type { ReviewBatch } from "../src/ingestion/overtureReview";
 import {
   publicationConfirmation,
+  publicationTarget,
   validatePublicationApprovals,
 } from "../src/ingestion/overturePublication";
 
@@ -34,7 +35,7 @@ async function main() {
     batch.batchId,
     config.supabaseUrl,
   );
-  console.log(`Publication target: ${new URL(config.supabaseUrl).origin}`);
+  console.log(`Publication target: ${publicationTarget(config.supabaseUrl)}`);
   const io = createInterface({ input: process.stdin, output: process.stdout });
   try {
     const answer = await io.question(`Type ${confirmation}: `);

@@ -65,5 +65,11 @@ test("publication confirmation identifies the target without exposing URL creden
       batch.batchId,
       "https://user:secret@example.supabase.co:8443/path",
     ),
-  ).toBe(`PUBLISH ${batch.batchId} TO https://example.supabase.co:8443`);
+  ).toBe(`PUBLISH ${batch.batchId} TO https://example.supabase.co:8443/path`);
+  expect(() =>
+    publicationConfirmation(
+      batch.batchId,
+      "https://example.supabase.co/path?key=secret",
+    ),
+  ).toThrow("query or fragment");
 });

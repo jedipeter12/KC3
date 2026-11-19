@@ -9,11 +9,20 @@ export type PublicationApproval = {
   reviewNotes: string;
 };
 
+export function publicationTarget(supabaseUrl: string): string {
+  const url = new URL(supabaseUrl);
+  if (url.search || url.hash)
+    throw new Error(
+      "Publication target URL cannot contain a query or fragment.",
+    );
+  return `${url.origin}${url.pathname.replace(/\/$/, "")}`;
+}
+
 export function publicationConfirmation(
   batchId: string,
   supabaseUrl: string,
 ): string {
-  return `PUBLISH ${batchId} TO ${new URL(supabaseUrl).origin}`;
+  return `PUBLISH ${batchId} TO ${publicationTarget(supabaseUrl)}`;
 }
 
 export function validatePublicationApprovals(
