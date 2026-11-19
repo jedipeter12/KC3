@@ -9,6 +9,13 @@ export type PublicationApproval = {
   reviewNotes: string;
 };
 
+export function publicationConfirmation(
+  batchId: string,
+  supabaseUrl: string,
+): string {
+  return `PUBLISH ${batchId} TO ${new URL(supabaseUrl).origin}`;
+}
+
 export function validatePublicationApprovals(
   batch: ReviewBatch,
   input: unknown,
