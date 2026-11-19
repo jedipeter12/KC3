@@ -3,7 +3,11 @@ import { createInterface } from "node:readline/promises";
 import { createClient } from "@supabase/supabase-js";
 import { getOperatorDatabaseConfig } from "../src/config/operatorDatabase";
 import type { ReviewBatch } from "../src/ingestion/overtureReview";
-import { validatePublicationApprovals } from "../src/ingestion/overturePublication";
+import {
+  publicationConfirmation,
+  publicationTarget,
+  validatePublicationApprovals,
+} from "../src/ingestion/overturePublication";
 
 async function main() {
   const [previewPath, approvalPath, flag] = process.argv.slice(2);
@@ -26,17 +30,22 @@ async function main() {
     );
   }
   if (flag !== "--publish") return;
+  const config = getOperatorDatabaseConfig();
+  const confirmation = publicationConfirmation(
+    batch.batchId,
+    config.supabaseUrl,
+  );
+  console.log(`Publication target: ${publicationTarget(config.supabaseUrl)}`);
   const io = createInterface({ input: process.stdin, output: process.stdout });
   try {
-    const answer = await io.question(`Type PUBLISH ${batch.batchId}: `);
-    if (answer !== `PUBLISH ${batch.batchId}`) {
+    const answer = await io.question(`Type ${confirmation}: `);
+    if (answer !== confirmation) {
       console.log("Cancelled.");
       return;
     }
   } finally {
     io.close();
   }
-  const config = getOperatorDatabaseConfig();
   const client = createClient(
     config.supabaseUrl,
     config.supabaseServiceRoleKey,

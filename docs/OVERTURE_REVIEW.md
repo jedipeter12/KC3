@@ -226,8 +226,11 @@ npm run publish:overture-review -- preview.json approvals.json
 npm run publish:overture-review -- preview.json approvals.json --publish
 ```
 
-The second command requires `PUBLISH <batch-id>` and confirms the exact staged
-batch before per-place writes. A failure may leave earlier places published;
+The second command displays the configured Supabase API base URL and requires
+`PUBLISH <batch-id> TO <API-base-URL>` before it confirms the exact staged batch
+and performs per-place writes. Check the target against the attended run plan.
+The configured API URL cannot contain credentials, a query, or a fragment.
+A failure may leave earlier places published;
 inspect the ledger and prepare a revised approval file for remaining rows. Do
 not use this command against the curated target until actual rows, protected
 values, history, and secondary-copy dispositions are reviewed. No current

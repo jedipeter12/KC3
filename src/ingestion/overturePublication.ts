@@ -9,6 +9,24 @@ export type PublicationApproval = {
   reviewNotes: string;
 };
 
+export function publicationTarget(supabaseUrl: string): string {
+  if (supabaseUrl.includes("?") || supabaseUrl.includes("#"))
+    throw new Error(
+      "Publication target URL cannot contain a query or fragment.",
+    );
+  const url = new URL(supabaseUrl);
+  if (url.username || url.password)
+    throw new Error("Publication target URL cannot contain credentials.");
+  return `${url.origin}${url.pathname}`;
+}
+
+export function publicationConfirmation(
+  batchId: string,
+  supabaseUrl: string,
+): string {
+  return `PUBLISH ${batchId} TO ${publicationTarget(supabaseUrl)}`;
+}
+
 export function validatePublicationApprovals(
   batch: ReviewBatch,
   input: unknown,

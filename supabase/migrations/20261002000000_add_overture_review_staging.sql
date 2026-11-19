@@ -69,10 +69,9 @@ begin
     then raise exception using errcode = '22023', message = 'invalid reviewed identity'; end if;
     if (record #>> '{identity,latitude}')::numeric not between -90 and 90
       or (record #>> '{identity,longitude}')::numeric not between -180 and 180
-      or coalesce(record #>> '{identity,timeZone}', '') = '' then
+      or coalesce(record #>> '{identity,timeZone}', '') <> 'America/Chicago' then
       raise exception using errcode = '22023', message = 'invalid coordinates or timezone';
     end if;
-    perform pg_catalog.timezone(record #>> '{identity,timeZone}', statement_timestamp());
     if record ->> 'targetPlaceId' is not null then
       target_id := (record ->> 'targetPlaceId')::uuid;
       if not exists (select 1 from public.places where places.id = target_id) then

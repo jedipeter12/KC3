@@ -95,6 +95,16 @@ test("rejects missing required identity, invalid coordinates, timezone, and dupl
     compileReview(r.manifest, r.places, r.hours, "2026-10-02"),
   ).toThrow("duplicate");
 });
+test("rejects a valid but incorrect time zone for the three Kansas cities", () => {
+  const r = ready();
+  r.places[0]["Time zone"] = "UTC";
+  r.places[0]["Identity reuse basis"] = "Permitted source";
+  r.places[0]["Identity source URL"] = "https://example.org/fixture";
+  r.places[0]["Review notes"] = "Independently reviewed identity.";
+  expect(() =>
+    compileReview(r.manifest, r.places, r.hours, "2026-10-02"),
+  ).toThrow("America/Chicago");
+});
 test("requires every day and distinct hours provenance", () => {
   const r = ready();
   const h = r.hours[0];

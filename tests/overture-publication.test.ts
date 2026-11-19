@@ -1,4 +1,7 @@
-import { validatePublicationApprovals } from "../src/ingestion/overturePublication";
+import {
+  publicationConfirmation,
+  validatePublicationApprovals,
+} from "../src/ingestion/overturePublication";
 import type { ReviewBatch } from "../src/ingestion/overtureReview";
 
 const batch = {
@@ -54,4 +57,33 @@ test("publication requires an exact staged identity, target, and explicit review
       entries: [approval, approval],
     }),
   ).toThrow();
+});
+
+test("publication confirmation identifies the full API base and rejects ambiguous URLs", () => {
+  expect(
+    publicationConfirmation(
+      batch.batchId,
+      "https://example.supabase.co:8443/path",
+    ),
+  ).toBe(`PUBLISH ${batch.batchId} TO https://example.supabase.co:8443/path`);
+  expect(() =>
+    publicationConfirmation(
+      batch.batchId,
+      "https://user:secret@example.supabase.co/path",
+    ),
+  ).toThrow("credentials");
+  expect(() =>
+    publicationConfirmation(
+      batch.batchId,
+      "https://example.supabase.co/path?key=secret",
+    ),
+  ).toThrow("query or fragment");
+  for (const suffix of ["?", "#"]) {
+    expect(() =>
+      publicationConfirmation(
+        batch.batchId,
+        `https://example.supabase.co/path${suffix}`,
+      ),
+    ).toThrow("query or fragment");
+  }
 });
