@@ -1,4 +1,7 @@
-import { validatePublicationApprovals } from "../src/ingestion/overturePublication";
+import {
+  publicationConfirmation,
+  validatePublicationApprovals,
+} from "../src/ingestion/overturePublication";
 import type { ReviewBatch } from "../src/ingestion/overtureReview";
 
 const batch = {
@@ -54,4 +57,13 @@ test("publication requires an exact staged identity, target, and explicit review
       entries: [approval, approval],
     }),
   ).toThrow();
+});
+
+test("publication confirmation identifies the target without exposing URL credentials", () => {
+  expect(
+    publicationConfirmation(
+      batch.batchId,
+      "https://user:secret@example.supabase.co:8443/path",
+    ),
+  ).toBe(`PUBLISH ${batch.batchId} TO https://example.supabase.co:8443`);
 });

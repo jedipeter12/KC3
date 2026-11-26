@@ -44,7 +44,9 @@ duplicates, and relevant flags. Required identity inputs are name, approved city
 and type/status, nonempty address, valid coordinates and timezone, address precision,
 source URL, reviewed date, and reuse basis. Address precision may stay unknown.
 America/Chicago is derived from the three target Kansas cities, not provider
-hours. The publication step must independently reconcile municipal eligibility
+hours. The review compiler and private staging table reject any other time zone;
+an already staged invalid batch stops the forward migration for review. The
+publication step must independently reconcile municipal eligibility
 and stable KC3 IDs; no full-coverage guarantee is made by postal locality.
 
 For unchanged selected Overture facts, retain `Overture license` and the supplied
@@ -226,8 +228,10 @@ npm run publish:overture-review -- preview.json approvals.json
 npm run publish:overture-review -- preview.json approvals.json --publish
 ```
 
-The second command requires `PUBLISH <batch-id>` and confirms the exact staged
-batch before per-place writes. A failure may leave earlier places published;
+The second command displays the configured Supabase API origin and requires
+`PUBLISH <batch-id> TO <API-origin>` before it confirms the exact staged batch
+and performs per-place writes. Check the target against the attended run plan.
+A failure may leave earlier places published;
 inspect the ledger and prepare a revised approval file for remaining rows. Do
 not use this command against the curated target until actual rows, protected
 values, history, and secondary-copy dispositions are reviewed. No current

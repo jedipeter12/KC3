@@ -78,6 +78,9 @@ starting source with spreadsheet review and independently maintained hours.
   hours, authorization, and Google exclusion. Internal fixture checks cover
   unknown hours and dawn-to-dusk transitions while the separate MVP gate keeps
   those fixtures private.
+  Review safeguards now require the exact API origin in the publication
+  confirmation and enforce the three-city time zone on staged records through
+  a forward migration. Synthetic tests do not authorize any real publication.
 - [ ] KC3-34: Complete user-attended VoiceOver and TalkBack verification for the
   KC3 place discovery/detail experience, implement and recheck any resulting
   fixes, and record spoken evidence for the KC3-21/KC3-23 closeout gate.
