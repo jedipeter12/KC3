@@ -367,11 +367,10 @@ export function compileReview(
       )
     )
       throw new Error("Unapproved city/type/address precision.");
-    try {
-      new Intl.DateTimeFormat("en-US", { timeZone: identity.timeZone });
-    } catch {
-      throw new Error("Invalid IANA time zone.");
-    }
+    if (identity.timeZone !== "America/Chicago")
+      throw new Error(
+        "The three Kansas cities require America/Chicago time zone.",
+      );
     if (identity.website) {
       const url = new URL(identity.website);
       if (
@@ -400,7 +399,6 @@ export function compileReview(
       Math.abs(identity.latitude - source.latitude) > 1e-9 ||
       Math.abs(identity.longitude - source.longitude) > 1e-9 ||
       identity.addressPrecision !== "unknown" ||
-      identity.timeZone !== "America/Chicago" ||
       identity.status !== sourceStatus(source.operatingStatus);
     if (changed && evidence.reuseBasis === "Overture license")
       throw new Error(

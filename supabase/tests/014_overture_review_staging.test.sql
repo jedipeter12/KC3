@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(20);
+select plan(22);
 create temporary table original_staging_count as
 select count(*)::integer as count from public.overture_review_batches;
 create function pg_temp.review_batch() returns jsonb language sql as $$
@@ -28,6 +28,14 @@ select ok(not has_table_privilege('kc3_overture_review_importer','public.place_d
 select throws_ok($$select public.kc3_stage_overture_review(null)$$,'22023','invalid review batch','null payload rejected');
 select throws_ok($$select public.kc3_stage_overture_review(jsonb_set(pg_temp.review_batch(),'{records}','[]'))$$,'22023','review batch must contain 1-1000 records','empty batch rejected');
 select throws_ok($$select public.kc3_stage_overture_review(jsonb_set(pg_temp.review_batch(),'{records,0,identity,address}','""'))$$,'22023','invalid reviewed identity','missing required field rejected');
+select throws_ok($$select public.kc3_stage_overture_review(jsonb_set(pg_temp.review_batch(),'{records,0,identity,timeZone}','"UTC"'))$$,'22023','invalid coordinates or timezone','valid but wrong regional time zone rejected');
+select throws_ok(
+  $$insert into public.overture_review_batches (batch_id, release, manifest_sha256, records)
+    select 'cccccccc-cccc-4ccc-8ccc-cccccccccccc', '2026-09-23.1', repeat('a', 64),
+      jsonb_set(pg_temp.review_batch() -> 'records', '{0,identity,timeZone}', '"UTC"')$$,
+  '22023', 'invalid coordinates or timezone',
+  'direct staging insert cannot bypass the regional time zone gate'
+);
 select throws_ok($$select public.kc3_stage_overture_review(jsonb_set(pg_temp.review_batch(),'{records,0,source,sources,0,license}','"unreviewed"'))$$,'22023','unapproved source license','unknown source license rejected');
 select throws_ok($$select public.kc3_stage_overture_review(jsonb_set(pg_temp.review_batch(),'{records,0,targetPlaceId}','"cccccccc-cccc-cccc-cccc-cccccccccccc"'))$$,'22023','KC3 target identity not found','unknown KC3 target rejected');
 select is(public.kc3_stage_overture_review(pg_temp.review_batch())->>'action','staged','valid batch staged');
